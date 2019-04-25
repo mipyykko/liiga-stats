@@ -11,6 +11,8 @@ const schema = new mongoose.Schema({
   type: Number,
   side: Number,
   second: Number,
+  first_team_score: Number,
+  second_team_score: Number
 })
 
 module.exports = mongoose.model('Goal', schema)

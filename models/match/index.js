@@ -69,7 +69,7 @@ const schema = new mongoose.Schema({
     logo: { type: String },
     statistics: { type: mongoose.Schema.Types.ObjectId, ref: 'TeamStatistics' }
   }, */
-  goals: [GoalSchema],//[{ type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }],
+  goals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }], // [GoalSchema]
   events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
   tactics: [{ type: mongoose.Schema.Types.Mixed }],
   players: [PlayerSchema],
