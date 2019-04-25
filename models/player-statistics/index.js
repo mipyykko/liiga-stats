@@ -1,8 +1,13 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
-  player: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
-  match: { type: mongoose.Schema.Types.ObjectId, ref: 'Match' },
+  _id: { 
+    player_id: { type: Number, ref: 'Player' },
+    match_id: { type: Number, ref: 'Match'},
+  },
+/*   player_id: { type: Number, ref: 'Player' },
+  match_id: { type: Number, ref: 'Match' },
+ */  
   isi: Number,
   cw: Number,
   t: Number,

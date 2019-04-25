@@ -1,8 +1,12 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
-  match_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Match' },
-  team_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
+  _id: {
+    match_id: { type: Number, ref: 'Match' },
+    team_id: { type: Number, ref: 'Team' },
+  },
+/*   match_id: { type: Number, ref: 'Match' },
+  team_id: { type: Number, ref: 'Team' }, */
   bpp: Number,
   bpm: Number,
   s: Number,
