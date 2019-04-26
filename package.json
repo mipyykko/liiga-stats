@@ -19,7 +19,8 @@
     "express": "^4.16.4",
     "fetch-ponyfill": "^6.0.2",
     "lodash": "^4.17.11",
-    "mongoose": "^5.5.3"
+    "mongoose": "^5.5.3",
+    "morgan": "^1.9.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

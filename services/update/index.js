@@ -1,4 +1,4 @@
-const API = require('api/fake_api')
+const API = require('api')
 const _ = require('lodash')
 
 const Match = require('models/match')
@@ -8,7 +8,20 @@ const Player = require('models/player')
 const PlayerStatistics = require('models/player-statistics')
 const Goal = require('models/goal')
 
-const fetchMatches = async (matches, options = { force: false }) => {
+const getUniquePlayers = (param) => _.uniqBy(
+  _.flatten(
+    param instanceof Array 
+      ? param.map(match => match.players)
+      : param.players),
+  'player_id'
+)
+
+const getUniqueTeams = (matches) => _.uniqBy(
+  _.flatten(matches.map(match => [match.first_team, match.second_team])), 
+  'team_id'
+)
+
+const getMatches = async (matches, options = { force: false }) => {
   return (await Promise.all(matches.map(async (match) => {
 
     const foundMatch = await Match.findOne({ match_id: match.match_id })
@@ -20,17 +33,7 @@ const fetchMatches = async (matches, options = { force: false }) => {
     return await API.fetchMatch(match.match_id)
   }))).filter(v => !!v)
 }
-
-const getUniquePlayers = (matches) => _.uniqBy(
-  _.flatten(matches.map(match => match.players)), 
-  'player_id'
-)
-
-const getUniqueTeams = (matches) => _.uniqBy(
-  _.flatten(matches.map(match => [match.first_team, match.second_team])), 
-  'team_id'
-)
-
+  
 const updatePlayers = async (players) => {
   return await Promise.all(players.map(async (player) => {
     const { player_id, display_name, photo } = player
@@ -41,13 +44,13 @@ const updatePlayers = async (players) => {
       return foundPlayer
     }
 
-    return await new Player({
+    return await Player.create({
       _id: player_id,
       player_id,
       player_name: display_name,
       display_name,
       photo
-    }).save()
+    }) //.save()
   }))
 }
 
@@ -68,37 +71,36 @@ const updateTeams = async (teams) => {
 }
 
 const createTeamStatistics = async (team, match) => {
-  return await new TeamStatistics({
-    _id: { 
-      team_id: team.team_id,
-      match_id: match.match_id
-    },
+  return await TeamStatistics.create({
+    team_id: team.team_id,
+    match_id: match.match_id,
     ...team.statistics
-  }).save()
+  }) //.save()
 }
 
 const createPlayerStatistics = async (match) => {
   const { players, match_id } = match
 
-  const matchUniquePlayers = _.uniqBy(players, 'player_id')
-
-  return await Promise.all(matchUniquePlayers.map(async (player) => {
+  // players in match might have duplicates in some cases, so let's filter them 
+  return await Promise.all(getUniquePlayers(match).map(async (player) => {
     const { player_id, statistics } = player
 
-    return await new PlayerStatistics({
-      _id: { 
+    return await PlayerStatistics.create({
+      player_id,
+      match_id,
+/*       _id: { 
         player_id,
         match_id
-      },
+      },*/
       ...statistics
-    }).save()
+    }) //.save()
   }))
 }
 
-const getMatchPlayers = (match) => {
-  const { first_team, second_team } = match
+const getMatchPlayers = (match, statistics) => {
+  const { first_team, second_team, match_id, players } = match
 
-  return match.players.map(player => {
+  return getUniquePlayers(match).map(player => {
     const { player_id, position_id, team_id, number } = player
 
     return {
@@ -106,7 +108,7 @@ const getMatchPlayers = (match) => {
       position_id,
       team_id: team_id === first_team.team_id ? first_team.team_id : second_team.team_id,
       number,
-      // statistics: playerStatistics._id
+      statistics_id: statistics.find(s => s.player_id === player_id)._id
     }
   })
 }
@@ -123,17 +125,17 @@ const updateMatchGoals = async (match) => {
         first_team_score = goal.side === 1 ? ++first_team_score : first_team_score
         second_team_score = goal.side !== 1 ? ++second_team_score : second_team_score
 
-        const newGoal = await new Goal({
+        const newGoal = await Goal.create({
           ..._.omit(goal, ['scorer', 'assistant']),
           team_id: goal.side === 1 ? first_team.team_id : second_team.team_id,
           scorer_id: goal.scorer.player_id,
-          match_id,
           assistant_id: goal.assistant ? goal.assistant.player_id : null,
+          match_id,
           first_team_score,
           second_team_score
         })
 
-        return newGoal.save() //{ ...newGoal._doc, scorer: goal.scorer }
+        return newGoal //.save() //{ ...newGoal._doc, scorer: goal.scorer }
       })
   )
 }
@@ -155,7 +157,7 @@ const updateMatches = async (matches, seasonid) => {
       status 
     } = match
 
-    let newMatch = new Match({ _id: match_id, match_id })
+    // let newMatch = Match.create({ _id: match_id, match_id })
 
     if (status <= 1) {
       return // it's not played, don't do anything
@@ -164,15 +166,37 @@ const updateMatches = async (matches, seasonid) => {
     const first_team_statistics = await createTeamStatistics(first_team, match)
     const second_team_statistics = await createTeamStatistics(second_team, match)
 
-    // players in match might have duplicates in some cases, so let's filter them 
-    const matchUniquePlayers = _.uniqBy(players, 'player_id')
+    const playerStatistics = await createPlayerStatistics(match)
 
-    const playerStatistics = await createPlayerStatistics(matchUniquePlayers, match)
-
-    const matchPlayers = getMatchPlayers(match)
+    const matchPlayers = getMatchPlayers(match, playerStatistics)
     const matchGoals = await updateMatchGoals(match)
 
-    newMatch = Object.assign(newMatch, {
+    const newMatch = Match.create({
+      _id: match_id,
+      match_id,
+      ..._.omit(match, ['goals', 'players', 'events', 'tactics', 'first_team', 'second_team']),
+      season_id: Number(seasonid),
+      players: matchPlayers,
+      goals: matchGoals.map(goal => goal._id), // sortedMatchGoalsWithScore
+      first_team: { 
+        team_id: first_team.team_id,
+        name: first_team.name,
+        coach: first_team_coach,
+        number_color: first_team_number_color,
+        shirt_color: first_team_shirt_color,
+        statistics_id: first_team_statistics._id
+      },
+      second_team: { 
+        team_id: second_team.team_id,
+        name: second_team.name,
+        coach: second_team_coach,
+        number_color: second_team_number_color,
+        shirt_color: second_team_shirt_color,
+        statistics_id: second_team_statistics._id
+      }
+    })
+
+/*     newMatch = Object.assign(newMatch, {
       ..._.omit(match, ['goals', 'players', 'events', 'tactics', 'first_team', 'second_team']),
       season_id: Number(seasonid),
       players: matchPlayers,
@@ -193,16 +217,16 @@ const updateMatches = async (matches, seasonid) => {
         shirt_color: second_team_shirt_color,
         // statistics: second_team_statistics._id
       }
-    }) // was: new Match({})
+    }) // was: new Match({}) */
 
-    return await newMatch.save()
+    return newMatch //await newMatch.save()
   }).filter(v => !!v))
 }
 
 const updateSeason = async (tournamentid, seasonid, options = {}) => {
   const seasonMatches = await API.fetchTournamentSeason(tournamentid, seasonid)
 
-  const matches = await fetchMatches(seasonMatches, options)
+  const matches = await getMatches(seasonMatches, options)
 
   const uniquePlayers = getUniquePlayers(matches)
   const uniqueTeams = getUniqueTeams(matches)

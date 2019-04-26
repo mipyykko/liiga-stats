@@ -1,3 +1,4 @@
 const updateService = require('./update')
+const matchService = require('./match')
 
-module.exports = { updateService }
+module.exports = { updateService, matchService }
