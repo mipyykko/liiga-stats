@@ -19,7 +19,6 @@ const schema = new mongoose.Schema({
   fitness_available: Boolean,
   player_id: { type: Number, ref: 'Player' },
   opponent_player_id: { type: Number, ref: 'Player' },
-  //opponent_player_name: "Volotinen",
   team_id: { type: Number, ref: 'Team' },
   goal_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal' },
   match_id: { type: Number, ref: 'Match' },

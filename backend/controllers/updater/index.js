@@ -1,4 +1,4 @@
-const { updateService } = require('../../services')
+const { updateService } = require('services')
 const { updateSeason } = updateService
 
 const updateController = {

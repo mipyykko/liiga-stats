@@ -77,8 +77,6 @@ const schema = new mongoose.Schema({
   events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
   tactics: [{ type: mongoose.Schema.Types.Mixed }],
   players: [PlayerSchema],
-  success: Boolean,
-  error: Boolean
 }, { toJSON: { virtuals: true } })
 
 /* schema.virtual('players.statistics', {
