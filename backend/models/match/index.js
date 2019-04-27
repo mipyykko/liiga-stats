@@ -73,38 +73,10 @@ const schema = new mongoose.Schema({
   season_id: Number,
   first_team: TeamSchema,
   second_team: TeamSchema,
-/*   first_team_shirt_color: { type: String },
-  second_team_shirt_color: { type: String },
-  first_team_number_color: { type: String },
-  second_team_number_color: { type: String }, */
-/*   first_team: { type: Number, ref: 'Team' }, 
-  second_team: { type: Number, ref: 'Team' },
-  first_team_statistics: { type: mongoose.Schema.Types.Mixed, ref: 'TeamStatistics' },
-  second_team_statistics: { type: mongoose.Schema.Types.Mixed, ref: 'TeamStatistics' }, */
-/*   first_team: {
-    team_id: { type: Number, ref: 'Team' },
-    name: { type: String },
-    logo: { type: String },
-    statistics: { type: mongoose.Schema.Types.ObjectId, ref: 'TeamStatistics' }
-  },
-  second_team: {
-    team_id: { type: Number, ref: 'Team' },
-    name: { type: String },
-    logo: { type: String },
-    statistics: { type: mongoose.Schema.Types.ObjectId, ref: 'TeamStatistics' }
-  }, */
   goals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }], // [GoalSchema]
   events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
   tactics: [{ type: mongoose.Schema.Types.Mixed }],
   players: [PlayerSchema],
-/*     {
-      player_id: { type: Number, ref: 'Player' },
-      number: Number,
-      position_id: Number,
-      statistics: { type: mongoose.Schema.Types.Mixed, ref: 'PlayerStatistics' },
-      team_id: { type: Number, ref: 'Team' } 
-    } 
-  ], */
   success: Boolean,
   error: Boolean
 }, { toJSON: { virtuals: true } })
@@ -114,5 +86,7 @@ const schema = new mongoose.Schema({
   localField: 'players.statistics_id', 
   foreignField: '_id',
 }) */
+
+require('./methods')(schema)
 
 module.exports = mongoose.model('Match', schema)

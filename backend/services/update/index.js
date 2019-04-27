@@ -7,6 +7,7 @@ const TeamStatistics = require('models/team-statistics')
 const Player = require('models/player')
 const PlayerStatistics = require('models/player-statistics')
 const Goal = require('models/goal')
+const Event = require('models/event')
 
 const getUniquePlayers = (param) => _.uniqBy(
   _.flatten(
@@ -34,28 +35,44 @@ const getMatches = async (matches, options = { force: false }) => {
   }))).filter(v => !!v)
 }
   
-const updatePlayers = async (players) => {
+const updatePlayers = async (players, options = { force: false }) => {
   return await Promise.all(players.map(async (player) => {
     const { player_id, display_name, photo } = player
 
     const foundPlayer = await Player.findOne({ _id: player_id })
 
-    if (foundPlayer) {
+    if (!options.force && foundPlayer) {
       return foundPlayer
     }
 
-    return await Player.create({
+    // TODO: get full player names from full events!
+    // first event should be enough
+    // matches/m_id/events/e_id/full_events?locale=en
+    return await Player.findOneAndUpdate({
       _id: player_id,
-      player_id,
-      player_name: display_name,
-      display_name,
-      photo
-    }) //.save()
+    }, {
+      $set: {
+        player_id,
+        player_name: display_name,
+        display_name,
+        photo
+      }
+    }, {
+      new: true, upsert: true
+    }).exec()
   }))
 }
 
-const updateTeams = async (teams) => {
+const updateTeams = async (teams, options = { force: false }) => {
   return await Promise.all(teams.map(async (team) => {
+    const { team_id } = team
+
+    const foundTeam = await Team.findOne({ _id: team_id })
+    
+    if (!options.force && foundTeam) {
+      return foundTeam
+    }
+
     return await Team.findOneAndUpdate({
       _id: team.team_id
     }, {
@@ -70,30 +87,36 @@ const updateTeams = async (teams) => {
   }))
 }
 
-const createTeamStatistics = async (team, match) => {
-  return await TeamStatistics.create({
+const updateTeamStatistics = async (team, match) => {
+  return await TeamStatistics.findOneAndUpdate({
     team_id: team.team_id,
-    match_id: match.match_id,
-    ...team.statistics
-  }) //.save()
+    match_id: match.match_id
+  }, { 
+    $set: {
+      ...team.statistics
+    }
+  }, { 
+    new: true, upsert: true
+  }).exec()
 }
 
-const createPlayerStatistics = async (match) => {
+const updatePlayerStatistics = async (match) => {
   const { players, match_id } = match
 
   // players in match might have duplicates in some cases, so let's filter them 
   return await Promise.all(getUniquePlayers(match).map(async (player) => {
     const { player_id, statistics } = player
 
-    return await PlayerStatistics.create({
+    return await PlayerStatistics.findOneAndUpdate({
       player_id,
       match_id,
-/*       _id: { 
-        player_id,
-        match_id
-      },*/
-      ...statistics
-    }) //.save()
+    }, {
+      $set: {
+        ...statistics
+      }
+    }, {
+      new: true, upsert: true
+    }).exec()
   }))
 }
 
@@ -125,6 +148,7 @@ const updateMatchGoals = async (match) => {
         first_team_score = goal.side === 1 ? ++first_team_score : first_team_score
         second_team_score = goal.side !== 1 ? ++second_team_score : second_team_score
 
+        // TODO: find and update
         const newGoal = await Goal.create({
           ..._.omit(goal, ['scorer', 'assistant']),
           team_id: goal.side === 1 ? first_team.team_id : second_team.team_id,
@@ -140,7 +164,107 @@ const updateMatchGoals = async (match) => {
   )
 }
 
+const convertTimeToSec = (min, sec) => (min - 1) * 60 + sec
+
+const mapEventToGoalId = (event, goals) => {
+  if (event.type !== 'goal') {
+    return
+  }
+
+  const { player_id, minute, second } = event
+
+  return (goals.find(goal => goal.scorer_id == player_id && goal.second == convertTimeToSec(minute, second)) || {})._id
+}
+
+const shallowCompare = (obj1, obj2) =>
+  Object.keys(obj1).length === Object.keys(obj2).length &&
+  Object.keys(obj1).every(key => obj1[key] === obj2[key])
+
+const updateMatchEvents = async (match, matchGoals) => {
+  const { goals, events, match_id, first_team, second_team } = match
+
+  // sometimes events can appear doubled
+  const uniqueEvents = _.uniqWith(events, shallowCompare)
+
+  const uniqueEventIds = _.uniq(uniqueEvents.map(e => e.event_id)).length
+
+/*   if (uniqueEventIds != uniqueEvents.length) {
+    console.log("combined events at %d", match_id)
+
+    const eventMap = _.reduce(uniqueEvents, (acc, curr) => ({ ...acc, [curr.event_id]: acc[curr.event_id] ? acc[curr.event_id] + 1 : 1 }), {})
+
+    const repeatEventIds = Object.entries(eventMap).filter(k => k[1] > 1).map(k => Number(k[0]))
+
+    const repeatedEvents = uniqueEvents.filter(event => _.includes(repeatEventIds, event.event_id))
+  } */
+
+  // TODO: opponent player_id === 0 => undefined/null
+
+  return await Promise.all(uniqueEvents.map(async (event) => {
+    const newEvent = await Event.findOneAndUpdate({
+      event_id: event.event_id,
+      match_id: match_id
+    }, {
+      $set: {
+        goal_id: mapEventToGoalId(event, matchGoals),
+        match_id,
+        opponent_player_id: event.opponent_player_id === 0 ? null : event.opponent_player_id,
+        ...event,         
+      }
+    }, {
+      new: true, upsert: true
+    })
+
+    return newEvent
+  }))
+}
+
+const updatePlayersFromDetailedEvent = async (matchid, events) => {
+  var idx = 0
+
+  while (idx < events.length) {
+    const event = await API.fetchDetailedEvent(matchid, events[idx++].event_id)
+
+    const { players } = event
+
+    if (!players || players && players.length === 0) { 
+      continue 
+    }
+
+    return Promise.all(_.uniqBy(players, 'id').map(async (player) => {
+      const { id: player_id, name_eng: name, lastname_eng: surname, player_team: team_id } = player
+
+      const foundPlayer = await Player.findOne({ _id: player_id })
+
+      if (foundPlayer.name === name) {
+        return // foundPlayer
+      }
+      
+      if (!name) {
+        // lineups seem to be padded with null players
+        return
+      }
+
+      return await Player.findOneAndUpdate({
+        _id: player_id,
+      }, {
+        $set: {
+          player_id,
+          name,
+          surname
+        }
+      }, {
+        new: true, upsert: true
+      }).exec()
+    }))
+  }
+
+  return []
+}
+
 const updateMatches = async (matches, seasonid) => {
+  // TODO: async parallel on the whole shebang?
+  
   return Promise.all(matches.map(async (match) => {
     const {
       first_team, 
@@ -163,14 +287,53 @@ const updateMatches = async (matches, seasonid) => {
       return // it's not played, don't do anything
     }
 
-    const first_team_statistics = await createTeamStatistics(first_team, match)
-    const second_team_statistics = await createTeamStatistics(second_team, match)
+    let first_team_statistics, second_team_statistics, 
+        matchPlayers, playerStatistics, 
+        matchGoals, matchEvents,
+        updatedPlayers
 
-    const playerStatistics = await createPlayerStatistics(match)
+    // TODO: something prettier
+
+    await Promise.all([
+      updateTeamStatistics(first_team, match),
+      updateTeamStatistics(second_team, match),
+      updatePlayerStatistics(match)
+    ]).then(data => {
+      first_team_statistics = data[0]
+      second_team_statistics = data[1]
+      playerStatistics = data[2]
+
+      return Promise.all([
+        getMatchPlayers(match, playerStatistics),
+        updateMatchGoals(match)
+      ])
+    }).then(data => {
+      matchPlayers = data[0]
+      matchGoals = data[1]
+
+      return updateMatchEvents(match, matchGoals)
+    }).then(async data => {
+      matchEvents = data
+
+      updatedPlayers = await updatePlayersFromDetailedEvent(match.match_id, matchEvents)
+    })
+/*     const first_team_statistics = await updateTeamStatistics(first_team, match)
+    const second_team_statistics = await updateTeamStatistics(second_team, match)
+
+    const playerStatistics = await updatePlayerStatistics(match)
 
     const matchPlayers = getMatchPlayers(match, playerStatistics)
     const matchGoals = await updateMatchGoals(match)
+    const matchEvents = await updateMatchEvents(match, matchGoals)
 
+    const updatedPlayers = (await updatePlayersFromDetailedEvent(match.match_id, matchEvents)).filter(v => !!v) */
+
+    if (updatedPlayers.length > 0) {
+      // console.log('Updated %d player full names', updatedPlayers.length)
+      // updatedPlayers.forEach(p => console.log('Updated', p.fullname))
+    }
+
+    // TODO: this also needs find and update, in case we are actually updating 
     const newMatch = Match.create({
       _id: match_id,
       match_id,
@@ -178,6 +341,7 @@ const updateMatches = async (matches, seasonid) => {
       season_id: Number(seasonid),
       players: matchPlayers,
       goals: matchGoals.map(goal => goal._id), // sortedMatchGoalsWithScore
+      events: matchEvents,
       first_team: { 
         team_id: first_team.team_id,
         name: first_team.name,
@@ -234,11 +398,16 @@ const updateSeason = async (tournamentid, seasonid, options = {}) => {
   // save new players
   const savedPlayers = await updatePlayers(uniquePlayers)
 
+  console.log('updated %d players', savedPlayers.length)
   // save new teams
   const savedTeams = await updateTeams(uniqueTeams)
+  console.log('updated %d teams', savedTeams.length)
 
   // handle matches
-  return await updateMatches(matches, seasonid)
+  const savedMatches = await updateMatches(matches, seasonid)
+  console.log('updated %d matches', savedMatches.length)
+
+  return savedMatches
 }
 
 module.exports = { updateSeason }

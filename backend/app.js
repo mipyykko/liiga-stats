@@ -18,7 +18,7 @@ const config = require('./config')
 
 mongoose.Promise = Promise
 mongoose.connect(config.MONGO_URI, { useNewUrlParser: true })
-mongoose.set('debug', true)
+// mongoose.set('debug', true)
 
 process.on('unhandledRejection', (error, p) => {
   console.log('=== UNHANDLED REJECTION ===')

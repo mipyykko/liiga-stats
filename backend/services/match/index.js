@@ -13,7 +13,7 @@ class MatchService {
       team_statistics: true
     })(Match.findOne({ _id: match_id }))
   }
- 
+
   static async findMatches(tournament_id, season_id, options) {
     const query = {}
     

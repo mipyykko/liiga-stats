@@ -7,6 +7,7 @@ const schema = new mongoose.Schema({
   },
   action_code: Number,
   type: String,
+  half: Number,
   minute: Number,
   second: Number,
   offset_left: Number,
@@ -14,14 +15,14 @@ const schema = new mongoose.Schema({
   pos_y: Number,
   pos_dest_x: Number,
   pos_dest_y: Number,
-  half: Number,
   title: String,
   fitness_available: Boolean,
   player_id: { type: Number, ref: 'Player' },
-  //player_name: "Källman",
   opponent_player_id: { type: Number, ref: 'Player' },
   //opponent_player_name: "Volotinen",
-  team_id: Number, // ref
+  team_id: { type: Number, ref: 'Team' },
+  goal_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal' },
+  match_id: { type: Number, ref: 'Match' },
   video_url: String
 })
 
