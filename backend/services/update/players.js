@@ -3,8 +3,6 @@ const PlayerStatistics = require('models/player-statistics')
 const API = require('api')
 const _ = require('lodash')
 
-const { getUniquePlayers } = require('services/update/common')
-
 const updatePlayers = async (players, options = { force: false }) => {
   return await Promise.all(players.map(async (player) => {
     const { player_id, display_name, photo } = player
@@ -15,9 +13,6 @@ const updatePlayers = async (players, options = { force: false }) => {
       return foundPlayer
     }
 
-    // TODO: get full player names from full events!
-    // first event should be enough
-    // matches/m_id/events/e_id/full_events?locale=en
     return await Player.findOneAndUpdate({
       _id: player_id,
     }, {
@@ -97,20 +92,31 @@ const updatePlayersFromDetailedEvent = async (matchid, events) => {
 }
 
 const getMatchPlayers = (match, statistics) => {
-  const { first_team, second_team, match_id, players } = match
-
   return getUniquePlayers(match).map(player => {
     const { player_id, position_id, team_id, number } = player
 
     return {
       player_id,
       position_id,
-      team_id: team_id === first_team.team_id ? first_team.team_id : second_team.team_id,
+      team_id, //: team_id === first_team.team_id ? first_team.team_id : second_team.team_id,
       number,
       statistics_id: statistics.find(s => s.player_id === player_id)._id
     }
   })
 }
 
+const getUniquePlayers = (param) => _.uniqBy(
+  _.flatten(
+    param instanceof Array 
+      ? param.map(match => match.players)
+      : param.players),
+  'player_id'
+)
 
-module.exports = { updatePlayers, updatePlayerStatistics, updatePlayersFromDetailedEvent, getMatchPlayers }
+module.exports = { 
+  updatePlayers, 
+  updatePlayerStatistics, 
+  updatePlayersFromDetailedEvent, 
+  getUniquePlayers,
+  getMatchPlayers 
+}

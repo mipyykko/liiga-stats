@@ -1,9 +1,8 @@
 const API = require('api')
 
 const { getMatches, updateMatches } = require('./matches')
-const { getUniquePlayers, getUniqueTeams } = require('./common')
-const { updatePlayers } = require('./players')
-const { updateTeams } = require('./teams')
+const { updatePlayers, getUniquePlayers } = require('./players')
+const { updateTeams, getUniqueTeams } = require('./teams')
 
 
 const updateSeason = async (tournamentid, seasonid, options = {}) => {

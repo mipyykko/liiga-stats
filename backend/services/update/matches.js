@@ -1,3 +1,4 @@
+const API = require('api')
 const Match = require('models/match')
 const _ = require('lodash')
 const { updateTeamStatistics } = require('services/update/teams')
