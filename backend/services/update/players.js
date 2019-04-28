@@ -29,7 +29,7 @@ export const updatePlayers = async (players, options = { force: false }) => {
 }
 
 export const updatePlayerStatistics = async (match, options = { force: false }) => {
-  const { players, match_id } = match
+  const { match_id } = match
 
   // players in match might have duplicates in some cases, so let's filter them 
   return await Promise.all(getUniquePlayers(match).map(async (player) => {
@@ -87,6 +87,9 @@ export const updatePlayersFromDetailedEvent = async (matchid, events) => {
       }).exec()
     }))).filter(v => !!v)
   }
+
+  return Promise.resolve([])
+
 }
 
 export const getMatchPlayers = (match, statistics) => {

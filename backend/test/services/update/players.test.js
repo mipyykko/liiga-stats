@@ -16,6 +16,7 @@ var expect = chai.expect
 
 const matches = [
   {
+    match_id: 1,
     first_team: { 
       team_id: 1
     },
@@ -28,22 +29,34 @@ const matches = [
         position_id: 31,
         team_id: 1,
         number: 1,
+        statistics: { 
+          g: 1,
+          isi: 500
+        }
       },
       {
         player_id: 1,
         position_id: 31,
         team_id: 1,
         number: 1,
+        statistics: {
+          g: 1,
+          isi: 500
+        }
       },
       {
         player_id: 2,
         position_id: 32,
         team_id: 2,
-        number: 2
+        number: 2,
+        statistics: {
+          g: 0,
+          isi: 150
+        }
       }
     ]
-  },
-  {
+  }, {
+    match_id: 2,
     first_team: { 
       team_id: 1
     },
@@ -73,8 +86,54 @@ const matches = [
   }
 ]
 
-describe('getMatchPlayers', () => {
+const players = [
+  {
+    player_id: 1,
+    display_name: 'test',
+    photo: 'photo.jpg'
+  },
+  {
+    player_id: 2,
+    display_name: 'test2',
+    photo: 'photo2.jpg'
+  }
+]
 
+const extendedEvents = [
+  {
+    event_id: 1,
+  },
+  { event_id: 2,
+    players: [
+      {
+        id: 1,
+        player_team: 1,
+        name_eng: 'test',
+        lastname_eng: 'one'
+      },
+      {
+        id: 2,
+        player_team: 2,
+        name_eng: 'test',
+        lastname_eng: 'two'
+      },
+      {
+        id: 1,
+        player_team: 1,
+        name_eng: 'test',
+        lastname_eng: 'duplicate'
+      },
+      {
+        id: 3,
+        player_team: 2,
+        name_eng: null,
+        lastname_eng: null
+      }
+    ]
+  }
+]
+
+describe('getMatchPlayers', () => {
   const statistics = [
     {
       _id: 123,
@@ -111,19 +170,6 @@ describe('getMatchPlayers', () => {
 })
 
 describe('updatePlayers', () => {
-  const players = [
-    {
-      player_id: 1,
-      display_name: 'test',
-      photo: 'photo.jpg'
-    },
-    {
-      player_id: 2,
-      display_name: 'test2',
-      photo: 'photo2.jpg'
-    }
-  ]
-
   const expected = players.map(p => ({ _id: p.player_id, player_name: p.display_name, ...p }))
 
   let findOneStub, findOneAndUpdateStub
@@ -134,8 +180,12 @@ describe('updatePlayers', () => {
   })
 
   it('creates player not in database and returns existing', async () => {
-    findOneStub.withArgs({ _id: 1 }).returns(Promise.resolve(expected[0]))
-    findOneStub.withArgs({ _id: 2 }).returns(null)
+    extendStub([
+      { _id: 1 }, { _id: 2}
+    ], [
+      Promise.resolve(expected[0]),
+      null
+    ])(findOneStub)
     findOneAndUpdateStub.returns({ exec: () => Promise.resolve(expected[1]) })
 
     const updatedPlayers = await updatePlayers(players)
@@ -148,11 +198,19 @@ describe('updatePlayers', () => {
   })
 
   it('updates player with force option', async () => {
-    findOneStub.withArgs({ _id: 1 }).returns(Promise.resolve(expected[0]))
-    findOneStub.withArgs({ _id: 2 }).returns(null)
+    extendStub([
+      { _id: 1}, { _id: 2 }
+    ], [
+      Promise.resolve(expected[0]),
+      null
+    ])(findOneStub)
 
-    findOneAndUpdateStub.withArgs({ _id: 1}).returns({ exec: () => Promise.resolve(expected[0]) })
-    findOneAndUpdateStub.withArgs({ _id: 2}).returns({ exec: () => Promise.resolve(expected[1]) })
+    extendStub([
+      { _id: 1 }, { _id: 2 }
+    ], [
+      { exec: () => Promise.resolve(expected[0]) },
+      { exec: () => Promise.resolve(expected[1]) }
+    ])(findOneAndUpdateStub)
 
     const updatedPlayers = await updatePlayers(players, { force: true })
 
@@ -176,47 +234,7 @@ describe('updatePlayerStatistics', async() => {
   })
 
   it('updates player statistics', async () => {
-    const match = {
-      match_id: 1,
-      first_team: { 
-        team_id: 1
-      },
-      second_team: {
-        team_id: 2
-      },
-      players: [
-        {
-          player_id: 1,
-          position_id: 31,
-          team_id: 1,
-          number: 1,
-          statistics: { 
-            g: 1,
-            isi: 500
-          }
-        },
-        {
-          player_id: 1,
-          position_id: 31,
-          team_id: 1,
-          number: 1,
-          statistics: {
-            g: 1,
-            isi: 500
-          }
-        },
-        {
-          player_id: 2,
-          position_id: 32,
-          team_id: 2,
-          number: 2,
-          statistics: {
-            g: 0,
-            isi: 150
-          }
-        }
-      ]
-    }
+    const match = matches[0]
 
     const expected = [
       {
@@ -233,18 +251,17 @@ describe('updatePlayerStatistics', async() => {
       }
     ]
 
-    findOneAndUpdateStub
-      .withArgs({ player_id: 1, match_id: 1 })
-      .returns({ exec: () => Promise.resolve(expected[0])})
-    findOneAndUpdateStub
-      .withArgs({ player_id: 2, match_id: 1 })
-      .returns({ exec: () => Promise.resolve(expected[1])})
+    extendStub(
+      [{ player_id: 1, match_id: 1 }, { player_id: 2, match_id: 1 }],
+      [{ exec: () => Promise.resolve(expected[0])}, 
+        { exec: () => Promise.resolve(expected[1]) }]
+    )(findOneAndUpdateStub)
 
     const playerStatistics = await updatePlayerStatistics(match)
 
     expect(findOneAndUpdateStub).to.have.been.calledTwice
     expect(findOneAndUpdateStub).to.have.been.calledWith(
-      { player_id: 1, match_id: 1},
+      { player_id: 1, match_id: 1},
       { $set: { g: 1, isi: 500 }})    
     expect(playerStatistics).eql(expected)
   })
@@ -257,8 +274,6 @@ describe('updatePlayerStatistics', async() => {
 describe('updatePlayersFromDetailedEvent', async () => {
   let fetchDetailedEventStub, findOneStub, findOneAndUpdateStub
 
-  before(() => API.fetchDetailedEvent = () => {})
-
   beforeEach(() => {
     fetchDetailedEventStub = sinon.stub(API, 'fetchDetailedEvent')
     findOneStub = sinon.stub(mongoose.Model, 'findOne')
@@ -266,72 +281,32 @@ describe('updatePlayersFromDetailedEvent', async () => {
   })
 
   it('updates missing name from event and does not touch existing', async () => {
-    const events = [
-      {
-        event_id: 1,
-      },
-      { event_id: 2,
-        players: [
-          {
-            id: 1,
-            player_team: 1,
-            name_eng: 'test',
-            lastname_eng: 'one'
-          },
-          {
-            id: 2,
-            player_team: 2,
-            name_eng: 'test',
-            lastname_eng: 'two'
-          },
-          {
-            id: 1,
-            player_team: 1,
-            name_eng: 'test',
-            lastname_eng: 'duplicate'
-          },
-          {
-            id: 3,
-            player_team: 2,
-            name_eng: null,
-            lastname_eng: null
-          }
-        ]
-      }
-    ]
     
-    fetchDetailedEventStub
-      .withArgs(1, 1)
-      .returns(Promise.resolve(events[0]))
-    fetchDetailedEventStub
-      .withArgs(1, 2)
-      .returns(Promise.resolve(events[1]))
+    extendStub([
+      [1,1], [1, 2]
+    ], [
+      Promise.resolve(extendedEvents[0]),
+      Promise.resolve(extendedEvents[1])
+    ])(fetchDetailedEventStub)
 
-    findOneStub
-      .withArgs({ _id: 1 })
-      .returns({
+    extendStub([
+      { _id: 1 }, { _id: 2 }
+    ], [
+      { player_id: 1, surname: 'one' },
+      { player_id: 2, name: 'test', surname: 'two' }
+    ])(findOneStub)
+    
+    extendStub([
+      { _id: 1 }
+    ], [{
+      exec: () => ({
         player_id: 1,
+        name: 'test',
         surname: 'one'
       })
-    findOneStub
-      .withArgs({ _id: 2 })
-      .returns({
-        player_id: 2,
-        name: 'test',
-        surname: 'two'
-      })
-    
-    findOneAndUpdateStub
-      .withArgs({ _id: 1 })
-      .returns({
-        exec: () => ({
-          player_id: 1,
-          name: 'test',
-          surname: 'one'
-        })
-      })
-    
-    const updatedPlayers = await updatePlayersFromDetailedEvent(1, events)
+    }])(findOneAndUpdateStub)
+
+    const updatedPlayers = await updatePlayersFromDetailedEvent(1, extendedEvents)
 
     expect(fetchDetailedEventStub).to.have.been.calledTwice
     expect(findOneStub).to.have.been.calledTwice
@@ -346,54 +321,52 @@ describe('updatePlayersFromDetailedEvent', async () => {
     ])
   })
 
+  it('returns empty with no events or not found events', async () => {
+    const dummyEvent = { event_id: 1 }
+
+    fetchDetailedEventStub
+      .withArgs(1, 1)
+      .returns(Promise.resolve(dummyEvent))
+
+    expect(await updatePlayersFromDetailedEvent(1, [])).eql([])
+    expect(await updatePlayersFromDetailedEvent(1, [dummyEvent])).eql([])
+  })
+
   afterEach(() => {
     API.fetchDetailedEvent.restore()
     mongoose.Model.findOne.restore()
     mongoose.Model.findOneAndUpdate.restore()
   })
 })
+
 describe('getUniquePlayers', () => {
   it('returns unique players from single match', () => {
-    const expected = [
-      {
-        player_id: 1,
-        position_id: 31,
-        team_id: 1,
-        number: 1,
-      },
-      {
-        player_id: 2,
-        position_id: 32,
-        team_id: 2,
-        number: 2,
-      }
-    ]
+    const expected = [matches[0].players[0], matches[0].players[2]]
 
     expect(getUniquePlayers(matches[0])).eql(expected)
   })
 
   it('returns unique players from multiple matches', () => {
     const expected = [
-      {
-        player_id: 1,
-        position_id: 31,
-        team_id: 1,
-        number: 1,
-      },
-      {
-        player_id: 2,
-        position_id: 32,
-        team_id: 2,
-        number: 2,
-      },
-      {
-        player_id: 3,
-        position_id: 33,
-        team_id: 3,
-        number: 2
-      }
+      matches[0].players[0],
+      matches[0].players[2],
+      matches[1].players[2]
     ]
 
     expect(getUniquePlayers(matches)).eql(expected)
   })
 })
+
+const extendStub = (paramlist, retvals) => (stub) => {
+  paramlist.map((_, idx) => {
+    const params = paramlist[idx] instanceof Array 
+      ? paramlist[idx]
+      : [paramlist[idx]]
+
+    stub
+      .withArgs(...params)
+      .returns(retvals[idx])
+  })
+
+  return stub
+}
