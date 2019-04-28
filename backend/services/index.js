@@ -1,4 +1,4 @@
-const updateService = require('./update')
-const matchService = require('./match')
+import updateService from './update'
+import matchService from './match'
 
-module.exports = { updateService, matchService }
+export default { updateService, matchService }

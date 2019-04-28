@@ -1,7 +1,7 @@
-const Match = require('models/match')
-const Player = require('models/player')
+import Match from 'models/match'
+import Player from 'models/player'
 
-class MatchService {
+export default class MatchService {
   static async findMatch(match_id) {
     return this.populateQuery({ 
       goals: true,
@@ -55,5 +55,3 @@ class MatchService {
     }
   }
 }
-
-module.exports = MatchService

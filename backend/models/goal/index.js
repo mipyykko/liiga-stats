@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   scorer_id: { type: Number, ref: 'Player' },
@@ -39,4 +39,4 @@ schema.virtual('team', {
   foreignField: '_id'
 })
 
-module.exports = mongoose.model('Goal', schema)
+export default mongoose.model('Goal', schema)

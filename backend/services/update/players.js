@@ -1,9 +1,9 @@
-const Player = require('models/player')
-const PlayerStatistics = require('models/player-statistics')
-const API = require('api')
-const _ = require('lodash')
+import API from 'api'
+import Player from 'models/player'
+import PlayerStatistics from 'models/player-statistics'
+import _ from 'lodash'
 
-const updatePlayers = async (players, options = { force: false }) => {
+export const updatePlayers = async (players, options = { force: false }) => {
   return await Promise.all(players.map(async (player) => {
     const { player_id, display_name, photo } = player
 
@@ -28,7 +28,7 @@ const updatePlayers = async (players, options = { force: false }) => {
   }))
 }
 
-const updatePlayerStatistics = async (match) => {
+export const updatePlayerStatistics = async (match, options = { force: false }) => {
   const { players, match_id } = match
 
   // players in match might have duplicates in some cases, so let's filter them 
@@ -48,7 +48,7 @@ const updatePlayerStatistics = async (match) => {
   }))
 }
 
-const updatePlayersFromDetailedEvent = async (matchid, events) => {
+export const updatePlayersFromDetailedEvent = async (matchid, events) => {
   var idx = 0
 
   while (idx < events.length) {
@@ -60,18 +60,18 @@ const updatePlayersFromDetailedEvent = async (matchid, events) => {
       continue
     }
 
-    return Promise.all(_.uniqBy(players, 'id').map(async (player) => {
+    return (await Promise.all(_.uniqBy(players, 'id').map(async (player) => {
       const { id: player_id, name_eng: name, lastname_eng: surname, player_team: team_id } = player
+
+      if (!name) {
+        // lineups seem to be padded with null players
+        return
+      }
 
       const foundPlayer = await Player.findOne({ _id: player_id })
 
       if (foundPlayer.name === name) {
         return // foundPlayer
-      }
-
-      if (!name) {
-        // lineups seem to be padded with null players
-        return
       }
 
       return await Player.findOneAndUpdate({
@@ -85,13 +85,11 @@ const updatePlayersFromDetailedEvent = async (matchid, events) => {
       }, {
         new: true, upsert: true
       }).exec()
-    }))
+    }))).filter(v => !!v)
   }
-
-  return []
 }
 
-const getMatchPlayers = (match, statistics) => {
+export const getMatchPlayers = (match, statistics) => {
   return getUniquePlayers(match).map(player => {
     const { player_id, position_id, team_id, number } = player
 
@@ -105,18 +103,10 @@ const getMatchPlayers = (match, statistics) => {
   })
 }
 
-const getUniquePlayers = (param) => _.uniqBy(
+export const getUniquePlayers = (param) => _.uniqBy(
   _.flatten(
     param instanceof Array 
       ? param.map(match => match.players)
       : param.players),
   'player_id'
 )
-
-module.exports = { 
-  updatePlayers, 
-  updatePlayerStatistics, 
-  updatePlayersFromDetailedEvent, 
-  getUniquePlayers,
-  getMatchPlayers 
-}

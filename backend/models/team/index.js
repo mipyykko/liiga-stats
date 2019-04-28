@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   _id: Number,
@@ -11,4 +11,4 @@ const schema = new mongoose.Schema({
   logo: String
 })
 
-module.exports = mongoose.model('Team', schema)
+export default mongoose.model('Team', schema)

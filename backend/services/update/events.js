@@ -1,8 +1,8 @@
-const Event = require('models/event')
-const _ = require('lodash')
-const { shallowCompare, convertTimeToSec } = require('util')
+import Event from 'models/event'
+import _ from 'lodash'
+import { shallowCompare, convertTimeToSec } from 'util'
 
-const updateEvents = async (match, matchGoals) => {
+export const updateEvents = async (match, matchGoals) => {
   const { goals, events, match_id, first_team, second_team } = match
 
   // sometimes events can appear doubled
@@ -50,5 +50,3 @@ const mapEventToGoalId = (event, goals) => {
 
   return (goals.find(goal => goal.scorer_id == player_id && goal.second == convertTimeToSec(minute - 1, second)) || {})._id
 }
-
-module.exports = { updateEvents }

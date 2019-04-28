@@ -1,5 +1,5 @@
-const { matchService } = require('services')
-const { throwError } = require('util/error')
+import { matchService } from 'services'
+import { throwError } from 'util/error'
 
 const matchController = {
   async getMatch(req, res, next) {
@@ -38,4 +38,4 @@ const matchController = {
   }
 }
 
-module.exports = matchController
+export default matchController

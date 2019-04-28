@@ -1,11 +1,11 @@
-const API = require('api')
+import API from 'api'
 
-const { getMatches, updateMatches } = require('./matches')
-const { updatePlayers, getUniquePlayers } = require('./players')
-const { updateTeams, getUniqueTeams } = require('./teams')
+import { getMatches, updateMatches } from './matches'
+import { updatePlayers, getUniquePlayers } from './players'
+import { updateTeams, getUniqueTeams } from './teams'
 
 
-const updateSeason = async (tournamentid, seasonid, options = {}) => {
+export const updateSeason = async (tournamentid, seasonid, options = {}) => {
   const seasonMatches = await API.fetchTournamentSeason(tournamentid, seasonid)
 
   const matches = await getMatches(seasonMatches, options)
@@ -27,5 +27,3 @@ const updateSeason = async (tournamentid, seasonid, options = {}) => {
 
   return savedMatches
 }
-
-module.exports = { updateSeason }

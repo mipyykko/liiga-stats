@@ -1,5 +1,4 @@
-const { updateService } = require('services')
-const { updateSeason } = updateService
+import { updateService } from 'services'
 
 const updateController = {
   async postUpdateSeason (req, res, next) {
@@ -7,7 +6,7 @@ const updateController = {
     const { force = false } = req.query
 
     try {
-      const updateResult = await updateSeason(tournamentid, seasonid, { force })
+      const updateResult = await updateService.updateSeason(tournamentid, seasonid, { force })
 
       res.json(updateResult)
 
@@ -19,4 +18,4 @@ const updateController = {
   }
 }
 
-module.exports = updateController
+export default updateController

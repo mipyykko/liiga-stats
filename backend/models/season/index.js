@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   id: { type: Number, required: true },
@@ -6,4 +6,4 @@ const schema = new mongoose.Schema({
   first_match: { type: Number, ref: 'Match', required: true }
 })
 
-module.exports = mongoose.model('Season', schema)
+export default mongoose.model('Season', schema)

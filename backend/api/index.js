@@ -1,3 +1,3 @@
-const API = require('./fake_api')
+import API from './fake_api'
 
-module.exports = API
+export default API

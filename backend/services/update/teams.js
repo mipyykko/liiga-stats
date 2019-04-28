@@ -1,9 +1,9 @@
-const Team = require('models/team')
-const TeamStatistics = require('models/team-statistics')
+import Team from 'models/team'
+import TeamStatistics from 'models/team-statistics'
 
-const _ = require('lodash')
+import _ from 'lodash'
 
-const updateTeams = async (teams, options = { force: false }) => {
+export const updateTeams = async (teams, options = { force: false }) => {
   return await Promise.all(teams.map(async (team) => {
     const { team_id } = team
 
@@ -27,7 +27,7 @@ const updateTeams = async (teams, options = { force: false }) => {
   }))
 }
 
-const updateTeamStatistics = async (team, match) => {
+export const updateTeamStatistics = async (team, match) => {
   return await TeamStatistics.findOneAndUpdate({
     team_id: team.team_id,
     match_id: match.match_id
@@ -40,9 +40,7 @@ const updateTeamStatistics = async (team, match) => {
   }).exec()
 }
 
-const getUniqueTeams = (matches) => _.uniqBy(
+export const getUniqueTeams = (matches) => _.uniqBy(
   _.flatten(matches.map(match => [match.first_team, match.second_team])), 
   'team_id'
 )
-
-module.exports = { updateTeams, updateTeamStatistics, getUniqueTeams }

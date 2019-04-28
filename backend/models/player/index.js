@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   _id: Number,
@@ -13,6 +13,8 @@ const schema = new mongoose.Schema({
   photo: String,
 }, { toJSON: { getters: true, virtuals: true }})
 
-schema.virtual('fullname').get(function () { return this.name + ' ' + this.surname })
+schema.virtual('fullname').get(function () { 
+  return this.name + ' ' + this.surname 
+})
 
-module.exports = mongoose.model('Player', schema)
+export default mongoose.model('Player', schema)

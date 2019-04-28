@@ -1,7 +1,7 @@
-const Goal = require('models/goal')
-const _ = require('lodash')
+import Goal from 'models/goal'
+import _ from 'lodash'
 
-const updateGoals = async (match) => {
+export const updateGoals = async (match) => {
   const { goals, match_id, first_team, second_team } = match
 
   let first_team_score = 0, second_team_score = 0
@@ -28,5 +28,3 @@ const updateGoals = async (match) => {
       })
   )
 }
-
-module.exports = { updateGoals }

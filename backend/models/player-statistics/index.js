@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
 /*   _id: { 
@@ -29,4 +29,4 @@ const schema = new mongoose.Schema({
   pa: Number,
 })
 
-module.exports = new mongoose.model('PlayerStatistics', schema)
+export default mongoose.model('PlayerStatistics', schema)

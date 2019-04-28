@@ -1,9 +1,8 @@
-const fetchPonyfill = require('fetch-ponyfill')
+import fetchPonyfill from 'fetch-ponyfill'
+import config from '../config'
 const { fetch } = fetchPonyfill()
 
-const config = require('../config')
-
-class API { 
+export default class API { 
   static fetchTournamentSeason(tournamentid, seasonid) {
     return fetch(`${config.EXTERNAL_API_URI}/matches?locale=en&tournament_id=${tournamentid}&season_id=${seasonid}`,
       {
@@ -46,5 +45,3 @@ class API {
       })
   }
 }
-
-module.exports = API

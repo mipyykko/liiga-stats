@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   match_id: { type: Number, ref: 'Match' },
@@ -18,4 +18,4 @@ const schema = new mongoose.Schema({
   cwp: Number
 })
 
-module.exports = mongoose.model('TeamStatistics', schema)
+export default mongoose.model('TeamStatistics', schema)

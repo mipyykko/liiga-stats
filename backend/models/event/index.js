@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const schema = new mongoose.Schema({
   event_id: {
@@ -25,4 +25,4 @@ const schema = new mongoose.Schema({
   video_url: String
 })
 
-module.exports = mongoose.model('Event', schema)
+export default mongoose.model('Event', schema)

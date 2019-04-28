@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
+import fakegoose from 'fakegoose'
 
 const TeamSchema = new mongoose.Schema({
   team_id: { type: Number, ref: 'Team' },
@@ -86,5 +87,6 @@ const schema = new mongoose.Schema({
 }) */
 
 require('./methods')(schema)
+schema.plugin(fakegoose)
 
-module.exports = mongoose.model('Match', schema)
+export default mongoose.model('Match', schema)

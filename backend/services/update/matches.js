@@ -1,12 +1,17 @@
-const API = require('api')
-const Match = require('models/match')
-const _ = require('lodash')
-const { updateTeamStatistics } = require('services/update/teams')
-const { updatePlayerStatistics, updatePlayersFromDetailedEvent, getMatchPlayers } = require('services/update/players')
-const { updateGoals } = require('services/update/goals')
-const { updateEvents } = require('services/update/events')
+import API from 'api'
+import Match from 'models/match'
+import _ from 'lodash'
 
-const getMatches = async (matches, options = { force: false }) => {
+import { updateTeamStatistics } from 'services/update/teams'
+import { 
+  updatePlayerStatistics, 
+  updatePlayersFromDetailedEvent, 
+  getMatchPlayers 
+} from 'services/update/players'
+import { updateGoals } from 'services/update/goals'
+import { updateEvents } from 'services/update/events'
+
+export const getMatches = async (matches, options = { force: false }) => {
   return (await Promise.all(matches.map(async (match) => {
 
     const foundMatch = await Match.findOne({ match_id: match.match_id })
@@ -19,7 +24,7 @@ const getMatches = async (matches, options = { force: false }) => {
   }))).filter(v => !!v)
 }
 
-const updateMatches = async (matches, seasonid) => {
+export const updateMatches = async (matches, seasonid) => {
   // TODO: async parallel on the whole shebang?
 
   return Promise.all(matches.map(async (match) => {
@@ -120,5 +125,3 @@ const updateMatches = async (matches, seasonid) => {
     return newMatch
   }).filter(v => !!v))
 }
-
-module.exports = { getMatches, updateMatches }

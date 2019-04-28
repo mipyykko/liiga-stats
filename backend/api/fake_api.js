@@ -1,8 +1,8 @@
-const fs = require('fs')
-const API = require('./api')
-const config = require('config')
+import fs from 'fs'
+import API from './api'
+import config from 'config'
 
-class FakeAPI extends API {
+export default class FakeAPI extends API {
   static fetchTournamentSeason(tournamentid, seasonid) {
     try {
       return JSON.parse(fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${tournamentid}-${seasonid}.json`, { encoding: 'utf-8' }))
@@ -19,5 +19,3 @@ class FakeAPI extends API {
     }
   }
 }
-
-module.exports = FakeAPI
