@@ -18,4 +18,4 @@ const updateController = {
   }
 }
 
-export default updateController
+export { updateController }

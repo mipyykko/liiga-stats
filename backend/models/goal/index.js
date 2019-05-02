@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 
+// TODO: add opponent_id
 const schema = new mongoose.Schema({
   scorer_id: { type: Number, ref: 'Player' },
   assistant_id: { type: Number, ref: 'Player' },

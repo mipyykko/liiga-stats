@@ -13,6 +13,7 @@ const TeamSchema = new mongoose.Schema({
   },
   statistics_id: { type: mongoose.Schema.Types.ObjectId, ref: 'TeamStatistics' }
 }, { _id: false, toJSON: { virtuals: true } })
+//TeamSchema.plugin(fakegoose)
 
 TeamSchema.virtual('statistics', {
   ref: 'TeamStatistics',
@@ -41,6 +42,8 @@ const PlayerSchema = new mongoose.Schema({
   statistics_id: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerStatistics' },
 }, { _id: false, toJSON: { virtuals: true } })
 
+// PlayerSchema.plugin(fakegoose)
+
 PlayerSchema.virtual('statistics', {
   ref: 'PlayerStatistics',
   localField: 'statistics_id',
@@ -52,6 +55,8 @@ PlayerSchema.virtual('player', {
   localField: 'player_id',
   foreignField: '_id',
 })
+
+// TODO: get rid of those subschemas and use just objectids
 
 const schema = new mongoose.Schema({
   _id: Number,
@@ -70,23 +75,79 @@ const schema = new mongoose.Schema({
   status: Number,
   round: Number,
   min: Number,
-  tournament_id: Number, // ref?
-  season_id: Number,
-  first_team: TeamSchema,
-  second_team: TeamSchema,
-  goals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }], // [GoalSchema]
+  tournament_id: { type: Number, ref: 'Tournament' },
+  season_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Season' },
+  // TODO: just array of teams
+  first_team: {
+    coach: { 
+      name: String,
+      surname: String,
+    },
+    shirt_color: String,
+    number_color: String,
+    team_id: { type: Number, ref: 'Team' },
+    statistics_id: { type: mongoose.Schema.Types.ObjectId, ref: 'TeamStatistics' },
+    // this just spams it 
+    tactics: [{
+      tactics: [{
+        player_id: { type: Number, ref: 'Player' },
+        position: Number,
+        half: Number,
+        second: Number
+      }],
+      second: Number
+    }]
+  },
+  second_team: { 
+    coach: { 
+      name: String,
+      surname: String,
+    },
+    shirt_color: String,
+    number_color: String,
+    team_id: { type: Number, ref: 'Team' },
+    statistics_id: { type: mongoose.Schema.Types.ObjectId, ref: 'TeamStatistics' },
+    tactics: [{
+      tactics: [{
+        player_id: { type: Number, ref: 'Player' },
+        position: Number,
+        half: Number,
+        second: Number
+      }],
+      second: Number
+    }]
+  },
+  // first_team: TeamSchema,
+  // how about:
+  // first_team: { coach, shirt_color, team as ref }
+  // or separate MatchInfo schema?
+  // second_team: TeamSchema,
+  // player_statistics: ...
+  goals: [{ 
+    score_first_team: Number,
+    score_second_team: Number,
+    goal_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }
+  }], // [GoalSchema]
   events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
-  tactics: [{ type: mongoose.Schema.Types.Mixed }],
-  players: [PlayerSchema],
+  tactics: [{ type: mongoose.Schema.Types.Mixed }], // ref: 'Tactics'
+  players: [{
+    player_id: { type: Number, ref: 'Player' },
+    // TODO: this may need team_id as well... 'ow queer
+    number: Number,
+    position_id: Number,
+    starting: Boolean,
+    statistics_id: { type: mongoose.Schema.Types.ObjectId, ref: 'PlayerStatistics' }
+  }]//[PlayerSchema],
+  // players: { player as ref, number, position_id? }
 }, { toJSON: { virtuals: true } })
 
-/* schema.virtual('players.statistics', {
+schema.virtual('player_statistics', {
   ref: 'PlayerStatistics',
   localField: 'players.statistics_id', 
   foreignField: '_id',
-}) */
+})
 
 require('./methods')(schema)
-schema.plugin(fakegoose)
+// schema.plugin(fakegoose)
 
 export default mongoose.model('Match', schema)

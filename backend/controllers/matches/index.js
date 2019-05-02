@@ -1,5 +1,5 @@
 import { matchService } from 'services'
-import { throwError } from 'util/error'
+import { throwError } from 'utils/error'
 
 const matchController = {
   async getMatch(req, res, next) {
@@ -38,4 +38,4 @@ const matchController = {
   }
 }
 
-export default matchController
+export { matchController }

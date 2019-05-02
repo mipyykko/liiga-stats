@@ -93,6 +93,8 @@ export const updatePlayersFromDetailedEvent = async (matchid, events) => {
 }
 
 export const getMatchPlayers = (match, statistics) => {
+  const startingLineUpPlayerIds = getStartingLineUp(match).map(p => p.player_id)
+
   return getUniquePlayers(match).map(player => {
     const { player_id, position_id, team_id, number } = player
 
@@ -101,6 +103,7 @@ export const getMatchPlayers = (match, statistics) => {
       position_id,
       team_id, //: team_id === first_team.team_id ? first_team.team_id : second_team.team_id,
       number,
+      starting: startingLineUpPlayerIds.indexOf(player_id) > -1,
       statistics_id: statistics.find(s => s.player_id === player_id)._id
     }
   })
@@ -113,3 +116,26 @@ export const getUniquePlayers = (param) => _.uniqBy(
       : param.players),
   'player_id'
 )
+
+// TODO: not completely in domain, is it
+const getStartingLineUp = (match) => {
+  const { tactics } = match
+
+  if (!tactics) {
+    return []
+  }
+
+  // this just assumes the first one is the starting one
+  
+  return tactics[0].tactics
+/*   const sortedTactics = tactics
+    .filter(t => t.tactics.length > 0)
+    .map(t => t.tactics)
+    .sort((a, b) => a.second - b.second)
+
+  if (sortedTactics[0].second > 0) { 
+    return []
+  }
+
+  return sortedTactics[0].tactics */
+}

@@ -1,6 +1,6 @@
 import Event from 'models/event'
 import _ from 'lodash'
-import { shallowCompare, convertTimeToSec } from 'util'
+import { shallowCompare, convertTimeToSec } from 'utils'
 
 export const updateEvents = async (match, matchGoals) => {
   const { goals, events, match_id, first_team, second_team } = match
@@ -48,5 +48,7 @@ const mapEventToGoalId = (event, goals) => {
 
   const { player_id, minute, second } = event
 
-  return (goals.find(goal => goal.scorer_id == player_id && goal.second == convertTimeToSec(minute - 1, second)) || {})._id
+  return (goals.find(
+    goal => goal.scorer_id == player_id && 
+    goal.second == convertTimeToSec(minute - 1, second)) || {})._id
 }

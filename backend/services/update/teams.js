@@ -4,7 +4,7 @@ import TeamStatistics from 'models/team-statistics'
 import _ from 'lodash'
 
 export const updateTeams = async (teams, options = { force: false }) => {
-  return await Promise.all(teams.map(async (team) => {
+  return await Promise.all(_.uniqBy(teams, 'team_id').map(async (team) => {
     const { team_id } = team
 
     const foundTeam = await Team.findOne({ _id: team_id })

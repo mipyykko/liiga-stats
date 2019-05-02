@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import fakegoose from 'fakegoose'
 
 const schema = new mongoose.Schema({
   _id: Number,

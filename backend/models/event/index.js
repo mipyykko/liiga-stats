@@ -22,7 +22,9 @@ const schema = new mongoose.Schema({
   team_id: { type: Number, ref: 'Team' },
   goal_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal' },
   match_id: { type: Number, ref: 'Match' },
-  video_url: String
+  video_url: String,
+/*   sub_event: { type: Boolean, default: false },
+  sub_events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }] */
 })
 
 export default mongoose.model('Event', schema)

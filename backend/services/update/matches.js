@@ -24,6 +24,38 @@ export const getMatches = async (matches, options = { force: false }) => {
   }))).filter(v => !!v)
 }
 
+const getTactics = (match, team_id) => {
+  /*
+    tactics: [
+      tactics: [{ player... team_id... }],
+      second: 0
+    ]
+   */
+
+  const teamTactics = match.tactics.map(row => {
+    return {
+      tactics: row.tactics.filter(t => t.team_id == team_id),
+      second: row.second
+    }  
+  })
+    .filter(r => r.tactics.length > 0)
+    .map(r => ({
+      tactics: r.tactics.map(tactic => {
+        const { player_id, position, half, second } = tactic
+
+        return { 
+          player_id,
+          position,
+          half,
+          second
+        }
+      }),
+      second: r.second
+    }))
+
+  return teamTactics
+}
+
 export const updateMatches = async (matches, seasonid) => {
   // TODO: async parallel on the whole shebang?
 
@@ -37,6 +69,7 @@ export const updateMatches = async (matches, seasonid) => {
       first_team_shirt_color,
       second_team_number_color,
       second_team_shirt_color,
+      tactics,
       players, 
       goals,
       match_id, 
@@ -50,11 +83,14 @@ export const updateMatches = async (matches, seasonid) => {
     }
 
     let first_team_statistics, second_team_statistics, 
+        first_team_tactics, second_team_tactics,
         matchPlayers, playerStatistics, 
         matchGoals, matchEvents,
         updatedPlayers
 
     // TODO: something prettier
+    first_team_tactics = getTactics(match, first_team.team_id)
+    second_team_tactics = getTactics(match, second_team.match_id)
 
     await Promise.all([
       updateTeamStatistics(first_team, match),
@@ -65,13 +101,11 @@ export const updateMatches = async (matches, seasonid) => {
       second_team_statistics = data[1]
       playerStatistics = data[2]
 
-      return Promise.all([
-        getMatchPlayers(match, playerStatistics),
-        updateGoals(match)
-      ])
+      matchPlayers = getMatchPlayers(match, playerStatistics)
+
+      return updateGoals(match)
     }).then(data => {
-      matchPlayers = data[0]
-      matchGoals = data[1]
+      matchGoals = data
 
       return updateEvents(match, matchGoals)
     }).then(async data => {
@@ -95,22 +129,28 @@ export const updateMatches = async (matches, seasonid) => {
       // updatedPlayers.forEach(p => console.log('Updated', p.fullname))
     }
 
+    // TODO: season needs an objectid
     // TODO: this also needs find and update, in case we are actually updating 
     const newMatch = Match.create({
       _id: match_id,
       match_id,
       ..._.omit(match, ['goals', 'players', 'events', 'tactics', 'first_team', 'second_team']),
-      season_id: Number(seasonid),
+      // season_id: Number(seasonid),
       players: matchPlayers,
-      goals: matchGoals.map(goal => goal._id), // sortedMatchGoalsWithScore
+      goals: matchGoals.map(goal => ({
+        goal_id: goal._id,
+        first_team_score: goal.first_team_score,
+        second_team_score: goal.second_team_score,
+      })), // sortedMatchGoalsWithScore
       events: matchEvents,
-      first_team: { 
+      first_team: {
         team_id: first_team.team_id,
         name: first_team.name,
         coach: first_team_coach,
         number_color: first_team_number_color,
         shirt_color: first_team_shirt_color,
-        statistics_id: first_team_statistics._id
+        statistics_id: first_team_statistics._id,
+        tactics: first_team_tactics,
       },
       second_team: { 
         team_id: second_team.team_id,
@@ -118,7 +158,8 @@ export const updateMatches = async (matches, seasonid) => {
         coach: second_team_coach,
         number_color: second_team_number_color,
         shirt_color: second_team_shirt_color,
-        statistics_id: second_team_statistics._id
+        statistics_id: second_team_statistics._id,
+        tactics: second_team_tactics
       }
     })
 

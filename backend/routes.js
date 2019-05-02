@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const updateController = require('controllers/updater')
-const matchController = require('controllers/matches')
+const { updateController } = require('controllers/updater')
+const { matchController } = require('controllers/matches')
 
 router.get('/matches', matchController.getMatches)
 router.get('/match/:matchid', matchController.getMatch)
