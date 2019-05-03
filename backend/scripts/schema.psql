@@ -1,13 +1,13 @@
 DROP TABLE IF EXISTS 
-  matches, tournaments, seasons, teams, team_match_infos, team_match_statistics,
-  players, player_match_statistics, match_events, team_match_tactics, goals CASCADE;
+  matches, tournaments, seasons, teams, match_team_infos, match_team_statistics,
+  players, match_player_statistics, match_events, match_team_tactics, goals CASCADE;
 
 CREATE TABLE matches (
   id INT UNIQUE NOT NULL,
   tournament_id INT,
   season_id INT,
   round INT,
-  datetime TIMESTAMPTZ,
+  date TIMESTAMPTZ,
   status INT,
   min INT,
   width INT,
@@ -50,7 +50,7 @@ CREATE TABLE teams (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE team_match_infos (
+CREATE TABLE match_team_infos (
   match_id INT NOT NULL,
   team_id INT NOT NULL,
   score INT,
@@ -63,7 +63,7 @@ CREATE TABLE team_match_infos (
   PRIMARY KEY (match_id, team_id)
 );
 
-CREATE TABLE team_match_tactics (
+CREATE TABLE match_team_tactics (
   team_id INT NOT NULL,
   match_id INT NOT NULL,
   player_id INT NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE team_match_tactics (
   second INT
 );
 
-CREATE TABLE team_match_statistics (
+CREATE TABLE match_team_statistics (
   team_id INT NOT NULL,
   match_id INT NOT NULL,
   status INT,
@@ -83,6 +83,7 @@ CREATE TABLE team_match_statistics (
   bpm float(3),
   bpp float(3),
   ck INT,
+  cw INT,
   cwp INT,
   offs INT,
   yc INT,
@@ -101,16 +102,15 @@ CREATE TABLE players (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE player_match_statistics (
+CREATE TABLE match_player_statistics (
   player_id INT NOT NULL,
   match_id INT NOT NULL,
   team_id INT NOT NULL,
   number INT,
   position_id INT,
   starting BOOLEAN,
-  substituted_in BOOLEAN,
-  substituted_out BOOLEAN,
-  substitute_id INT,
+  replaced_player_id INT,
+  replacement_player_id INT,
   isi INT,
   mof INT,
   g INT,
@@ -185,22 +185,26 @@ ALTER TABLE seasons
 ALTER TABLE seasons
   ADD CONSTRAINT "season_first_match_fk" FOREIGN KEY (first_match_id) REFERENCES matches (id);
 
-ALTER TABLE team_match_infos
+ALTER TABLE match_team_infos
   ADD CONSTRAINT "team_match_info_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
-ALTER TABLE team_match_infos
+ALTER TABLE match_team_infos
   ADD CONSTRAINT "team_match_info_team" FOREIGN KEY (team_id) REFERENCES teams (id);
 
-ALTER TABLE team_match_statistics
+ALTER TABLE match_team_statistics
   ADD CONSTRAINT "team_match_statistics_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
-ALTER TABLE team_match_statistics
+ALTER TABLE match_team_statistics
   ADD CONSTRAINT "team_match_statistics_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
 
-ALTER TABLE player_match_statistics
+ALTER TABLE match_player_statistics
   ADD CONSTRAINT "player_match_statistics_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);
-ALTER TABLE player_match_statistics
+ALTER TABLE match_player_statistics
   ADD CONSTRAINT "player_match_statistics_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
-ALTER TABLE player_match_statistics
+ALTER TABLE match_player_statistics
   ADD CONSTRAINT "player_match_statistics_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_replaced_player_fk" FOREIGN KEY (replaced_player_id) REFERENCES players (id);
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_replacement_player_fk" FOREIGN KEY (replacement_player_id) REFERENCES players (id);
 
 ALTER TABLE match_events
   ADD CONSTRAINT "match_event_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
@@ -213,11 +217,11 @@ ALTER TABLE match_events
 ALTER TABLE match_events
   ADD CONSTRAINT "match_event_parent_fk" FOREIGN KEY (parent_event_id) REFERENCES match_events (id);
 
-ALTER TABLE team_match_tactics
+ALTER TABLE match_team_tactics
   ADD CONSTRAINT "team_match_tactic_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
-ALTER TABLE team_match_tactics
+ALTER TABLE match_team_tactics
   ADD CONSTRAINT "team_match_tactic_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
-ALTER TABLE team_match_tactics
+ALTER TABLE match_team_tactics
   ADD CONSTRAINT "team_match_tactic_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);
 
 ALTER TABLE goals

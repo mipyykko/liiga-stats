@@ -5,6 +5,10 @@ export default class MatchTeamInfo extends Model {
     return 'match_team_infos'
   }
 
+  static get idColumn() {
+    return ['match_id', 'team_id']
+  }
+  
   static get jsonSchema() {
     return {
       type: 'object',

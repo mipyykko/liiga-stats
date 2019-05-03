@@ -9,7 +9,8 @@ const knex = Knex({
     user: config.POSTGRES_USER,
     password: config.POSTGRES_PASSWORD,
     database: config.POSTGRES_DATABASE
-  }
+  },
+  debug: true
 })
 
 Model.knex(knex)

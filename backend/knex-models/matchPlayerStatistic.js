@@ -5,6 +5,10 @@ export default class MatchPlayerStatistic extends Model {
     return 'match_player_statistics'
   }
 
+  static get idColumn() {
+    return ['player_id', 'match_id'] // 'team_id'
+  }
+  
   static get jsonSchema() {
     return {
       type: 'object',
@@ -14,23 +18,23 @@ export default class MatchPlayerStatistic extends Model {
         match_id: { type: 'integer' },
         team_id: { type: 'integer' },
         number: { type: 'integer' },
-        position_id: { type: 'integer' },
+        position_id: { type: ['integer', 'null'] },
         starting: { type: 'boolean' },
-        replaced_player_id: { type: 'integer' },
-        replacement_player_id: { type: 'integer' },
-        s: { type: 'integer' },
-        st: { type: 'integer' },
-        f: { type: 'integer' },
-        pa: { type: 'integer' },
-        pap: { type: 'float' },
-        bpm: { type: 'float' },
-        bpp: { type: 'float' },
-        ck: { type: 'integer' },
-        cw: { type: 'integer' },
-        cwp: { type: 'integer' },
-        offs: { type: 'integer' },
-        yc: { type: 'integer' },
-        rc: { type: 'integer' }
+        replaced_player_id: { type: ['integer', 'null'] },
+        replacement_player_id: { type: ['integer', 'null'] },
+        s: { type: ['integer', 'null'] },
+        st: { type: ['integer', 'null'] },
+        f: { type: ['integer', 'null'] },
+        pa: { type: ['integer', 'null'] },
+        pap: { type: ['number', 'null'] },
+        bpm: { type: ['number', 'null'] },
+        bpp: { type: ['number', 'null'] },
+        ck: { type: ['integer', 'null'] },
+        cw: { type: ['integer', 'null'] },
+        cwp: { type: ['integer', 'null'] },
+        offs: { type: ['integer', 'null'] },
+        yc: { type: ['integer', 'null'] },
+        rc: { type: ['integer', 'null'] }
       }
     }
   }
