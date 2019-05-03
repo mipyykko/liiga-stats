@@ -2,10 +2,12 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import morgan from 'morgan'
-import mongoose from 'mongoose'
-import config from './config'
+// import mongoose from 'mongoose'
+import config from 'config/index'
 
 import routes from './routes'
+
+import { knex, Model } from 'db'
 
 const app = express()
 
@@ -15,8 +17,8 @@ app.use(morgan('combined'))
 
 const Promise = require('bluebird')
 
-mongoose.Promise = Promise
-mongoose.connect(config.MONGO_URI, { useNewUrlParser: true })
+// mongoose.Promise = Promise
+// mongoose.connect(config.MONGO_URI, { useNewUrlParser: true })
 // mongoose.set('debug', true)
 
 process.on('unhandledRejection', (error, p) => {

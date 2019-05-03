@@ -8,6 +8,8 @@ router.get('/match/:matchid', matchController.getMatch)
 
 router.post('/update/:tournamentid/:seasonid', updateController.postUpdateSeason)
 
+router.post('/knex/update/:tournamentid/:seasonid', updateController.postKnexUpdateSeason)
+
 /* router.use((error, req, res, next) => {
   if (!error) { 
     return next() 
