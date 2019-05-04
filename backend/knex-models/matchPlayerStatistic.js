@@ -1,5 +1,5 @@
 import { Model } from 'db'
-
+import path from 'path'
 export default class MatchPlayerStatistic extends Model {
   static get tableName() {
     return 'match_player_statistics'
@@ -8,7 +8,7 @@ export default class MatchPlayerStatistic extends Model {
   static get idColumn() {
     return ['player_id', 'match_id'] // 'team_id'
   }
-  
+
   static get jsonSchema() {
     return {
       type: 'object',
@@ -40,14 +40,15 @@ export default class MatchPlayerStatistic extends Model {
   }
 
   static get relationMappings() {
-    const Match = require('./match')
+/*     const Match = require('./match')
     const Player = require('./player')
     const Team = require('./team')
 
+ */    
     return {
       match: {
         relation: Model.HasOneRelation,
-        modelClass: Match,
+        modelClass: path.join(__dirname, 'match'),
         join: {
           from: 'match_player_statistics.match_id',
           to: 'matches.id'
@@ -55,7 +56,7 @@ export default class MatchPlayerStatistic extends Model {
       },
       player: {
         relation: Model.HasOneRelation,
-        modelClass: Player,
+        modelClass: path.join(__dirname, 'player'),
         join: {
           from: 'match_player_statistics.player_id',
           to: 'players.id'
@@ -63,7 +64,7 @@ export default class MatchPlayerStatistic extends Model {
       },
       team: {
         relation: Model.HasOneRelation,
-        modelClass: Team,
+        modelClass: path.join(__dirname, 'team'),
         join: { 
           from: 'match_player_statistics.team_id',
           to: 'teams.id'

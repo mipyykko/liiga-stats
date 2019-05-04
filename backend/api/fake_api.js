@@ -3,6 +3,14 @@ import API from './api'
 import config from 'config'
 
 export default class FakeAPI extends API {
+  static fetchTournamentSeasons(tournamentid) {
+    try {
+      return JSON.parse(fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${tournamentid}.json`))
+    } catch (err) {
+      return super.fetchTournamentSeasons(tournamentid)
+    }
+  }
+  
   static fetchTournamentSeason(tournamentid, seasonid) {
     try {
       return JSON.parse(fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${tournamentid}-${seasonid}.json`, { encoding: 'utf-8' }))

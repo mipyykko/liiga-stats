@@ -1,4 +1,5 @@
 import { Model } from 'db'
+import path from 'path'
 
 export default class Match extends Model {
   static get tableName() {
@@ -29,17 +30,17 @@ export default class Match extends Model {
   }
 
   static get relationMappings() {
-    const Tournament = require('./tournament')
+/*     const Tournament = require('./tournament')
     const Season = require('./season')
     const Team = require('./team')
     const MatchPlayerStatistic = require('./matchPlayerStatistic')
     const MatchTeamStatistic = require('./matchTeamStatistic')
     const MatchTeamInfo = require('./matchTeamInfo')
-    
+ */    
     return {
       tournament: {
         relation: Model.BelongsToOneRelation,
-        modelClass: Tournament,
+        modelClass: path.join(__dirname, 'tournament'),
         join: {
           from: 'matches.tournament_id',
           to: 'tournaments.id'
@@ -47,7 +48,7 @@ export default class Match extends Model {
       },
       season: {
         relation: Model.BelongsToOneRelation,
-        modelClass: Season,
+        modelClass: path.join(__dirname, 'season'),
         join: {
           from: [
             'matches.tournament_id',
@@ -61,7 +62,7 @@ export default class Match extends Model {
       },
       home_team: {
         relation: Model.HasOneRelation,
-        modelClass: Team,
+        modelClass: path.join(__dirname, 'team'),
         join: {
           from: 'matches.home_team_id',
           to: 'teams.id'
@@ -69,7 +70,7 @@ export default class Match extends Model {
       },
       away_team: {
         relation: Model.HasOneRelation,
-        modelClass: Team,
+        modelClass: path.join(__dirname, 'team'),
         join: {
           from: 'matches.away_team_id',
           to: 'teams.id'
@@ -77,7 +78,7 @@ export default class Match extends Model {
       },
       home_players: {
         relation: Model.HasManyRelation,
-        modelClass: MatchPlayerStatistic,
+        modelClass: path.join(__dirname, 'matchPlayerStatistic'),
         join: {
           from: [
             'matches.home_team_id',
@@ -91,7 +92,7 @@ export default class Match extends Model {
       },
       away_players: {
         relation: Model.HasManyRelation,
-        modelClass: MatchPlayerStatistic,
+        modelClass: path.join(__dirname, 'matchPlayerStatistic'),
         join: {
           from: [
             'matches.away_team_id',
@@ -105,7 +106,7 @@ export default class Match extends Model {
       },
       home_statistics: {
         relation: Model.HasOneRelation,
-        modelClass: MatchTeamStatistic,
+        modelClass: path.join(__dirname, 'matchTeamStatistic'),
         join: {
           from: [
             'matches.home_team_id',
@@ -119,7 +120,7 @@ export default class Match extends Model {
       },
       away_statistics: {
         relation: Model.HasOneRelation,
-        modelClass: MatchTeamStatistic,
+        modelClass: path.join(__dirname, 'matchTeamStatistic'),
         join: {
           from: [
             'matches.away_team_id',
@@ -133,7 +134,7 @@ export default class Match extends Model {
       },
       home_team_info: {
         relation: Model.HasOneRelation,
-        modelClass: MatchTeamInfo,
+        modelClass: path.join(__dirname, 'matchTeamInfo'),
         join: {
           from: [
             'matches.home_team_id',
@@ -147,7 +148,7 @@ export default class Match extends Model {
       },
       away_team_info: {
         relation: Model.HasOneRelation,
-        modelClass: MatchTeamInfo,
+        modelClass: path.join(__dirname, 'matchTeamInfo'),
         join: {
           from: [
             'matches.away_team_id',

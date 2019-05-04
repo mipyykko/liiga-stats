@@ -4,7 +4,27 @@ import MatchPlayerStatistic from 'knex-models/matchPlayerStatistic'
 import _ from 'lodash'
 
 export const updatePlayers = async (players, options = { force: false }) => {
-  return await Promise.all(players.map(async (player) => {
+  const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
+
+  const insertablePlayers = options.force ? foundPlayers : _.pullAllBy(
+    players, 
+    foundPlayers
+      .map(p => ({
+        ...p,
+        id: undefined,
+        player_id: p.id,
+      })), 'player_id')
+
+  const inserts = insertablePlayers.map(player => ({
+    id: player.player_id,
+    display_name: player.display_name,
+    photo: player.photo
+  }))
+
+  return await Player
+    .query()
+    .update(inserts)
+/*   return await Promise.all(players.map(async (player) => {
     const { player_id, display_name, photo } = player
 
     const foundPlayer = await Player.query().findById(player_id)
@@ -20,7 +40,28 @@ export const updatePlayers = async (players, options = { force: false }) => {
         display_name,
         photo
       })
+  })) */
+}
+
+export const getUpdateablePlayers = async (players, options = { force: false }) => {
+  const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
+
+  const insertablePlayers = options.force ? foundPlayers : _.pullAllBy(
+    players, 
+    foundPlayers
+      .map(p => ({
+        ...p,
+        id: undefined,
+        player_id: p.id,
+      })), 'player_id')
+
+  const inserts = insertablePlayers.map(player => ({
+    id: player.player_id,
+    display_name: player.display_name,
+    photo: player.photo
   }))
+
+  return inserts
 }
 
 export const updatePlayerStatistics = async (match, options = { force: false }) => {
@@ -31,8 +72,7 @@ export const updatePlayerStatistics = async (match, options = { force: false }) 
     const { player_id, statistics } = player
 
     // TODO: matchid
-    console.log(statistics)
-    
+
     return await MatchPlayerStatistic
       .query()
       .insert({
