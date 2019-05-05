@@ -3,6 +3,42 @@ import MatchTeamStatistic from 'knex-models/matchTeamStatistic'
 
 import _ from 'lodash'
 
+export const getTeamStatistics = (match, team) => {
+  return {
+    match_id: match.match_id,
+    team_id: match[`${team}_team`]['team_id'],
+    ...match[`${team}_team`]['statistics']
+  }
+}
+
+export const getTeamInfo = (match, team) => {
+  return {
+    match_id: match.match_id,
+    team_id: match[`${team}_team`]['team_id'],
+    score: match[`score_${team}_team`],
+    score_pen: match[`score_pen_${team}_team`],
+    number_color: match[`${team}_team_number_color`],
+    shirt_color: match[`${team}_team_shirt_color`],
+    coach_name: match[`${team}_team_coach_name`],
+    coach_surname: match[`${team}_team_coach_surname`]
+  }
+}
+
+export const getTactics = (match) => {
+  return _.flatten(match.tactics.map(t => t.tactics))
+}
+
+export const getTeamTactics = (match, team_id) => {
+  return getTactics(match)
+    .filter(t => t.team_id == team_id)
+    .map(tactic => ({
+      team_id,
+      match_id: match.match_id,
+      ..._.pick(tactic, ['player_id', 'position', 'second'])
+    }))
+}
+
+/////
 export const updateTeams = async (teams, options = { force: false }) => {
   const uniqTeams = _.uniqBy(teams, 'team_id')
 
@@ -51,8 +87,6 @@ export const getUpdateableTeams = async (teams, options = { force: false }) => 
       id: null
     })), 'team_id')
 
-  console.log('INSERTABLE', insertableTeams)
-
   const inserts = insertableTeams.map(team => ({
     id: team.team_id,
     name: team.name,
@@ -64,7 +98,7 @@ export const getUpdateableTeams = async (teams, options = { force: false }) => 
 }
 
 export const getUpdateableTeamMatchStatistics = async (team, match, options = { force: false }) => {
-  const foundTeamStatistics = await TeamMatchStatistic
+  const foundTeamStatistics = await MatchTeamStatistic
     .query()
     .findById([team.team_id, match.match_id])
 

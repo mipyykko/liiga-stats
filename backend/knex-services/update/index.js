@@ -17,6 +17,7 @@ import {
 } from './teams'
 import { updateTournament, getUpdateableTournaments } from './tournaments'
 import { updateSeason, getUpdateableSeasons } from './seasons'
+import { getMatchGoals } from './goals'
 
 import Tournament from 'knex-models/tournament'
 import Season from 'knex-models/season'
@@ -36,7 +37,12 @@ const updateKnexService = {
     const updateableTournaments = await getUpdateableTournaments(seasons, tournamentid)
     const updateableSeasons = await getUpdateableSeasons(seasons, seasonid, tournamentid)
 
-    const updateableMatches = await getUpdateableMatches(matches, tournamentid, seasonid, { teamStatistics: true })
+    const updateableMatches = await getUpdateableMatches(
+      matches, tournamentid, seasonid, 
+      { teamStatistics: true, teamInfo: true, teamTactics: true, playerStatistics: true, goals: true }
+    )
+
+    console.log("----UPDATEABLE-----", updateableMatches[0])
     const updateableTeams = await getUpdateableTeams(uniqueTeams)
     const updateablePlayers = await getUpdateablePlayers(uniquePlayers)
 

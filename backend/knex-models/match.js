@@ -159,6 +159,46 @@ export default class Match extends Model {
             'match_team_infos.match_id'
           ]
         }
+      },
+      home_team_tactics: { 
+        relation: Model.HasManyRelation,
+        modelClass: path.join(__dirname, 'matchTeamTactic'),
+        join: {
+          from: [
+            'matches.home_team_id',
+            'matches.id',
+          ],
+          to: [
+            'match_team_tactics.team_id',
+            'match_team_tactics.match_id'
+          ]
+        }
+      },
+      away_team_tactics: { 
+        relation: Model.HasManyRelation,
+        modelClass: path.join(__dirname, 'matchTeamTactic'),
+        join: {
+          from: [
+            'matches.away_team_id',
+            'matches.id',
+          ],
+          to: [
+            'match_team_tactics.team_id',
+            'match_team_tactics.match_id'
+          ]
+        }
+      },
+      goals: {
+        relation: Model.HasManyRelation,
+        modelClass: path.join(__dirname, 'goal'),
+        join: {
+          from: [
+            'matches.id'
+          ],
+          to: [
+            'goals.match_id'
+          ]
+        }
       }
     }
   }

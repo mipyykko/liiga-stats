@@ -54,7 +54,7 @@ CREATE TABLE match_team_infos (
   match_id INT NOT NULL,
   team_id INT NOT NULL,
   score INT,
-  pen_score INT,
+  score_pen INT,
   number_color VARCHAR(16),
   shirt_color VARCHAR(16),
   coach_name VARCHAR(64),
@@ -67,7 +67,7 @@ CREATE TABLE match_team_tactics (
   team_id INT NOT NULL,
   match_id INT NOT NULL,
   player_id INT NOT NULL,
-  position_id INT,
+  position INT,
   second INT
 );
 
@@ -124,6 +124,9 @@ CREATE TABLE match_player_statistics (
   pa INT,
   pap float(3),
   offs INT,
+  c INT,
+  cw INT,
+  cwp float(3),
   d INT,
   spda float(3),
   spdm float(3),
@@ -155,7 +158,6 @@ CREATE TABLE match_events (
 );
 
 CREATE TABLE goals (
-  id INT NOT NULL UNIQUE,
   scorer_id INT NOT NULL,
   assistant_id INT NULL,
   match_id INT NOT NULL,
@@ -168,7 +170,7 @@ CREATE TABLE goals (
   home_team_score INT,
   away_team_score INT,
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (match_id, home_team_score, away_team_score)
 );
 
 ALTER TABLE matches

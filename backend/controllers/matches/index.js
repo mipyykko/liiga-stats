@@ -45,19 +45,14 @@ const matchController = {
       throwError(400, 'no match id given')
     }
 
-    try {
-      const match = await matchKnexService.findMatch(matchid)
-      
-      if (!match) {
-        throwError(404, `no match with id ${matchid} found`)
-      }
-
-      res.json(match)
-      next()
-    } catch (err) {
-      res.sendStatus(500)
-      next(err)
+    const match = await matchKnexService.findMatch(matchid)
+    
+    if (!match) {
+      throwError(404, `no match with id ${matchid} found`)
     }
+
+    res.json(match)
+    next()
   },
 }
 
