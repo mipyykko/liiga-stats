@@ -30,7 +30,7 @@ const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_
 
 export const getPlayerStatistics = (match) => {
   const { match_id } = match
-  
+
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
 
@@ -107,6 +107,55 @@ export const getUpdateablePlayers = async (players, options = { force: false }) 
     display_name: player.display_name,
     photo: player.photo
   }))
+
+  return inserts
+}
+
+export const getUpdateablePlayersFromEvents = async (players, matches, options = { force: false }) => {
+  const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
+  const playerMap = _.reduce(p, (arr, el) => ({ ...arr, [el.player_id]: el}), {})
+
+  let updateableIds = foundPlayers.filter(p => !p.name).map(p => p.player_id)
+
+  const inserts = _.flatten(await Promise.all(matches.map(async (match) => {
+    if (!updateableIds || updateableIds.length === 0) {
+      return
+    }
+
+    const { match_id, players: matchPlayers, events } = match
+
+    const matchPlayerIds = _.uniqBy(matchPlayers.map(p => p.player_id), 'player_id')
+
+    const notUpdatedYet = _.pullAll(matchPlayerIds, updateableIds)
+
+    if (!notUpdatedYet || notUpdatedYet.length === 0) {
+      return
+    }
+
+    let detailedEvent = false
+
+    await Promise.all(events.some(async (event) => {
+      detailedEvent = await API.fetchDetailedEvent(match_id, event.event_id)
+
+      return !!detailedEvent
+    }))
+
+    const { players: eventPlayers } = detailedEvent
+    
+    const toBeUpdated = _.uniqBy(
+      eventPlayers.filter(p => _.includes(notUpdatedYet, p.player_id) && p.name),
+      'player_id'
+    ).map(p => ({
+      id: p.player_id,
+      name: p.name,
+      surname: p.surname
+    }))
+
+    updateableIds = updateableIds
+      .filter(i => !_.includes(updateableIds, toBeUpdated.map(p => p.id)))
+
+    return toBeUpdated
+  })))
 
   return inserts
 }

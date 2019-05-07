@@ -1,19 +1,20 @@
 import API from 'api'
 import _ from 'lodash'
-import { knex } from 'db'
-import { transaction } from 'objection'
+import { knex } from 'db'
+import { transaction } from 'objection'
 
-import { 
+import {
   getMatches, updateMatchesFirst,
   getUpdateableMatches,
   getForMatches
 } from './matches'
-import { 
+import {
   updatePlayers, getUniquePlayers,
   getUpdateablePlayers,
-  getPlayerStatistics
+  getPlayerStatistics,
+  getUpdateablePlayersFromEvents
 } from './players'
-import { 
+import {
   updateTeams, getUniqueTeams,
   getUpdateableTeams,
   getTeamStatistics,
@@ -21,8 +22,8 @@ import {
   getTactics
 } from './teams'
 import { updateTournament, getUpdateableTournaments } from './tournaments'
-import { updateSeason, getUpdateableSeasons } from './seasons'
-import { getMatchGoals } from './goals'
+import { updateSeason, getUpdateableSeasons } from './seasons'
+import { getMatchGoals } from './goals'
 
 import Tournament from 'knex-models/tournament'
 import Season from 'knex-models/season'
@@ -36,133 +37,124 @@ import MatchTeamInfo from 'knex-models/matchTeamInfo'
 import MatchTeamTactic from 'knex-models/matchTeamTactic'
 import Goal from 'knex-models/goal'
 
+const insert = async (data, entity, trx = null) => {
+  return !(data instanceof Array)
+    ? await entity.query().insert(data)
+    : await Promise.all(
+      data.map(d => trx
+        ? entity.query(trx).insert(d)
+        : entity.query().insert(d)
+      ))
+}
+
+const insertMany = async (data, entities, trx = null) => {
+  return await Promise.all(
+    (_.zip(data, entities)).map(async ([d, e]) => await insert(d, e, trx))
+  )
+}
+
 const updateKnexService = {
   async updateSeason(tournamentid, seasonid, options = {}) {
     const seasons = await API.fetchTournamentSeasons(tournamentid)
     const seasonMatches = await API.fetchTournamentSeason(tournamentid, seasonid)
-    const matches = await getMatches(seasonMatches, options)
 
-    const uniquePlayers = getUniquePlayers(matches)
-    const uniqueTeams = getUniqueTeams(matches)
+    const matches = await getMatches(seasonMatches, options)
 
     const updateableTournaments = await getUpdateableTournaments(seasons, tournamentid)
     const updateableSeasons = await getUpdateableSeasons(seasons, seasonid, tournamentid)
 
     const updateableMatches = await getUpdateableMatches(
-      matches, tournamentid, seasonid, 
+      matches, tournamentid, seasonid,
       { teamStatistics: false, teamInfo: false, teamTactics: false, playerStatistics: false, goals: false }
     )
-
-    const updateableTeams = await getUpdateableTeams(uniqueTeams)
-    const updateablePlayers = await getUpdateablePlayers(uniquePlayers)
-
-    const updateableTeamStatistics = _.concat(
-      getForMatches(matches, getTeamStatistics, 'first'),
-      getForMatches(matches, getTeamStatistics, 'second')
-    )
-
-    const updateableTeamInfos = _.concat(
-      getForMatches(matches, getTeamInfo, 'first'),
-      getForMatches(matches, getTeamInfo, 'second')
-    )
-    
-    const updateableTactics = getForMatches(matches, getTactics)
-
-    const updateablePlayerStatistics = getForMatches(matches, getPlayerStatistics)
-
-    const updateableGoals = _.flatten(getForMatches(matches, getMatchGoals))
-
-    try {
-      const updatedTeams = updateableTeams.length === 0 ? null : await Team
-        .query()
-        .insert(updateableTeams)
-
-      const updatedPlayers = updateablePlayers.length === 0 ? null : await Player
-        .query()
-        .insert(updateablePlayers)
-
-      const ret = await transaction(Tournament, Match, Season, 
-        async (Tournament, Match, Season, trx) => {
-          await Promise.all(updateableTournaments.map(t => 
-            Tournament
-              .query(trx)
-              .insert(t)  
-          ))
-
-          await Promise.all(updateableSeasons.map(s => 
-            Season
-              .query(trx)
-              .insert(s)
-          ))
-
-          await Promise.all(updateableMatches.map(m => 
-            Match
-              .query(trx)
-              .upsertGraph(m, { insertMissing: true }) // update
-          ))
-        })
-      
-      const updatedTeamStatistics = await Promise.all(updateableTeamStatistics.map(t => 
-        MatchTeamStatistic
-          .query()
-          .insert(t)
-      ))
-
-      const updatedTeamInfos = await Promise.all(updateableTeamInfos.map(t =>
-        MatchTeamInfo
-          .query()
-          .insert(t)
-      ))
-
-      const updatedPlayerStatistics = await Promise.all(updateablePlayerStatistics.map(p => 
-        MatchPlayerStatistic
-          .query()
-          .insert(p)
-      ))
-      
-      const updatedTactics = await Promise.all(updateableTactics.map(t => 
-        MatchTeamTactic
-          .query()
-          .insert(t)
-      ))
-
-      const updatedGoals = await Promise.all(updateableGoals.map(g => 
-        Goal
-          .query()
-          .insert(g)
-      ))
-
-      return {
-        updatedTournaments: updateableTournaments.length,
-        updatedSeasons: updateableSeasons.length,
-        updatedTeams: updateableTeams.length,
-        updatedMatches: updateableMatches.length,
-        updatedGoals: updatedGoals.length
-      }
-    } catch(err) {
-      console.log(err, 'oh crud!')
-    }
-/*     const updatedTournament = await updateTournament(seasons, tournamentid)
-
-    const updatedSeason = await updateSeason(seasons, seasonid, tournamentid)
-
-    const seasonMatches = await API.fetchTournamentSeason(tournamentid, seasonid)
-
-    const matches = await getMatches(seasonMatches, options)
 
     const uniquePlayers = getUniquePlayers(matches)
     const uniqueTeams = getUniqueTeams(matches)
 
-    const savedTeams = await updateTeams(uniqueTeams)
+    const updateableTeams = await getUpdateableTeams(uniqueTeams)
+    const updateablePlayers = await getUpdateablePlayers(uniquePlayers)
 
-    const savedMatches = await updateMatchesFirst(matches, tournamentid, seasonid)
+    try {
+      const [updatedTeams, updatedPlayers] = await insertMany(
+        [updateableTeams, updateablePlayers],
+        [Team, Player]
+      )
 
-    const savedPlayers = await updatePlayers(uniquePlayers) */
+      let updatedMatches, updatedSeasons, updatedTournaments
 
+      const ret = await transaction(Tournament, Match, Season,
+        async (Tournament, Match, Season, trx) => {
+          [updatedTournaments, updatedSeasons] = await insertMany(
+            [updateableTournaments, updateableSeasons],
+            [Tournament, Season],
+            trx)
 
-    // const savedMatches = await updateMatches(matches, seasonid)
+          updatedMatches = await Promise.all(updateableMatches.map(m => Match
+            .query(trx)
+            .upsertGraph(m, { insertMissing: true })))
+        })
 
-    // console.log(savedTeams)
+      const updateableTeamStatistics = _.concat(
+        getForMatches(matches, getTeamStatistics, 'first'),
+        getForMatches(matches, getTeamStatistics, 'second')
+      )
+  
+      const updateableTeamInfos = _.concat(
+        getForMatches(matches, getTeamInfo, 'first'),
+        getForMatches(matches, getTeamInfo, 'second')
+      )
+
+      const updateableTactics = _.flatten(getForMatches(matches, getTactics))
+
+      const updateablePlayerStatistics = _.flatten(getForMatches(matches, getPlayerStatistics))
+      const updateableGoals = _.flatten(getForMatches(matches, getMatchGoals))
+
+      const [
+        updatedTeamStatistics,
+        updatedTeamInfos,
+        updatedPlayerStatistics,
+        updatedTactics,
+        updatedGoals
+      ] = await insertMany(
+        [
+          updateableTeamStatistics,
+          updateableTeamInfos,
+          updateablePlayerStatistics,
+          updateableTactics,
+          updateableGoals
+        ],
+        [
+          MatchTeamStatistic,
+          MatchTeamInfo,
+          MatchPlayerStatistic,
+          MatchTeamTactic,
+          Goal
+        ]
+      )
+
+      const updatedPlayerDetails = await getUpdateablePlayersFromEvents(players, matches)
+
+      return {
+        updated: {
+          tournaments: updatedTournaments.length,
+          seasons: updatedSeasons.length,
+          teams: updatedTeams.length,
+          team_statistics: updatedTeamStatistics.length,
+          players: updatedPlayers.length,
+          player_statistics: updatedPlayerStatistics.length,
+          matches: updatedMatches.length,
+          team_infos: updatedTeamInfos.length,
+          goals: updatedGoals.length,
+          tactics: updatedTactics.length,
+        }
+      }
+    } catch (err) {
+      console.log(err, 'oh crud!')
+
+      return {
+        error: err
+      }
+    }
   }
 }
 
