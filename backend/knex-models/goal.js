@@ -1,6 +1,6 @@
 import { Model } from 'db'
 
-export class Goal extends Model {
+export default class Goal extends Model {
   static get tableName() {
     return 'goals'
   }

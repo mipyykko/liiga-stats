@@ -29,11 +29,14 @@ const getPlayerReplaced = (subs, player_id) => _.get(subs.find(s => s.opponent_p
 const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_id === player_id), 'opponent_player_id')
 
 export const getPlayerStatistics = (match) => {
+  const { match_id } = match
+  
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
 
   return _.uniqBy(match.players, 'player_id').map(player => ({
     ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
+    match_id,
     ...player.statistics,
     starting: isStarting(lineups, player.player_id),
     replaced_player_id: getPlayerReplaced(subs, player.player_id),

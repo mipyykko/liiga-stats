@@ -25,17 +25,19 @@ export const getTeamInfo = (match, team) => {
 }
 
 export const getTactics = (match) => {
-  return _.flatten(match.tactics.map(t => t.tactics))
+  return _.flatten(
+    match.tactics.map(t => 
+      t.tactics.map(tt => ({
+        match_id: match.match_id,
+        ..._.omit(tt, ['half', 'player_num'])
+      }))
+    )
+  )
 }
 
 export const getTeamTactics = (match, team_id) => {
   return getTactics(match)
     .filter(t => t.team_id == team_id)
-    .map(tactic => ({
-      team_id,
-      match_id: match.match_id,
-      ..._.pick(tactic, ['player_id', 'position', 'second'])
-    }))
 }
 
 /////

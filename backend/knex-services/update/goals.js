@@ -14,7 +14,7 @@ export const getMatchGoals = (match) => {
 
   let home_team_score = 0, away_team_score = 0
 
-  return goals.map(goal => {
+  return _.orderBy(goals, ['half', 'second']).map(goal => {
     const { side, scorer, assistant } = goal
 
     home_team_score = side === 1 ? ++home_team_score : home_team_score

@@ -121,6 +121,11 @@ export const getUpdateableMatches = async (
   })
 }
 
+export const getForMatches = (matches, fn, ...params) => {
+  return matches.map(match => fn(match, ...params)).filter(v => !!v)
+}
+
+////
 export const updateMatchesFirst = async (matches, tournament_id, season_id) => {
   return Promise.all(matches.map(async (match) => {
     const {
