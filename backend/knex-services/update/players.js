@@ -30,11 +30,12 @@ const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_
 
 export const getPlayerStatistics = (match) => {
   const { match_id } = match
+  const matchPlayers = filterEmptyNames(_.uniqBy(match.players, 'player_id'))
 
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
 
-  return _.uniqBy(match.players, 'player_id').map(player => ({
+  return matchPlayers.map(player => ({
     ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
     match_id,
     ...player.statistics,
@@ -93,14 +94,16 @@ export const updatePlayers = async (players, options = { force: false }) => {
 export const getUpdateablePlayers = async (players, options = { force: false }) => {
   const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
 
-  const insertablePlayers = options.force ? foundPlayers : _.pullAllBy(
-    players, 
-    foundPlayers
-      .map(p => ({
-        ...p,
-        id: undefined,
-        player_id: p.id,
-      })), 'player_id')
+  const insertablePlayers = filterEmptyNames(
+    options.force ? foundPlayers : _.pullAllBy(
+      players, 
+      foundPlayers
+        .map(p => ({
+          ...p,
+          id: undefined,
+          player_id: p.id,
+        })), 'player_id')
+  )
 
   const inserts = insertablePlayers.map(player => ({
     id: player.player_id,
@@ -112,59 +115,56 @@ export const getUpdateablePlayers = async (players, options = { force: false }) 
 }
 
 export const getUpdateablePlayersFromEvents = async (players, matches, options = { force: false }) => {
-  const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
-  const playerMap = _.reduce(p, (arr, el) => ({ ...arr, [el.player_id]: el}), {})
+  const playerMap = _.reduce(players, (arr, el) => ({ ...arr, [el.id]: el}), {})
 
-  let updateableIds = foundPlayers.filter(p => !p.name).map(p => p.player_id)
+  let updatedIds = players.filter(p => !!p.name).map(p => p.id)
 
   const inserts = _.flatten(await Promise.all(matches.map(async (match) => {
-    if (!updateableIds || updateableIds.length === 0) {
+/*     if (!updateableIds || updateableIds.length === 0) {
       return
-    }
+    } */
 
     const { match_id, players: matchPlayers, events } = match
 
-    const matchPlayerIds = _.uniqBy(matchPlayers.map(p => p.player_id), 'player_id')
-
-    const notUpdatedYet = _.pullAll(matchPlayerIds, updateableIds)
+    const matchPlayerIds = _.uniq(filterEmptyNames(matchPlayers).map(p => p.player_id))
+    const notUpdatedYet = _.pullAll(matchPlayerIds, updatedIds)
 
     if (!notUpdatedYet || notUpdatedYet.length === 0) {
       return
     }
 
-    let detailedEvent = false
+    
+    let detailedEvent, idx = 0
 
-    await Promise.all(events.some(async (event) => {
-      detailedEvent = await API.fetchDetailedEvent(match_id, event.event_id)
-
-      return !!detailedEvent
-    }))
+    while (idx < events.length && (!detailedEvent || !detailedEvent.players)) {
+      detailedEvent = await API.fetchDetailedEvent(match_id, events[idx++].event_id)
+    }
 
     const { players: eventPlayers } = detailedEvent
-    
+
     const toBeUpdated = _.uniqBy(
-      eventPlayers.filter(p => _.includes(notUpdatedYet, p.player_id) && p.name),
-      'player_id'
+      eventPlayers.filter(p => _.includes(notUpdatedYet, p.id) && p.name_eng),
+      'id'
     ).map(p => ({
-      id: p.player_id,
-      name: p.name,
-      surname: p.surname
+      ...playerMap[p.id],
+      name: p.name_eng,
+      surname: p.lastname_eng
     }))
 
-    updateableIds = updateableIds
-      .filter(i => !_.includes(updateableIds, toBeUpdated.map(p => p.id)))
+    updatedIds = _.merge(updatedIds, toBeUpdated.map(p => p.id))
 
     return toBeUpdated
   })))
 
-  return inserts
+  return _.uniqBy(inserts.filter(v => !!v), 'id')
 }
 
 export const updatePlayerStatistics = async (match, options = { force: false }) => {
   const { match_id } = match
+  const players = filterEmptyNames(getUniquePlayers(match))
 
   // players in match might have duplicates in some cases, so let's filter them 
-  return await Promise.all(getUniquePlayers(match).map(async (player) => {
+  return await Promise.all(players.map(async (player) => {
     const { player_id, statistics } = player
 
     // TODO: matchid
@@ -186,3 +186,5 @@ export const getUniquePlayers = (param) => _.uniqBy(
       : param.players),
   'player_id'
 )
+
+export const filterEmptyNames = (players, field = 'display_name') => players.filter(p => p[field] !== '')

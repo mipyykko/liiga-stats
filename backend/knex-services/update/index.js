@@ -80,6 +80,11 @@ const updateKnexService = {
         [Team, Player]
       )
 
+      const updateablePlayerDetails = await getUpdateablePlayersFromEvents(updatedPlayers, matches)
+
+      // TODO: put this in trx or smth... 
+      const updatedPlayerDetails = await Promise.all(updateablePlayerDetails.map(p => Player.query().update(p).where('id', p.id)))
+
       let updatedMatches, updatedSeasons, updatedTournaments
 
       const ret = await transaction(Tournament, Match, Season,
@@ -132,7 +137,9 @@ const updateKnexService = {
         ]
       )
 
-      const updatedPlayerDetails = await getUpdateablePlayersFromEvents(players, matches)
+/*       const updatedPlayerDetails = await getUpdateablePlayersFromEvents(uniquePlayers, matches)
+
+      console.log(updatedPlayerDetails) */
 
       return {
         updated: {
@@ -141,6 +148,7 @@ const updateKnexService = {
           teams: updatedTeams.length,
           team_statistics: updatedTeamStatistics.length,
           players: updatedPlayers.length,
+          player_details: updatedPlayerDetails.length,
           player_statistics: updatedPlayerStatistics.length,
           matches: updatedMatches.length,
           team_infos: updatedTeamInfos.length,

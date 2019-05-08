@@ -14,7 +14,7 @@ export default class API {
       .then(data => data.json())
       .catch(err => err.json())
   }
-   
+
   static fetchTournamentSeason(tournamentid, seasonid) {
     return fetch(`${config.EXTERNAL_API_URI}/matches?locale=en&tournament_id=${tournamentid}&season_id=${seasonid}`,
       {
@@ -50,7 +50,7 @@ export default class API {
       })
       .then(data => data.json())
       .catch(err => {
-        console.error('errored on %d %d', matchid, eventid)
+        console.error('fetch detailed event errored on %d %d', matchid, eventid)
 
         return err
       })
