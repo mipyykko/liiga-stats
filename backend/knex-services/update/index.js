@@ -1,6 +1,5 @@
 import API from 'api'
 import _ from 'lodash'
-import { knex } from 'db'
 import { transaction } from 'objection'
 
 import {
@@ -15,7 +14,7 @@ import {
   getUpdateablePlayersFromEvents
 } from './players'
 import {
-  updateTeams, getUniqueTeams,
+  getUniqueTeamsFromMatches,
   getUpdateableTeams,
   getTeamStatistics,
   getTeamInfo,
@@ -24,6 +23,8 @@ import {
 import { updateTournament, getUpdateableTournaments } from './tournaments'
 import { updateSeason, getUpdateableSeasons } from './seasons'
 import { getMatchGoals } from './goals'
+
+import { insertMany, update } from 'knex-services/common'
 
 import Tournament from 'knex-models/tournament'
 import Season from 'knex-models/season'
@@ -37,22 +38,6 @@ import MatchTeamInfo from 'knex-models/matchTeamInfo'
 import MatchTeamTactic from 'knex-models/matchTeamTactic'
 import Goal from 'knex-models/goal'
 
-const insert = async (data, entity, trx = null) => {
-  return !(data instanceof Array)
-    ? await entity.query().insert(data)
-    : await Promise.all(
-      data.map(d => trx
-        ? entity.query(trx).insert(d)
-        : entity.query().insert(d)
-      ))
-}
-
-const insertMany = async (data, entities, trx = null) => {
-  return await Promise.all(
-    (_.zip(data, entities)).map(async ([d, e]) => await insert(d, e, trx))
-  )
-}
-
 const updateKnexService = {
   async updateSeason(tournamentid, seasonid, options = {}) {
     const seasons = await API.fetchTournamentSeasons(tournamentid)
@@ -65,28 +50,45 @@ const updateKnexService = {
 
     const updateableMatches = await getUpdateableMatches(
       matches, tournamentid, seasonid,
-      { teamStatistics: false, teamInfo: false, teamTactics: false, playerStatistics: false, goals: false }
+//      { teamStatistics: true, teamInfo: true, teamTactics: true, playerStatistics: true, goals: true }
     )
 
     const uniquePlayers = getUniquePlayers(matches)
-    const uniqueTeams = getUniqueTeams(matches)
+    const uniqueTeams = getUniqueTeamsFromMatches(matches)
 
     const updateableTeams = await getUpdateableTeams(uniqueTeams)
     const updateablePlayers = await getUpdateablePlayers(uniquePlayers)
 
     try {
-      const [updatedTeams, updatedPlayers] = await insertMany(
-        [updateableTeams, updateablePlayers],
-        [Team, Player]
-      )
+      let updatedTeams, updatedPlayers, updatedPlayerDetails
 
-      const updateablePlayerDetails = await getUpdateablePlayersFromEvents(updatedPlayers, matches)
+      console.time('update teams and players')
+      await transaction(Team, Player,
+        async (Team, Player, trx) => {
+          [updatedTeams, updatedPlayers] = await insertMany(
+            [updateableTeams, updateablePlayers],
+            [Team, Player],
+            trx
+          )
 
-      // TODO: put this in trx or smth... 
-      const updatedPlayerDetails = await Promise.all(updateablePlayerDetails.map(p => Player.query().update(p).where('id', p.id)))
+          const updateablePlayerDetails = await getUpdateablePlayersFromEvents(updatedPlayers, matches)
+
+          updatedPlayerDetails = await update(updateablePlayerDetails, Player, trx)
+        })
+
+      console.timeEnd('update teams and players')
+
+      console.time('get updateable players from events')
+      console.timeEnd('get updateable players from events')
+
+      // TODO: put this in trx or smth...
+/*       console.time('update player details') 
+
+      console.timeEnd('update player details')  */
 
       let updatedMatches, updatedSeasons, updatedTournaments
 
+      console.time('update tournaments, match, seasons')
       const ret = await transaction(Tournament, Match, Season,
         async (Tournament, Match, Season, trx) => {
           [updatedTournaments, updatedSeasons] = await insertMany(
@@ -98,6 +100,7 @@ const updateKnexService = {
             .query(trx)
             .upsertGraph(m, { insertMissing: true })))
         })
+      console.timeEnd('update tournaments, match, seasons')
 
       const updateableTeamStatistics = _.concat(
         getForMatches(matches, getTeamStatistics, 'first'),
@@ -114,6 +117,7 @@ const updateKnexService = {
       const updateablePlayerStatistics = _.flatten(getForMatches(matches, getPlayerStatistics))
       const updateableGoals = _.flatten(getForMatches(matches, getMatchGoals))
 
+      console.time('update team stats, infos, player stats, tactics, goals')
       const [
         updatedTeamStatistics,
         updatedTeamInfos,
@@ -136,6 +140,7 @@ const updateKnexService = {
           Goal
         ]
       )
+      console.timeEnd('update team stats, infos, player stats, tactics, goals')
 
 /*       const updatedPlayerDetails = await getUpdateablePlayersFromEvents(uniquePlayers, matches)
 
@@ -143,17 +148,17 @@ const updateKnexService = {
 
       return {
         updated: {
-          tournaments: updatedTournaments.length,
-          seasons: updatedSeasons.length,
-          teams: updatedTeams.length,
-          team_statistics: updatedTeamStatistics.length,
-          players: updatedPlayers.length,
-          player_details: updatedPlayerDetails.length,
-          player_statistics: updatedPlayerStatistics.length,
-          matches: updatedMatches.length,
-          team_infos: updatedTeamInfos.length,
-          goals: updatedGoals.length,
-          tactics: updatedTactics.length,
+          tournaments: updatedTournaments.map(t => t.id),
+          seasons: updatedSeasons.map(s => [s.tournament_id, s.id]),
+          teams: updatedTeams.map(t => t.id),
+          //team_statistics: updatedTeamStatistics.map(m => [m.team_id, m.match_id]),
+          players: updatedPlayers.map(p => p.id),
+          player_details: updatedPlayerDetails.map(p => p.id),
+          //player_statistics: updatedPlayerStatistics.map(p => [p.player_id, p.match_id, p.team_id]),
+          matches: updatedMatches.map(m => m.id),
+          //team_infos: updatedTeamInfos.map(m => [m.match_id, m.team_id]),
+          //goals: updatedGoals.map(g => g.id),
+          //tactics: updatedTactics.map(t => [t.team_id, t.match_id, t.player_id, t.second]),
         }
       }
     } catch (err) {

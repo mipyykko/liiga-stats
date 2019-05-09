@@ -10,6 +10,7 @@ const knex = Knex({
     password: config.POSTGRES_PASSWORD,
     database: config.POSTGRES_DATABASE
   },
+  pool: { min: 0, max: 100 },
   //debug: true
 })
 
