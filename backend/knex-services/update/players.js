@@ -1,6 +1,5 @@
 import API from 'api'
-import Player from 'knex-models/player'
-import MatchPlayerStatistic from 'knex-models/matchPlayerStatistic'
+import { Player, MatchPlayerStatistic } from 'knex-models'
 import _ from 'lodash'
 
 import { getTactics } from './teams'
@@ -30,8 +29,8 @@ const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_
 
 export const getPlayerStatistics = (match) => {
   const { match_id } = match
-  const matchPlayers = filterEmptyNames(_.uniqBy(match.players, 'player_id'))
 
+  const matchPlayers = filterEmptyNames(getUniquePlayers(match))
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
 
@@ -52,7 +51,7 @@ export const getPlayerStatisticsForTeam = (match, team_id) => {
 
 
 export const updatePlayers = async (players, options = { force: false }) => {
-  
+
 }
 
 export const getUpdateablePlayers = async (players, options = { force: false }) => {

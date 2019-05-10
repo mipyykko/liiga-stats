@@ -26,7 +26,19 @@ import { getMatchGoals } from './goals'
 
 import { insertMany, update } from 'knex-services/common'
 
-import Tournament from 'knex-models/tournament'
+import { 
+  Tournament, 
+  Season,
+  Match,
+  Player,
+  Team,
+  MatchTeamStatistic,
+  MatchPlayerStatistic,
+  MatchTeamInfo,
+  MatchTeamTactic,
+  Goal
+} from 'knex-models'
+/* import Tournament from 'knex-models/tournament'
 import Season from 'knex-models/season'
 import Match from 'knex-models/match'
 import Player from 'knex-models/player'
@@ -36,7 +48,7 @@ import MatchTeamStatistic from 'knex-models/matchTeamStatistic'
 import MatchPlayerStatistic from 'knex-models/matchPlayerStatistic'
 import MatchTeamInfo from 'knex-models/matchTeamInfo'
 import MatchTeamTactic from 'knex-models/matchTeamTactic'
-import Goal from 'knex-models/goal'
+import Goal from 'knex-models/goal' */
 
 const updateKnexService = {
   async updateSeason(tournamentid, seasonid, options = {}) {
@@ -59,6 +71,7 @@ const updateKnexService = {
     const updateableTeams = await getUpdateableTeams(uniqueTeams)
     const updateablePlayers = await getUpdateablePlayers(uniquePlayers)
 
+    
     try {
       let updatedTeams, updatedPlayers, updatedPlayerDetails
 
@@ -77,14 +90,6 @@ const updateKnexService = {
         })
 
       console.timeEnd('update teams and players')
-
-      console.time('get updateable players from events')
-      console.timeEnd('get updateable players from events')
-
-      // TODO: put this in trx or smth...
-/*       console.time('update player details') 
-
-      console.timeEnd('update player details')  */
 
       let updatedMatches, updatedSeasons, updatedTournaments
 
@@ -151,14 +156,14 @@ const updateKnexService = {
           tournaments: updatedTournaments.map(t => t.id),
           seasons: updatedSeasons.map(s => [s.tournament_id, s.id]),
           teams: updatedTeams.map(t => t.id),
-          //team_statistics: updatedTeamStatistics.map(m => [m.team_id, m.match_id]),
+          team_statistics: updatedTeamStatistics.map(m => [m.team_id, m.match_id]),
           players: updatedPlayers.map(p => p.id),
           player_details: updatedPlayerDetails.map(p => p.id),
-          //player_statistics: updatedPlayerStatistics.map(p => [p.player_id, p.match_id, p.team_id]),
+          player_statistics: updatedPlayerStatistics.map(p => [p.player_id, p.match_id, p.team_id]),
           matches: updatedMatches.map(m => m.id),
-          //team_infos: updatedTeamInfos.map(m => [m.match_id, m.team_id]),
-          //goals: updatedGoals.map(g => g.id),
-          //tactics: updatedTactics.map(t => [t.team_id, t.match_id, t.player_id, t.second]),
+          team_infos: updatedTeamInfos.map(m => [m.match_id, m.team_id]),
+          goals: updatedGoals.map(g => g.id),
+          tactics: updatedTactics.map(t => [t.team_id, t.match_id, t.player_id, t.second]),
         }
       }
     } catch (err) {

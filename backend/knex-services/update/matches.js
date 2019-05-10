@@ -1,5 +1,5 @@
 import API from 'api'
-import Match from 'knex-models/match'
+import { Match } from 'knex-models'
 import _ from 'lodash'
 
 import { 
@@ -29,9 +29,7 @@ export const getMatches = async (matches, options = { force: false }) => {
       return !foundMatch || match.status < foundMatch.status
     })
 
-  return (await Promise.all(fetchableMatches.map(async (match) => {
-    return await API.fetchMatch(match.match_id)
-  }))).filter(v => !!v)
+  return (await Promise.all(fetchableMatches.map(async (match) => await API.fetchMatch(match.match_id)))).filter(v => !!v)
   /*     return (await Promise.all(matches.map(async (match) => {
   
       const foundMatch = await Match.query().findById(match.match_id)

@@ -1,4 +1,4 @@
-import Tournament from 'knex-models/tournament'
+import { Tournament } from 'knex-models'
 
 export const updateTournament = async (seasons, tournamentid, options = { force: false }) => {
   const foundTournament = await Tournament.query().findById(tournamentid)

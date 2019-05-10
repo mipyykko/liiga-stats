@@ -1,6 +1,6 @@
 import { Model } from 'db'
 
-export default class Player extends Model {
+export class Player extends Model {
   static get tableName() {
     return 'players'
   }

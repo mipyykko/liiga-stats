@@ -1,5 +1,4 @@
-import Team from 'knex-models/team'
-import MatchTeamStatistic from 'knex-models/matchTeamStatistic'
+import { Team, MatchTeamStatistic } from 'knex-models'
 
 import _ from 'lodash'
 

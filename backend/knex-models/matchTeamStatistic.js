@@ -1,6 +1,6 @@
 import { Model } from 'db'
 
-export default class MatchTeamStatistic extends Model {
+export class MatchTeamStatistic extends Model {
   static get tableName() {
     return 'match_team_statistics'
   }

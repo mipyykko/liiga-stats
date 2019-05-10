@@ -1,6 +1,7 @@
 import { Model } from 'db'
 import path from 'path'
-export default class Season extends Model {
+
+export class Season extends Model {
   static get tableName() {
     return 'seasons'
   }

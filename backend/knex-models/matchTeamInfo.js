@@ -1,6 +1,7 @@
 import { Model } from 'db'
 import path from 'path'
-export default class MatchTeamInfo extends Model {
+
+export class MatchTeamInfo extends Model {
   static get tableName() {
     return 'match_team_infos'
   }

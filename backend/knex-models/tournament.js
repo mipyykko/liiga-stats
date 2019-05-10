@@ -1,7 +1,7 @@
 import { Model } from 'db'
 import path from 'path'
 
-export default class Tournament extends Model {
+export class Tournament extends Model {
   static get tableName() {
     return 'tournaments'
   }
