@@ -1,30 +1,34 @@
-import Goal from 'models/goal'
 import _ from 'lodash'
 
-export const updateGoals = async (match) => {
-  const { goals, match_id, first_team, second_team } = match
+export const getMatchGoals = (match) => {
+  const { 
+    goals, 
+    match_id, 
+    first_team: { team_id: first_team_id }, 
+    second_team: { team_id: second_team_id} 
+  } = match
 
-  let first_team_score = 0, second_team_score = 0
+  if (!goals || goals.length === 0) {
+    return null
+  }
 
-  return await Promise.all(
-    _.orderBy(goals, ['second'], ['asc'])
-      .map(async (goal) => {
-        // does not handle penalty kick contests
-        first_team_score = goal.side === 1 ? ++first_team_score : first_team_score
-        second_team_score = goal.side !== 1 ? ++second_team_score : second_team_score
+  let home_team_score = 0, away_team_score = 0
 
-        // TODO: find and update
-        const newGoal = await Goal.create({
-          ..._.omit(goal, ['scorer', 'assistant']),
-          team_id: goal.side === 1 ? first_team.team_id : second_team.team_id,
-          scorer_id: goal.scorer.player_id,
-          assistant_id: goal.assistant ? goal.assistant.player_id : null,
-          match_id,
-          first_team_score,
-          second_team_score
-        })
+  return _.orderBy(goals, ['half', 'second']).map(goal => {
+    const { side, scorer, assistant } = goal
 
-        return newGoal //.save() //{ ...newGoal._doc, scorer: goal.scorer }
-      })
-  )
+    home_team_score = side === 1 ? ++home_team_score : home_team_score
+    away_team_score = side !== 1 ? ++away_team_score : away_team_score
+
+    return {
+      ..._.omit(goal, ['scorer', 'assistant', 'minute']),
+      match_id,
+      team_id: side === 1 ? first_team_id : second_team_id,
+      opposing_team_id: side === 1 ? second_team_id: first_team_id,
+      home_team_score,
+      away_team_score,
+      scorer_id: scorer.player_id,
+      assistant_id: assistant ? assistant.player_id : null,
+    }
+  }) 
 }

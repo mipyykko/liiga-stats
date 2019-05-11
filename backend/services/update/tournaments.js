@@ -1,13 +1,9 @@
-import { Tournament } from 'knex-models'
+import { Tournament } from 'models'
 
 export const getUpdateableTournaments = async (seasons, tournamentid, options = { force: false }) => {
   const foundTournament = await Tournament.query().findById(tournamentid)
 
-  if (foundTournament && !options.force) {
-    return []
-  }
-
-  if (!seasons || seasons.length === 0) {
+  if ((foundTournament || (!seasons || seasons.length == 0)) && !options.force) {
     return []
   }
 

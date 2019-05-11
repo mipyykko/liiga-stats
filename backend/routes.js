@@ -1,23 +1,9 @@
-const express = require('express')
-const router = express.Router()
-const { updateController } = require('controllers/update')
-const { matchController } = require('controllers/matches')
+import express from 'express'
+import { updateController, matchController } from 'controllers'
 
-router.get('/matches', matchController.getMatches)
-router.get('/match/:matchid', matchController.getMatch)
+const router = express.Router()
 
 router.post('/update/:tournamentid/:seasonid', updateController.postUpdateSeason)
+router.get('/match/:matchid', matchController.getMatch)
 
-router.post('/knex/update/:tournamentid/:seasonid', updateController.postKnexUpdateSeason)
-router.get('/knex/match/:matchid', matchController.getKnexMatch)
-
-/* router.use((error, req, res, next) => {
-  if (!error) { 
-    return next() 
-  }
-
-  res.status(error.status || 500)
-  res.json({ error: error.message })
-})
- */
-module.exports = router
+export default router

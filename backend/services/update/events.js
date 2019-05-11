@@ -1,44 +1,34 @@
-import Event from 'models/event'
 import _ from 'lodash'
 import { shallowCompare, convertTimeToSec } from 'utils'
 
-export const updateEvents = async (match, matchGoals) => {
-  const { goals, events, match_id, first_team, second_team } = match
+export const getMatchEvents = (match) => {
+  if (!match) {
+    return []
+  }
 
-  // sometimes events can appear doubled
-  const uniqueEvents = _.uniqWith(events, shallowCompare)
+  const { events, goals } = match
 
-  const uniqueEventIds = _.uniq(uniqueEvents.map(e => e.event_id)).length
+  let uniqueEvents = _.uniqWith(events, shallowCompare)
+  const eventsById = _.groupBy(uniqueEvents, 'event_id')
 
-/*   if (uniqueEventIds != uniqueEvents.length) {
-    console.log("combined events at %d", match_id)
+  const duplicateEvents = Object.values(eventsById).map(es => {
+    if (es.length > 1) {
+      return (es[0].pos_x > 0 && es[0].pos_y > 0) 
+        ? es[1]['event_id']
+        : es[0]['event_id']
+    } 
+    
+    return
+  }).filter(v => !!v)
 
-    const eventMap = _.reduce(uniqueEvents, (acc, curr) => ({ ...acc, [curr.event_id]: acc[curr.event_id] ? acc[curr.event_id] + 1 : 1 }), {})
+  uniqueEvents = uniqueEvents.filter(e => !_.includes(duplicateEvents, e.event_id))
 
-    const repeatEventIds = Object.entries(eventMap).filter(k => k[1] > 1).map(k => Number(k[0]))
-
-    const repeatedEvents = uniqueEvents.filter(event => _.includes(repeatEventIds, event.event_id))
-  } */
-
-  // TODO: opponent player_id === 0 => undefined/null
-
-  return await Promise.all(uniqueEvents.map(async (event) => {
-    const newEvent = await Event.findOneAndUpdate({
-      event_id: event.event_id,
-      match_id: match_id
-    }, {
-      $set: {
-        goal_id: mapEventToGoalId(event, matchGoals),
-        match_id,
-        opponent_player_id: event.opponent_player_id === 0 ? null : event.opponent_player_id,
-        ...event,         
-      }
-    }, {
-      new: true, upsert: true
-    })
-
-    return newEvent
-  }))
+  return uniqueEvents.map(event => ({
+    ..._.omit(event, ['event_id', 'minute', 'fitness_available', 'player_name', 'opponent_player_name', 'opponent_player_id']),
+    id: event.event_id,
+    match_id: match.match_id,
+    opponent_player_id: match.opponent_player_id > 0 ? match.opponent_player_id : null
+  }))  
 }
 
 const mapEventToGoalId = (event, goals) => {
@@ -48,7 +38,9 @@ const mapEventToGoalId = (event, goals) => {
 
   const { player_id, minute, second } = event
 
+  // TODO: not used now since it's a composite key
   return (goals.find(
     goal => goal.scorer_id == player_id && 
-    goal.second == convertTimeToSec(minute - 1, second)) || {})._id
+    goal.second == convertTimeToSec(minute - 1, second)) || {}).id // goal doesn't have an id now
 }
+

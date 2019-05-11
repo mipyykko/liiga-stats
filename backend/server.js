@@ -7,8 +7,6 @@ import config from 'config/index'
 
 import routes from './routes'
 
-import { knex, Model } from 'db'
-
 const app = express()
 
 app.use(bodyParser.json())

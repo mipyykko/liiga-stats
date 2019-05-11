@@ -1,4 +1,4 @@
-import { Season } from 'knex-models'
+import { Season } from 'models'
 
 export const getUpdateableSeasons = async (seasons, seasonid, tournamentid, options = { force: false }) => {
   const season = seasons.find(s => Number(s.id) === Number(seasonid))

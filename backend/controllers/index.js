@@ -1,4 +1,4 @@
-import { MatchController } from './matches'
-import { UpdateController } from './update'
+import matchController from './matches'
+import updateController from './update'
 
-export { MatchController, UpdateController }
+export { matchController, updateController }
