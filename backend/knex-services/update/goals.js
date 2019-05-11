@@ -24,6 +24,7 @@ export const getMatchGoals = (match) => {
       ..._.omit(goal, ['scorer', 'assistant', 'minute']),
       match_id,
       team_id: side === 1 ? first_team_id : second_team_id,
+      opposing_team_id: side === 1 ? second_team_id: first_team_id,
       home_team_score,
       away_team_score,
       scorer_id: scorer.player_id,

@@ -49,11 +49,6 @@ export const getPlayerStatisticsForTeam = (match, team_id) => {
     .filter(p => p.team_id === team_id)
 }
 
-
-export const updatePlayers = async (players, options = { force: false }) => {
-
-}
-
 export const getUpdateablePlayers = async (players, options = { force: false }) => {
   const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
 
@@ -120,26 +115,6 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
   })))
 
   return _.uniqBy(inserts.filter(v => !!v), 'id')
-}
-
-export const updatePlayerStatistics = async (match, options = { force: false }) => {
-  const { match_id } = match
-  const players = filterEmptyNames(getUniquePlayers(match))
-
-  // players in match might have duplicates in some cases, so let's filter them 
-  return await Promise.all(players.map(async (player) => {
-    const { player_id, statistics } = player
-
-    // TODO: matchid
-
-    return await MatchPlayerStatistic
-      .query()
-      .insert({
-        player_id,
-        match_id,
-        ...statistics
-      })
-  }))
 }
 
 export const getUniquePlayers = (param) => _.uniqBy(

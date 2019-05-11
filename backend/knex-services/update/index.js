@@ -3,12 +3,12 @@ import _ from 'lodash'
 import { transaction } from 'objection'
 
 import {
-  getMatches, updateMatchesFirst,
+  getMatches,
   getUpdateableMatches,
   getForMatches
 } from './matches'
 import {
-  updatePlayers, getUniquePlayers,
+  getUniquePlayers,
   getUpdateablePlayers,
   getPlayerStatistics,
   getUpdateablePlayersFromEvents
@@ -20,9 +20,10 @@ import {
   getTeamInfo,
   getTactics
 } from './teams'
-import { updateTournament, getUpdateableTournaments } from './tournaments'
-import { updateSeason, getUpdateableSeasons } from './seasons'
+import { getUpdateableTournaments } from './tournaments'
+import { getUpdateableSeasons } from './seasons'
 import { getMatchGoals } from './goals'
+import { getMatchEvents } from './events'
 
 import { insertMany, update } from 'knex-services/common'
 
@@ -36,19 +37,9 @@ import {
   MatchPlayerStatistic,
   MatchTeamInfo,
   MatchTeamTactic,
-  Goal
+  Goal,
+  MatchEvent
 } from 'knex-models'
-/* import Tournament from 'knex-models/tournament'
-import Season from 'knex-models/season'
-import Match from 'knex-models/match'
-import Player from 'knex-models/player'
-import Team from 'knex-models/team'
-
-import MatchTeamStatistic from 'knex-models/matchTeamStatistic'
-import MatchPlayerStatistic from 'knex-models/matchPlayerStatistic'
-import MatchTeamInfo from 'knex-models/matchTeamInfo'
-import MatchTeamTactic from 'knex-models/matchTeamTactic'
-import Goal from 'knex-models/goal' */
 
 const updateKnexService = {
   async updateSeason(tournamentid, seasonid, options = {}) {
@@ -122,27 +113,32 @@ const updateKnexService = {
       const updateablePlayerStatistics = _.flatten(getForMatches(matches, getPlayerStatistics))
       const updateableGoals = _.flatten(getForMatches(matches, getMatchGoals))
 
+      const updateableEvents = _.flatten(getForMatches(matches, getMatchEvents))
+
       console.time('update team stats, infos, player stats, tactics, goals')
       const [
         updatedTeamStatistics,
         updatedTeamInfos,
         updatedPlayerStatistics,
         updatedTactics,
-        updatedGoals
+        updatedGoals,
+        updatedEvents
       ] = await insertMany(
         [
           updateableTeamStatistics,
           updateableTeamInfos,
           updateablePlayerStatistics,
           updateableTactics,
-          updateableGoals
+          updateableGoals,
+          updateableEvents
         ],
         [
           MatchTeamStatistic,
           MatchTeamInfo,
           MatchPlayerStatistic,
           MatchTeamTactic,
-          Goal
+          Goal,
+          MatchEvent
         ]
       )
       console.timeEnd('update team stats, infos, player stats, tactics, goals')
@@ -164,6 +160,7 @@ const updateKnexService = {
           team_infos: updatedTeamInfos.map(m => [m.match_id, m.team_id]),
           goals: updatedGoals.map(g => g.id),
           tactics: updatedTactics.map(t => [t.team_id, t.match_id, t.player_id, t.second]),
+          events: updatedEvents.map(e => [e.id, e.match_id, e.action_code])
         }
       }
     } catch (err) {

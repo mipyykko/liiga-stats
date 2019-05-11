@@ -154,7 +154,7 @@ CREATE TABLE match_events (
   offset_left float(3),
   video_url VARCHAR(255),
 
-  PRIMARY KEY (id)
+  PRIMARY KEY (id, match_id, action_code)
 );
 
 CREATE TABLE goals (
@@ -162,6 +162,7 @@ CREATE TABLE goals (
   assistant_id INT NULL,
   match_id INT NOT NULL,
   team_id INT NOT NULL,
+  opposing_team_id INT NOT NULL,
   half INT,
   second INT,
   standard INT,
@@ -234,3 +235,5 @@ ALTER TABLE goals
   ADD CONSTRAINT "goal_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
 ALTER TABLE goals
   ADD CONSTRAINT "goal_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_opposing_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);

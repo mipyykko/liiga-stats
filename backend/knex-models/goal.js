@@ -18,6 +18,7 @@ export class Goal extends Model {
         assistant_id: { type: ['integer', 'null'] },
         match_id: { type: 'integer' },
         team_id: { type: 'integer' },
+        opposing_team_id: { type: 'integer' }, 
         half: { type: 'integer' },
         second: { type: 'integer' },
         standard: { type: 'integer' },
