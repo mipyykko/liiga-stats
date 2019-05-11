@@ -1,112 +1,120 @@
 import API from 'api'
-import Player from 'models/player'
-import PlayerStatistics from 'models/player-statistics'
+import { Player, MatchPlayerStatistic } from 'models'
 import _ from 'lodash'
 
-export const updatePlayers = async (players, options = { force: false }) => {
-  return await Promise.all(players.map(async (player) => {
-    const { player_id, display_name, photo } = player
+import { getTactics } from './teams'
 
-    const foundPlayer = await Player.findOne({ _id: player_id })
-
-    if (!options.force && foundPlayer) {
-      return foundPlayer
-    }
-
-    return await Player.findOneAndUpdate({
-      _id: player_id,
-    }, {
-      $set: {
-        player_id,
-        player_name: display_name,
-        display_name,
-        photo
-      }
-    }, {
-      new: true, upsert: true
-    }).exec()
-  }))
+export const getStartingLineUps = (match) => {
+  return getTactics(match)
+    .filter(t => t.second === 0)
 }
 
-export const updatePlayerStatistics = async (match, options = { force: false }) => {
+export const getStartingLineUp = (match, team_id) => {
+  return getStartingLineUps(match)
+    .filter(t => t.team_id === team_id)
+}
+
+export const getSubstitutions = (match) => {
+  return _(match.events)
+    .filter(event => event.type === 'sub')
+    .map(event => _.pick(event, ['player_id', 'opponent_player_id', 'half', 'minute', 'second']))
+    .sortBy(['half', 'minute', 'second'])
+    .value()
+}
+
+const isStarting = (lineup, player_id) => lineup.some(t => t.player_id === player_id)
+
+const getPlayerReplaced = (subs, player_id) => _.get(subs.find(s => s.opponent_player_id === player_id), 'player_id')
+const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_id === player_id), 'opponent_player_id')
+
+export const getPlayerStatistics = (match) => {
   const { match_id } = match
 
-  // players in match might have duplicates in some cases, so let's filter them 
-  return await Promise.all(getUniquePlayers(match).map(async (player) => {
-    const { player_id, statistics } = player
+  const matchPlayers = filterEmptyNames(getUniquePlayers(match))
+  const subs = getSubstitutions(match)
+  const lineups = getStartingLineUps(match)
 
-    return await PlayerStatistics.findOneAndUpdate({
-      player_id,
-      match_id,
-    }, {
-      $set: {
-        ...statistics
-      }
-    }, {
-      new: true, upsert: true
-    }).exec()
+  return matchPlayers.map(player => ({
+    ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
+    match_id,
+    ...player.statistics,
+    starting: isStarting(lineups, player.player_id),
+    replaced_player_id: getPlayerReplaced(subs, player.player_id),
+    replacement_player_id: getPlayerReplacement(subs, player.player_id)
   }))
 }
 
-export const updatePlayersFromDetailedEvent = async (matchid, events) => {
-  var idx = 0
-
-  while (idx < events.length) {
-    const event = await API.fetchDetailedEvent(matchid, events[idx++].event_id)
-
-    const { players } = event
-
-    if (!players || players && players.length === 0) {
-      continue
-    }
-
-    return (await Promise.all(_.uniqBy(players, 'id').map(async (player) => {
-      const { id: player_id, name_eng: name, lastname_eng: surname, player_team: team_id } = player
-
-      if (!name) {
-        // lineups seem to be padded with null players
-        return
-      }
-
-      const foundPlayer = await Player.findOne({ _id: player_id })
-
-      if (foundPlayer.name === name) {
-        return // foundPlayer
-      }
-
-      return await Player.findOneAndUpdate({
-        _id: player_id,
-      }, {
-        $set: {
-          player_id,
-          name,
-          surname
-        }
-      }, {
-        new: true, upsert: true
-      }).exec()
-    }))).filter(v => !!v)
-  }
-
-  return Promise.resolve([])
-
+export const getPlayerStatisticsForTeam = (match, team_id) => {
+  return getPlayerStatistics(match)
+    .filter(p => p.team_id === team_id)
 }
 
-export const getMatchPlayers = (match, statistics) => {
-  const startingLineUpPlayerIds = getStartingLineUp(match).map(p => p.player_id)
+export const getUpdateablePlayers = async (players, options = { force: false }) => {
+  const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
 
-  return getUniquePlayers(match).map(player => {
-    const { player_id, position_id, team_id, number } = player
+  const insertablePlayers = filterEmptyNames(
+    options.force ? foundPlayers : _.pullAllBy(
+      players, 
+      foundPlayers
+        .map(p => ({
+          ...p,
+          id: undefined,
+          player_id: p.id,
+        })), 'player_id')
+  )
 
-    return {
-      player_id,
-      position_id,
-      team_id, //: team_id === first_team.team_id ? first_team.team_id : second_team.team_id,
-      number,
-      starting: startingLineUpPlayerIds.indexOf(player_id) > -1,
-      statistics_id: statistics.find(s => s.player_id === player_id)._id
+  const inserts = insertablePlayers.map(player => ({
+    id: player.player_id,
+    display_name: player.display_name,
+    photo: player.photo
+  }))
+
+  return inserts
+}
+
+export const getUpdateablePlayersFromEvents = async (players, matches, options = { force: false }) => {
+  const playerMap = _.reduce(players, (arr, el) => ({ ...arr, [el.id]: el}), {})
+
+  let updatedIds = players.filter(p => !!p.name).map(p => p.id)
+
+  const inserts = _.flatten(await Promise.all(matches.map(async (match) => {
+/*     if (!updateableIds || updateableIds.length === 0) {
+      return
+    } */
+
+    const { match_id, players: matchPlayers, events } = match
+
+    const matchPlayerIds = _.uniq(filterEmptyNames(matchPlayers).map(p => p.player_id))
+    const notUpdatedYet = _.pullAll(matchPlayerIds, updatedIds)
+
+    if (!notUpdatedYet || notUpdatedYet.length === 0) {
+      return
     }
-  })
+
+    
+    let detailedEvent, idx = 0
+
+    while (idx < events.length && (!detailedEvent || !detailedEvent.players)) {
+      detailedEvent = await API.fetchDetailedEvent(match_id, events[idx++].event_id)
+    }
+
+    const { players: eventPlayers } = detailedEvent
+
+    const toBeUpdated = _.uniqBy(
+      eventPlayers.filter(p => _.includes(notUpdatedYet, p.id) && p.name_eng),
+      'id'
+    ).map(p => ({
+      ...playerMap[p.id],
+      name: p.name_eng,
+      surname: p.lastname_eng
+    }))
+
+    updatedIds = _.merge(updatedIds, toBeUpdated.map(p => p.id))
+
+    return toBeUpdated
+  })))
+
+  return _.uniqBy(inserts.filter(v => !!v), 'id')
 }
 
 export const getUniquePlayers = (param) => _.uniqBy(
@@ -117,25 +125,4 @@ export const getUniquePlayers = (param) => _.uniqBy(
   'player_id'
 )
 
-// TODO: not completely in domain, is it
-const getStartingLineUp = (match) => {
-  const { tactics } = match
-
-  if (!tactics) {
-    return []
-  }
-
-  // this just assumes the first one is the starting one
-  
-  return tactics[0].tactics
-/*   const sortedTactics = tactics
-    .filter(t => t.tactics.length > 0)
-    .map(t => t.tactics)
-    .sort((a, b) => a.second - b.second)
-
-  if (sortedTactics[0].second > 0) { 
-    return []
-  }
-
-  return sortedTactics[0].tactics */
-}
+export const filterEmptyNames = (players, field = 'display_name') => players.filter(p => p[field] !== '')

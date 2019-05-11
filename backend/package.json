@@ -18,13 +18,12 @@
     "cors": "^2.8.5",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
-    "fakegoose": "0.0.3",
     "fetch-ponyfill": "^6.0.2",
+    "knex": "^0.16.5",
     "lodash": "^4.17.11",
-    "mongoose": "^5.5.3",
-    "mongoose-dummy": "^1.0.8",
-    "mongoose-faker": "^1.0.0",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "objection": "^1.6.8",
+    "pg": "^7.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
