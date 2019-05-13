@@ -30,7 +30,7 @@ const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_
 export const getPlayerStatistics = (match) => {
   const { match_id } = match
 
-  const matchPlayers = filterEmptyNames(getUniquePlayers(match))
+  const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
 
@@ -122,6 +122,37 @@ export const getUniquePlayers = (param) => _.uniqBy(
     param instanceof Array 
       ? param.map(match => match.players)
       : param.players),
+  'player_id'
+)
+
+/**
+ * Matches can have multiple entries for players. 
+ * This returns the ones with statistics - if no entries with statistics
+ * are found, returns the first.
+ * 
+ * @param {array} players from a match
+ * @return {array} list of unique players  
+ */
+export const getPlayersWithStats = (players) => {
+  const playersById = _.groupBy(players, 'player_id')
+
+  return Object.values(playersById)
+    .map(ps => {
+      const playersWithStats = ps.filter(p => !playerStatsIsEmpty(p))
+    
+      return playersWithStats.length > 0 ? playersWithStats[0] : ps[0]
+    })
+    .filter(v => !!v)
+}
+
+
+export const playerStatsIsEmpty = (player) => !(Object.values(player.statistics).some(s => !s))
+
+export const getUniquePlayersWithStats = (param) => _.uniqBy(
+  _.flatten(
+    param instanceof Array
+      ? param.map(match => getPlayersWithStats(match.players))
+      : getPlayersWithStats(param.players)),
   'player_id'
 )
 

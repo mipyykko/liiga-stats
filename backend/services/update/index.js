@@ -9,6 +9,7 @@ import {
 } from './matches'
 import {
   getUniquePlayers,
+  getUniquePlayersWithStats,
   getUpdateablePlayers,
   getPlayerStatistics,
   getUpdateablePlayersFromEvents
@@ -56,7 +57,7 @@ const updateKnexService = {
 //      { teamStatistics: true, teamInfo: true, teamTactics: true, playerStatistics: true, goals: true }
     )
 
-    const uniquePlayers = getUniquePlayers(matches)
+    const uniquePlayers = getUniquePlayersWithStats(matches)
     const uniqueTeams = getUniqueTeamsFromMatches(matches)
 
     const updateableTeams = await getUpdateableTeams(uniqueTeams)

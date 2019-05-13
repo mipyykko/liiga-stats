@@ -14,8 +14,8 @@ export const getMatchEvents = (match) => {
   const duplicateEvents = Object.values(eventsById).map(es => {
     if (es.length > 1) {
       return (es[0].pos_x > 0 && es[0].pos_y > 0) 
-        ? es[1]['event_id']
-        : es[0]['event_id']
+        ? es[0]['event_id']
+        : es[1]['event_id']
     } 
     
     return

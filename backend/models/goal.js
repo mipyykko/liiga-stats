@@ -19,13 +19,16 @@ export class Goal extends Model {
         match_id: { type: 'integer' },
         team_id: { type: 'integer' },
         opposing_team_id: { type: 'integer' }, 
+        opposing_goalkeeper_id: { type: 'integer' },
         half: { type: 'integer' },
         second: { type: 'integer' },
         standard: { type: 'integer' },
         type: { type: 'integer' },
         side: { type: 'integer' },
         home_team_score: { type: 'integer' },
-        away_team_score: { type: 'integer' }
+        away_team_score: { type: 'integer' },
+        home_team_prev_score: { type: 'integer' },
+        away_team_prev_score: { type: 'integer' }
       }
     }
   }

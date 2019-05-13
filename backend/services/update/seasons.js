@@ -23,10 +23,11 @@ export const getUpdateableSeasons = async (seasons, seasonid, tournamentid, opti
     return []
   }
 
+  // TODO: bit silly to construct the name again
   return [{
     id,
     tournament_id: Number(tournamentid),
-    name,
+    name: `${tournamentName} - ${start_year}${end_year ? `-${end_year}` : ''}}`,
     start_year: Number(start_year),
     end_year: end_year ? Number(end_year) : Number(start_year),
     first_match_id: first_match
