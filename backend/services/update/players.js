@@ -53,14 +53,14 @@ export const getUpdateablePlayers = async (players, options = { force: false }) 
   const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
 
   const insertablePlayers = filterEmptyNames(
-    options.force ? foundPlayers : _.pullAllBy(
+    options.force ? players : _.pullAllBy(
       players, 
       foundPlayers
         .map(p => ({
           ...p,
           id: undefined,
           player_id: p.id,
-        })), 'player_id')
+        })), 'id')
   )
 
   const inserts = insertablePlayers.map(player => ({
@@ -123,7 +123,7 @@ export const getUniquePlayers = (param) => _.uniqBy(
       ? param.map(match => match.players)
       : param.players),
   'player_id'
-)
+).filter(v => !!v)
 
 /**
  * Matches can have multiple entries for players. 
@@ -146,7 +146,7 @@ export const getPlayersWithStats = (players) => {
 }
 
 
-export const playerStatsIsEmpty = (player) => !(Object.values(player.statistics).some(s => !s))
+export const playerStatsIsEmpty = (player) => !(Object.values(player.statistics).some(s => s))
 
 export const getUniquePlayersWithStats = (param) => _.uniqBy(
   _.flatten(

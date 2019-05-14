@@ -1,112 +1,104 @@
 const chai = require('chai')
 const sinon = require('sinon')
 
-import { getUniquePlayers } from 'services/update/players'
+import { 
+  getUniquePlayers, 
+  getUniquePlayersWithStats, 
+  filterEmptyNames,
+  getUpdateablePlayers,
+  getPlayerStatistics 
+} from 'services/update/players'
+import { testMatches, expectedUniquePlayers, expectedPlayers, expectedPlayerStatistics } from './testData'
+import _ from 'lodash'
+import { Model } from 'objection'
 
 var expect = chai.expect
+chai.use(require('sinon-chai'))
 
-const matches = [
-  {
-    match_id: 1,
-    first_team: { 
-      team_id: 1
-    },
-    second_team: {
-      team_id: 2
-    },
-    players: [
-      {
-        player_id: 1,
-        position_id: 31,
-        team_id: 1,
-        number: 1,
-        statistics: { 
-          g: 1,
-          isi: 500
-        }
-      },
-      {
-        player_id: 1,
-        position_id: 31,
-        team_id: 1,
-        number: 1,
-        statistics: {
-          g: 1,
-          isi: 500
-        }
-      },
-      {
-        player_id: 2,
-        position_id: 32,
-        team_id: 2,
-        number: 2,
-        statistics: {
-          g: 0,
-          isi: 150
-        }
-      }
-    ]
-  }, {
-    match_id: 2,
-    first_team: { 
-      team_id: 1
-    },
-    second_team: {
-      team_id: 3
-    },
-    players: [
-      {
-        player_id: 1,
-        position_id: 31,
-        team_id: 1,
-        number: 1
-      },
-      {
-        player_id: 1,
-        position_id: 31,
-        team_id: 1,
-        number: 1
-      },
-      {
-        player_id: 3,
-        position_id: 33,
-        team_id: 3,
-        number: 2
-      }
-    ]
-  }
-]
-
-const players = [
-  {
-    player_id: 1,
-    display_name: 'test',
-    photo: 'photo.jpg'
-  },
-  {
-    player_id: 2,
-    display_name: 'test2',
-    photo: 'photo2.jpg'
-  }
-]
 
 describe('Update service: players', () => {
+  const oneMatchExpected = expectedUniquePlayers.filter(p => _.includes([1,2], p.team_id))
+
   describe('getUniquePlayers', () => {
     it('returns unique players from single match', () => {
-      const expected = [matches[0].players[0], matches[0].players[2]]
-
-      expect(getUniquePlayers(matches[0])).eql(expected)
+      expect(getUniquePlayers(testMatches[1])).eql(oneMatchExpected)
     })
 
     it('returns unique players from multiple matches', () => {
-      const expected = [
-        matches[0].players[0],
-        matches[0].players[2],
-        matches[1].players[2]
-      ]
-
-      expect(getUniquePlayers(matches)).eql(expected)
+      expect(getUniquePlayers(testMatches)).eql(expectedUniquePlayers)
     })
   })
 
+  describe('getUniquePlayersWithStats', () => {
+    it('returns unique players with stats', () => {
+      expect(getUniquePlayersWithStats(testMatches[1])).eql(oneMatchExpected)
+    })
+
+    it('returns unique players with stats from multiple matches', () => {
+      expect(getUniquePlayersWithStats(testMatches)).eql(expectedUniquePlayers)
+    })
+  })
+
+  describe('filterEmptyNames', () => {
+    it('filters empty names', () => {
+      expect(filterEmptyNames(testMatches[1].players).find(p => p.display_name === '')).to.be.undefined
+    })
+  })
+
+  describe('getUpdateablePlayers', () => {
+    let queryStub
+
+    beforeEach(() => {
+      queryStub = sinon.stub(Model, 'query')
+    })
+
+    it('returns right players when none are stored in database', async () => {
+      queryStub.returns({
+        findByIds: () => Promise.resolve([])
+      })
+
+      const uniquePlayers = getUniquePlayers(testMatches)
+      const updatedPlayers = await getUpdateablePlayers(uniquePlayers)
+
+      expect(updatedPlayers).eql(expectedPlayers)
+
+      expect(queryStub).to.have.been.calledOnce
+    })
+
+    it('returns right players when some are stored in database', async () => {
+      queryStub.returns({
+        findByIds: () => Promise.resolve([{ id: 1 }])
+      })
+
+      const uniquePlayers = getUniquePlayers(testMatches)
+      const updatedPlayers = await getUpdateablePlayers(uniquePlayers)
+
+      expect(updatedPlayers.find(p => p.id === 1)).to.be.undefined
+
+      expect(queryStub).to.have.been.calledOnce
+    })
+
+    it('returns right players when some are stored in database and force option is used', async () => {
+      queryStub.returns({
+        findByIds: () => Promise.resolve([{ id: 1 }])
+      })
+
+      const uniquePlayers = getUniquePlayers(testMatches)
+      const updatedPlayers = await getUpdateablePlayers(uniquePlayers, { force: true })
+
+      expect(updatedPlayers).eql(expectedPlayers)
+
+      expect(queryStub).to.have.been.calledOnce
+    })
+
+    afterEach(() => {
+      Model.query.restore()
+    })
+  })
+
+  describe('getPlayerStatistics', () => {
+    it('returns the right statistics', () => {
+      expect(getPlayerStatistics(testMatches[1])).to.deep.equal(expectedPlayerStatistics)
+    })
+  })
 })

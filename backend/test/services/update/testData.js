@@ -21,7 +21,7 @@ const expectedSeason = {
   first_match_id: 1
 }
 
-const testMatches = [
+export const testMatches = [
   {
     match_id: 1,
     tournament_id: 1,
@@ -306,8 +306,8 @@ const testMatches = [
         }
       },
       {
-        player_id: 3,
-        display_name: 'player4',
+        player_id: 5,
+        display_name: 'player5',
         position_id: 33,
         team_id: 3,
         number: 2,
@@ -333,7 +333,7 @@ const testMatches = [
       {
         // 0-2 
         scorer: {
-          player_id: 3
+          player_id: 5
         },
         type: 1,
         half: 2,
@@ -415,7 +415,67 @@ const expectedTeamInfos = {
   }
 }
 
-const expectedPlayers = [
+export const expectedUniquePlayers = [
+  {
+    player_id: 1,
+    position_id: 31,
+    display_name: 'player1',
+    photo: 'player1.jpg',
+    team_id: 1,
+    number: 1,
+    statistics: {
+      g: 1,
+      isi: 500
+    }
+  },
+  {
+    player_id: 2,
+    position_id: 32,
+    display_name: 'player2',
+    photo: 'player2.jpg',
+    team_id: 2,
+    number: 2,
+    statistics: {
+      g: 0,
+      isi: 150
+    }
+  },
+  {
+    player_id: 3,
+    position_id: 32,
+    display_name: 'player3',
+    team_id: 2,
+    number: 3,
+    statistics: {
+      g: null,
+      isi: null
+    }
+  },
+  {
+    player_id: 4,
+    position_id: 53,
+    display_name: '',
+    number: null,
+    team_id: 2,
+    statistics: {
+      g: null,
+      isi: null
+    }
+  },
+  {
+    player_id: 5,
+    display_name: 'player5',
+    position_id: 33,
+    team_id: 3,
+    number: 2,
+    statistics: {
+      g: null,
+      isi: null
+    }
+  }
+]
+
+export const expectedPlayers = [
   {
     id: 1,
     display_name: 'player1',
@@ -428,15 +488,17 @@ const expectedPlayers = [
   },
   {
     id: 3,
-    display_name: 'player3'
+    display_name: 'player3',
+    photo: undefined
   },
   {
-    id: 4,
-    display_name: 'player4'
+    id: 5,
+    display_name: 'player5',
+    photo: undefined
   }
 ]
 
-const expectedPlayerStatistics = [
+export const expectedPlayerStatistics = [
   {
     player_id: 1,
     team_id: 1,
@@ -445,7 +507,9 @@ const expectedPlayerStatistics = [
     number: 1,
     starting: true,
     g: 1,
-    isi: 500
+    isi: 500,
+    replaced_player_id: undefined,
+    replacement_player_id: undefined
   },
   {
     player_id: 2,
@@ -454,6 +518,7 @@ const expectedPlayerStatistics = [
     position_id: 32,
     number: 2,
     starting: true,
+    replaced_player_id: undefined,
     replacement_player_id: 3,
     g: 0,
     isi: 150
@@ -465,7 +530,10 @@ const expectedPlayerStatistics = [
     position_id: 32,
     number: 3,
     starting: false,
-    replaced_player_id: 2
+    replaced_player_id: 2,
+    replacement_player_id: undefined,
+    g: null,
+    isi: null
   }
 ]
 
