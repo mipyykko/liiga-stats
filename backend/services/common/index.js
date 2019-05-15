@@ -34,3 +34,29 @@ export const update = async (data, entity, trx = null, id = 'id') => {
         .patchAndFetchById(d[id], d))),
     1)
 } 
+
+export const splitSeasonName = (name) => {
+  const seasonRegExp = /^(.*)\.\s+(.*) - (\d+)-?(\d+)?$/
+
+  try {
+    // eslint-disable-next-line no-empty-pattern
+    const [{}, country, tournamentName, start_year, end_year] = seasonRegExp.exec(name)
+
+    return { country, tournamentName, start_year, end_year }
+  } catch (e) {
+    return {}
+  }
+}
+
+export const stripTournament = (name) => {
+  const tournamentRegExp = /^.*\.\s+(.*)$/
+
+  try {
+    // eslint-disable-next-line no-empty-pattern
+    const [{}, seasonName] = tournamentRegExp.exec(name)
+    
+    return seasonName
+  } catch (e) {
+    return null
+  }
+}

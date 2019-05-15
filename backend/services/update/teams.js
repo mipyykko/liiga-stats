@@ -8,7 +8,7 @@ export const getUpdateableTeams = async (teams, options = { force: false }) => 
   const foundTeams = await Team.query().findByIds(uniqTeams.map(t => t.team_id))
 
   const insertableTeams = options.force ? uniqTeams : _.pullAllBy(uniqTeams, 
-    foundTeams.map(t => ({
+    (foundTeams || []).map(t => ({
       ...t,
       team_id: t.id,
       id: null
@@ -24,7 +24,8 @@ export const getUpdateableTeams = async (teams, options = { force: false }) => 
   return inserts
 }
 
-export const getUpdateableTeamMatchStatistics = async (team, match, options = { force: false }) => {
+// not used?
+/* export const getUpdateableTeamMatchStatistics = async (team, match, options = { force: false }) => {
   const foundTeamStatistics = await MatchTeamStatistic
     .query()
     .findById([team.team_id, match.match_id])
@@ -38,26 +39,26 @@ export const getUpdateableTeamMatchStatistics = async (team, match, options = { 
     match_id: match.match_id,
     ...team.statistics
   }
-}
+} */
 
 export const getTeamStatistics = (match, team) => {
   return {
     match_id: match.match_id,
-    team_id: match[`${team}_team`]['team_id'],
-    ...match[`${team}_team`]['statistics']
+    team_id: _.get(match, `[${team}_team]['team_id']`),
+    ..._.get(match, `[${team}_team]['statistics']`)
   }
 }
 
 export const getTeamInfo = (match, team) => {
   return {
     match_id: match.match_id,
-    team_id: match[`${team}_team`]['team_id'],
-    score: match[`score_${team}_team`],
-    score_pen: match[`score_pen_${team}_team`],
-    number_color: match[`${team}_team_number_color`],
-    shirt_color: match[`${team}_team_shirt_color`],
-    coach_name: match[`${team}_team_coach_name`],
-    coach_surname: match[`${team}_team_coach_surname`]
+    team_id: _.get(match, `[${team}_team]['team_id']`),
+    score: _.get(match, `score_${team}_team`),
+    score_pen: _.get(match, `score_pen_${team}_team`),
+    number_color: _.get(match, `${team}_team_number_color`),
+    shirt_color: _.get(match, `${team}_team_shirt_color`),
+    coach_name: _.get(match, `${team}_team_coach_name`),
+    coach_surname: _.get(match, `${team}_team_coach_surname`)
   }
 }
 

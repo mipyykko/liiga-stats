@@ -1,24 +1,43 @@
-const testTournaments = [
+export const testSeasons = [
   {
-    id: 1,
+    id: 1, // this is the seasonid
     name: 'Test. Testing Tournament - 2019',
     first_match: 1
+  },
+  {
+    id: 2,
+    name: 'Test. Testing Tournament - 2019-2020',
+    first_match: 2
+  },
+  {
+    id: 3,
+    name: 'invalidtournamentname'
   }
 ]
 
-const expectedTournament = {
+export const expectedTournament = {
   id: 1,
   name: 'Testing Tournament',
   country: 'Test'
 }
 
-const expectedSeason = {
-  id: 1,
-  tournament_id: 1,
-  name: 'Testing Tournament - 2019',
-  start_year: 2019,
-  end_year: 2019,
-  first_match_id: 1
+export const expectedSeasons = {
+  1: {
+    id: 1,
+    tournament_id: 1,
+    name: 'Testing Tournament - 2019',
+    start_year: 2019,
+    end_year: 2019,
+    first_match_id: 1
+  },
+  2: {
+    id: 2,
+    tournament_id: 1,
+    name: 'Testing Tournament - 2019-2020',
+    start_year: 2019,
+    end_year: 2020,
+    first_match_id: 2
+  }
 }
 
 export const testMatches = [
@@ -125,10 +144,10 @@ export const testMatches = [
     events: [
       {
         player_id: 1,
-        opponent_player_id: 0, // this should be the goalie
+        opponent_player_id: 2, // this should be the goalie
         type: 'goal',
         half: 1,
-        minute: 19,
+        minute: 20,
         second: 1,
         event_id: 1,
         action_code: 8010
@@ -143,13 +162,29 @@ export const testMatches = [
         second: 0,
         event_id: 2,
         action_code: 14000,
+        pos_x: 12.0,
+        pos_y: 12.0
+      },
+      {
+        // double event: should not be counted
+        player_id: 2,
+        opponent_player_id: 3,
+        type: 'sub',
+        team_id: 2,
+        half: 2,
+        minute: 46,
+        second: 0,
+        event_id: 2,
+        action_code: 14000,
+        pos_x: 0.0,
+        pos_y: 0.0
       },
       { 
         player_id: 2,
-        opponent_player_id: 0, // ditto
+        opponent_player_id: 1, // ditto
         type: 'goal',
         half: 2,
-        minute: 86,
+        minute: 87,
         second: 27,
         action_code: 8010,
         event_id: 3
@@ -362,7 +397,7 @@ const expectedMatches = [
   }
 ]
 
-const expectedTeams = [
+export const expectedTeams = [
   {
     id: 1,
     name: 'first team',
@@ -383,7 +418,7 @@ const expectedTeams = [
   }
 ]
 
-const expectedTeamStatistics = {
+export const expectedTeamStatistics = {
   first: {
     team_id: 1,
     match_id: 1,
@@ -398,11 +433,14 @@ const expectedTeamStatistics = {
   }
 }
 
-const expectedTeamInfos = {
+export const expectedTeamInfos = {
   first: {
     match_id: 1,
     team_id: 1,
     score: 1,
+    score_pen: undefined,
+    shirt_color: undefined,
+    number_color: undefined,
     coach_name: 'first',
     coach_surname: 'coach'
   },
@@ -410,10 +448,44 @@ const expectedTeamInfos = {
     match_id: 1,
     team_id: 2,
     score: 1,
+    score_pen: undefined,
+    shirt_color: undefined,
+    number_color: undefined,
     coach_name: 'second',
     coach_surname: 'coach'
   }
 }
+
+export const expectedTactics = [
+  {
+    team_id: 1,
+    player_id: 1,
+    position: 31,
+    second: 0,
+    match_id: 1
+  },
+  {
+    team_id: 2,
+    player_id: 2,
+    position: 32,
+    second: 0,
+    match_id: 1
+  },
+  {
+    team_id: 1,
+    player_id: 1,
+    position: 31,
+    second: 2700,
+    match_id: 1
+  },
+  {
+    team_id: 2,
+    player_id: 3,
+    position: 32,
+    second: 2700,
+    match_id: 1
+  }
+]
 
 export const expectedUniquePlayers = [
   {
@@ -537,16 +609,18 @@ export const expectedPlayerStatistics = [
   }
 ]
 
-const expectedGoals = [
+export const expectedGoals = [
   { 
     match_id: 1,
     team_id: 1,
     opposing_team_id: 2,
+    opposing_goalkeeper_id: 2,
     home_team_score: 1,
     away_team_score: 0,
     home_team_prev_score: 0,
     away_team_prev_score: 0,
     scorer_id: 1,
+    assistant_id: null,
     half: 1,
     side: 1,
     second: 1141,
@@ -557,12 +631,13 @@ const expectedGoals = [
     match_id: 1,
     team_id: 2,
     opposing_team_id: 1,
+    opposing_goalkeeper_id: 1,
     home_team_score: 1,
     away_team_score: 1,
     home_team_prev_score: 1,
     away_team_prev_score: 0,
     scorer_id: 2,
-    assistant_id: 2,
+    assistant_id: 3,
     half: 2,
     side: 2,
     standard: 1,
@@ -570,6 +645,42 @@ const expectedGoals = [
     second: 5187
   }
 ]
+
+export const expectedEvents = [
+  {
+    id: 1,
+    player_id: 1,
+    opponent_player_id: 2, // this should be the goalie
+    type: 'goal',
+    half: 1,
+    second: 1,
+    action_code: 8010,
+    match_id: 1
+  },
+  {
+    id: 2,
+    player_id: 2,
+    opponent_player_id: 3,
+    type: 'sub',
+    team_id: 2,
+    half: 2,
+    second: 0,
+    action_code: 14000,
+    pos_x: 12.0,
+    pos_y: 12.0,
+    match_id: 1
+  },
+  { 
+    id: 3,
+    player_id: 2,
+    opponent_player_id: 1, // ditto
+    type: 'goal',
+    half: 2,
+    second: 27,
+    action_code: 8010,
+    match_id: 1
+  }
+]  
 
 export const detailedEvent = {
   players: [
@@ -582,6 +693,11 @@ export const detailedEvent = {
       id: 2,
       name_eng: 'player',
       lastname_eng: 'two'
+    },
+    {
+      id: 3,
+      name_eng: null,
+      lastname_eng: null
     }
   ]
 }

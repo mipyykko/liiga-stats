@@ -1,6 +1,9 @@
 const chai = require('chai')
 const sinon = require('sinon')
 
+var expect = chai.expect
+chai.use(require('sinon-chai'))
+
 import API from 'api'
 import { 
   getUniquePlayers, 
@@ -21,10 +24,6 @@ import {
 } from './testData'
 import _ from 'lodash'
 import { Model } from 'objection'
-
-var expect = chai.expect
-chai.use(require('sinon-chai'))
-
 
 describe('Update service: players', () => {
   const oneMatchExpected = expectedUniquePlayers.filter(p => _.includes([1,2], p.team_id))
@@ -56,49 +55,51 @@ describe('Update service: players', () => {
   })
 
   describe('getUpdateablePlayers', () => {
-    let queryStub
+    let queryStub, findByIdsStub
 
     beforeEach(() => {
       queryStub = sinon.stub(Model, 'query')
+      findByIdsStub = sinon.stub()
+      
+      queryStub.returns({
+        findByIds: findByIdsStub
+      })
+      findByIdsStub.returns(Promise.resolve([]))
     })
 
     it('returns right players when none are stored in database', async () => {
-      queryStub.returns({
-        findByIds: () => Promise.resolve([])
-      })
+      findByIdsStub.returns(Promise.resolve([]))
 
       const uniquePlayers = getUniquePlayers(testMatches)
       const updatedPlayers = await getUpdateablePlayers(uniquePlayers)
 
       expect(updatedPlayers).eql(expectedPlayers)
 
-      expect(queryStub).to.have.been.calledOnce
+      expect(findByIdsStub).to.have.been.calledOnce
+      expect(findByIdsStub).to.have.been.calledWith(uniquePlayers.map(p => p.player_id))
     })
 
     it('returns right players when some are stored in database', async () => {
-      queryStub.returns({
-        findByIds: () => Promise.resolve([{ id: 1 }])
-      })
+      findByIdsStub.returns(Promise.resolve([{ id: 1 }]))
 
       const uniquePlayers = getUniquePlayers(testMatches)
       const updatedPlayers = await getUpdateablePlayers(uniquePlayers)
 
       expect(updatedPlayers.find(p => p.id === 1)).to.be.undefined
 
-      expect(queryStub).to.have.been.calledOnce
+      expect(findByIdsStub).to.have.been.calledOnce
+      // params same as before
     })
 
     it('returns right players when some are stored in database and force option is used', async () => {
-      queryStub.returns({
-        findByIds: () => Promise.resolve([{ id: 1 }])
-      })
+      findByIdsStub.returns(Promise.resolve([{ id: 1 }]))
 
       const uniquePlayers = getUniquePlayers(testMatches)
       const updatedPlayers = await getUpdateablePlayers(uniquePlayers, { force: true })
 
       expect(updatedPlayers).eql(expectedPlayers)
 
-      expect(queryStub).to.have.been.calledOnce
+      expect(findByIdsStub).to.have.been.calledOnce
     })
 
     afterEach(() => {
@@ -129,6 +130,8 @@ describe('Update service: players', () => {
       expect(updatedPlayersFromEvents).eql(expectedDetailedPlayers)
 
       expect(APIstub).to.have.been.calledTwice
+      expect(APIstub.firstCall).to.have.been.calledWith(1,1)
+      expect(APIstub.secondCall).to.have.been.calledWith(1,2)
 
       API.fetchDetailedEvent.restore()
     })

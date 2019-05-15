@@ -9,25 +9,24 @@ export const getMatchEvents = (match) => {
   const { events, goals } = match
 
   let uniqueEvents = _.uniqWith(events, shallowCompare)
+
   const eventsById = _.groupBy(uniqueEvents, 'event_id')
 
-  const duplicateEvents = Object.values(eventsById).map(es => {
-    if (es.length > 1) {
-      return (es[0].pos_x > 0 && es[0].pos_y > 0) 
-        ? es[0]['event_id']
-        : es[1]['event_id']
-    } 
-    
-    return
-  }).filter(v => !!v)
+  uniqueEvents = Object.values(eventsById).map(events => {
+    if (events.length > 1) {
+      return (events[0].pos_x > 0 && events[0].pos_y > 0) 
+        ? events[0]
+        : events[1]
+    }
 
-  uniqueEvents = uniqueEvents.filter(e => !_.includes(duplicateEvents, e.event_id))
+    return events[0]
+  }).filter(v => !!v)
 
   return uniqueEvents.map(event => ({
     ..._.omit(event, ['event_id', 'minute', 'fitness_available', 'player_name', 'opponent_player_name', 'opponent_player_id']),
     id: event.event_id,
     match_id: match.match_id,
-    opponent_player_id: match.opponent_player_id > 0 ? match.opponent_player_id : null
+    opponent_player_id: event.opponent_player_id > 0 ? event.opponent_player_id : null
   }))  
 }
 

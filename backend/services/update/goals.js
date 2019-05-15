@@ -5,9 +5,10 @@ export const getMatchGoals = (match) => {
   const { 
     goals, 
     match_id, 
-    first_team: { team_id: first_team_id }, 
-    second_team: { team_id: second_team_id} 
   } = match
+
+  const first_team_id = _.get(match, 'first_team.team_id')
+  const second_team_id = _.get(match, 'second_team.team_id')
 
   if (!goals || goals.length === 0) {
     return null
@@ -17,8 +18,6 @@ export const getMatchGoals = (match) => {
   let home_team_prev_score, away_team_prev_score
 
   const goalEventMap = mapGoalsToEvents(match)
-
-  // console.log(goalEventMap)
 
   return _.orderBy(goals, ['half', 'second']).map(goal => {
     const { side, scorer, assistant } = goal

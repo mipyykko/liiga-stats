@@ -1,4 +1,5 @@
 import { Tournament } from 'models'
+import { splitSeasonName } from 'services/common'
 
 export const getUpdateableTournaments = async (seasons, tournamentid, options = { force: false }) => {
   const foundTournament = await Tournament.query().findById(tournamentid)
@@ -7,12 +8,13 @@ export const getUpdateableTournaments = async (seasons, tournamentid, options = 
     return []
   }
 
-  const seasonRegExp = /^(.*)\.\s+(.*) - (\d+)-?(\d+)?$/
-
   let country, name
 
   const found = seasons.some(season => {
-    [{}, country, name] = seasonRegExp.exec(season.name)
+    const split = splitSeasonName(season.name)
+
+    country = split.country
+    name = split.tournamentName
 
     return country && name
   })

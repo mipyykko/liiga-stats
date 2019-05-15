@@ -53,6 +53,7 @@ export const getUpdateableMatches = async (
     const { team_id: first_team_id } = first_team
     const { team_id: second_team_id } = second_team
 
+    // TODO: get these away or in any case don't run when not needed
     const [home_statistics, away_statistics] = ['first', 'second'].map(t => getTeamStatistics(match, t))
     const [home_team_info, away_team_info] = ['first', 'second'].map(t => getTeamInfo(match, t))
     const [home_team_tactics, away_team_tactics] = [first_team_id, second_team_id].map(t => getTeamTactics(match, t))
