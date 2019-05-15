@@ -1,14 +1,24 @@
 const chai = require('chai')
 const sinon = require('sinon')
 
+import API from 'api'
 import { 
   getUniquePlayers, 
   getUniquePlayersWithStats, 
   filterEmptyNames,
   getUpdateablePlayers,
-  getPlayerStatistics 
+  getPlayerStatistics,
+  getPlayerStatisticsForTeam,
+  getUpdateablePlayersFromEvents
 } from 'services/update/players'
-import { testMatches, expectedUniquePlayers, expectedPlayers, expectedPlayerStatistics } from './testData'
+import { 
+  testMatches, 
+  expectedUniquePlayers, 
+  expectedPlayers, 
+  expectedPlayerStatistics,
+  detailedEvent,
+  expectedDetailedPlayers
+} from './testData'
 import _ from 'lodash'
 import { Model } from 'objection'
 
@@ -99,6 +109,28 @@ describe('Update service: players', () => {
   describe('getPlayerStatistics', () => {
     it('returns the right statistics', () => {
       expect(getPlayerStatistics(testMatches[1])).to.deep.equal(expectedPlayerStatistics)
+    })
+  })
+
+  describe('getPlayerStatisticsForTeam', () => {
+    it('returns the right statistics for team', () => {
+      expect(getPlayerStatisticsForTeam(testMatches[1], 1)).eql(expectedPlayerStatistics.filter(p => p.team_id === 1))
+    })
+  })
+
+  describe('getUpdateablePlayersFromEvents', () => {
+    it('returns updated players', async () => {
+      const APIstub = sinon.stub(API, 'fetchDetailedEvent')
+      APIstub.onCall(0).returns(Promise.resolve(null))
+      APIstub.onCall(1).returns(Promise.resolve(detailedEvent))
+
+      const updatedPlayersFromEvents = await getUpdateablePlayersFromEvents(expectedPlayers, testMatches)
+      
+      expect(updatedPlayersFromEvents).eql(expectedDetailedPlayers)
+
+      expect(APIstub).to.have.been.calledTwice
+
+      API.fetchDetailedEvent.restore()
     })
   })
 })

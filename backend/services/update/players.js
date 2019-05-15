@@ -87,7 +87,7 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
     const matchPlayerIds = _.uniq(filterEmptyNames(matchPlayers).map(p => p.player_id))
     const notUpdatedYet = _.pullAll(matchPlayerIds, updatedIds)
 
-    if (!notUpdatedYet || notUpdatedYet.length === 0) {
+    if (!events || !notUpdatedYet || notUpdatedYet.length === 0) {
       return
     }
 
@@ -156,4 +156,4 @@ export const getUniquePlayersWithStats = (param) => _.uniqBy(
   'player_id'
 )
 
-export const filterEmptyNames = (players, field = 'display_name') => players.filter(p => p[field] !== '')
+export const filterEmptyNames = (players, field = 'display_name') => (players || []).filter(p => p[field] !== '')

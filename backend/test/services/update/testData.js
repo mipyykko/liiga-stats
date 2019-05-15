@@ -570,3 +570,35 @@ const expectedGoals = [
     second: 5187
   }
 ]
+
+export const detailedEvent = {
+  players: [
+    {
+      id: 1,
+      name_eng: 'player',
+      lastname_eng: 'one'
+    },
+    {
+      id: 2,
+      name_eng: 'player',
+      lastname_eng: 'two'
+    }
+  ]
+}
+
+export const expectedDetailedPlayers = [
+  {
+    id: 1,
+    name: 'player',
+    surname: 'one',
+    display_name: 'player1',
+    photo: 'player1.jpg'
+  },
+  {
+    id: 2,
+    name: 'player',
+    surname: 'two',
+    display_name: 'player2',
+    photo: 'player2.jpg'
+  }
+]
