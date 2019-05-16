@@ -64,7 +64,7 @@ export const getTeamInfo = (match, team) => {
 
 export const getTactics = (match) => {
   return _.flatten(
-    match.tactics.map(t => 
+    (match.tactics || []).map(t => 
       t.tactics.map(tt => ({
         match_id: match.match_id,
         ..._.omit(tt, ['half', 'player_num'])

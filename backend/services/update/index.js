@@ -62,11 +62,9 @@ const updateService = {
     const updateableTeams = await getUpdateableTeams(uniqueTeams)
     const updateablePlayers = await getUpdateablePlayers(uniquePlayers)
 
-    
     try {
       let updatedTeams, updatedPlayers, updatedPlayerDetails
 
-      console.time('update teams and players')
       await transaction(Team, Player,
         async (Team, Player, trx) => {
           [updatedTeams, updatedPlayers] = await insertMany(
@@ -80,11 +78,8 @@ const updateService = {
           updatedPlayerDetails = await update(updateablePlayerDetails, Player, trx)
         })
 
-      console.timeEnd('update teams and players')
-
       let updatedMatches, updatedSeasons, updatedTournaments
 
-      console.time('update tournaments, match, seasons')
       const ret = await transaction(Tournament, Match, Season,
         async (Tournament, Match, Season, trx) => {
           [updatedTournaments, updatedSeasons, updatedMatches] = await insertMany(
@@ -96,7 +91,6 @@ const updateService = {
             .query(trx)
             .upsertGraph(m, { insertMissing: true }))) */
         })
-      console.timeEnd('update tournaments, match, seasons')
 
       const updateableTeamStatistics = _.concat(
         getForMatches(matches, getTeamStatistics, 'first'),
@@ -115,7 +109,6 @@ const updateService = {
 
       const updateableEvents = _.flatten(getForMatches(matches, getMatchEvents))
 
-      console.time('update team stats, infos, player stats, tactics, goals')
       const [
         updatedTeamStatistics,
         updatedTeamInfos,
@@ -141,7 +134,6 @@ const updateService = {
           MatchEvent
         ]
       )
-      console.timeEnd('update team stats, infos, player stats, tactics, goals')
 
 /*       const updatedPlayerDetails = await getUpdateablePlayersFromEvents(uniquePlayers, matches)
 
@@ -158,7 +150,7 @@ const updateService = {
           player_statistics: updatedPlayerStatistics.map(p => [p.player_id, p.match_id, p.team_id]),
           matches: updatedMatches.map(m => m.id),
           team_infos: updatedTeamInfos.map(m => [m.match_id, m.team_id]),
-          goals: updatedGoals.map(g => g.id),
+          goals: updatedGoals.map(g => [g.match_id, g.home_team_score, g.away_team_score]),
           tactics: updatedTactics.map(t => [t.team_id, t.match_id, t.player_id, t.second]),
           events: updatedEvents.map(e => [e.id, e.match_id, e.action_code])
         }
@@ -167,7 +159,7 @@ const updateService = {
       console.log(err, 'oh crud!')
 
       return {
-        error: err
+        error: err.name
       }
     }
   }

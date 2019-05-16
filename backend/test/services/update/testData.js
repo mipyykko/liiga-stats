@@ -781,3 +781,30 @@ export const expectedDetailedPlayers = [
     photo: 'player2.jpg'
   }
 ]
+
+export const expectedUpdated = { 
+  updated: { 
+    tournaments: [ 1 ],
+    seasons: [ [ undefined, undefined ] ],
+    teams: [ 1, 2, 3 ],
+    team_statistics: [ [ 1, 1 ], [ 2, 1 ] ],
+    players: [ 1, 2, 3, 5 ],
+    player_details: [ 1, 2 ],
+    player_statistics: [ [ 1, 1, 1 ], [ 2, 1, 2 ], [ 3, 1, 2 ] ],
+    matches: [ 1, 2 ],
+    team_infos: [ [ 1, 1 ], [ 1, 2 ] ],
+    goals: [ [ 1, 1, 0 ], [ 1, 1, 1 ] ],
+    tactics: [ 
+      [ 1, 1, 1, 0 ],
+      [ 2, 1, 2, 0 ],
+      [ 1, 1, 1, 2700 ],
+      [ 2, 1, 3, 2700 ] 
+    ],
+    events: [ 
+      [ 1, 1, 8010 ],
+      [ 2, 1, 14000 ],
+      [ 3, 1, 8010 ],
+      [ 4, 1, 12345 ] 
+    ] 
+  } 
+}

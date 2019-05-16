@@ -73,6 +73,10 @@ export const getUpdateablePlayers = async (players, options = { force: false }) 
 }
 
 export const getUpdateablePlayersFromEvents = async (players, matches, options = { force: false }) => {
+  if (!players || players.length === 0) {
+    return []
+  }
+
   const playerMap = _.reduce(players, (arr, el) => ({ ...arr, [el.id]: el}), {})
 
   let updatedIds = players.filter(p => !!p.name).map(p => p.id)
@@ -100,7 +104,7 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
     const { players: eventPlayers } = detailedEvent
 
     const toBeUpdated = _.uniqBy(
-      eventPlayers.filter(p => _.includes(notUpdatedYet, p.id) && p.name_eng),
+      (eventPlayers || []).filter(p => _.includes(notUpdatedYet, p.id) && p.name_eng),
       'id'
     ).map(p => ({
       ...playerMap[p.id],

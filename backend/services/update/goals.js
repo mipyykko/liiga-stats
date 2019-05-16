@@ -45,7 +45,7 @@ export const getMatchGoals = (match) => {
 
 const mapGoalsToEvents = (match) => {
   const goalEvents = _.uniqBy(
-    match.events.filter(e => Math.floor(e.action_code / 1000) === 8),
+    (match.events || []).filter(e => Math.floor(e.action_code / 1000) === 8),
     e => `${e.minute}:${e.second}`
   )
 
