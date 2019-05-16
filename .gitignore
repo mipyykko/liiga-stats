@@ -4,3 +4,4 @@ coverage
 node_modules
 reports
 .stryker_tmp
+stryker.log
