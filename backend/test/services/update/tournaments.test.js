@@ -4,7 +4,6 @@ const sinon = require('sinon')
 var expect = chai.expect
 chai.use(require('sinon-chai'))
 
-import API from 'api'
 import { Model } from 'objection'
 import { getUpdateableTournaments } from 'services/update/tournaments'
 import { testSeasons, expectedTournament } from './testData'
@@ -49,6 +48,11 @@ describe('Update service: tournaments', () => {
       expect(tournaments).to.be.empty
       
       expect(queryStub).to.have.been.calledOnce
+    })
+
+    it('returns empty on empty or null tournament data', async () => {
+      expect(await getUpdateableTournaments(null, 1)).to.be.empty
+      expect(await getUpdateableTournaments([], 1)).to.be.empty
     })
 
     afterEach(() => {

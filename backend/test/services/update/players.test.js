@@ -68,8 +68,6 @@ describe('Update service: players', () => {
     })
 
     it('returns right players when none are stored in database', async () => {
-      findByIdsStub.returns(Promise.resolve([]))
-
       const uniquePlayers = getUniquePlayers(testMatches)
       const updatedPlayers = await getUpdateablePlayers(uniquePlayers)
 

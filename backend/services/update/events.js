@@ -6,7 +6,7 @@ export const getMatchEvents = (match) => {
     return []
   }
 
-  const { events, goals } = match
+  const { events } = match
 
   let uniqueEvents = _.uniqWith(events, shallowCompare)
 
@@ -23,14 +23,15 @@ export const getMatchEvents = (match) => {
   }).filter(v => !!v)
 
   return uniqueEvents.map(event => ({
-    ..._.omit(event, ['event_id', 'minute', 'fitness_available', 'player_name', 'opponent_player_name', 'opponent_player_id']),
+    ..._.omit(event, ['event_id', 'minute', 'second', 'fitness_available', 'player_name', 'opponent_player_name', 'opponent_player_id']),
     id: event.event_id,
     match_id: match.match_id,
-    opponent_player_id: event.opponent_player_id > 0 ? event.opponent_player_id : null
+    opponent_player_id: event.opponent_player_id > 0 ? event.opponent_player_id : null,
+    second: convertTimeToSec(event.minute, event.second)
   }))  
 }
 
-const mapEventToGoalId = (event, goals) => {
+/* const mapEventToGoalId = (event, goals) => {
   if (event.type !== 'goal') {
     return
   }
@@ -41,5 +42,5 @@ const mapEventToGoalId = (event, goals) => {
   return (goals.find(
     goal => goal.scorer_id == player_id && 
     goal.second == convertTimeToSec(minute - 1, second)) || {}).id // goal doesn't have an id now
-}
+} */
 

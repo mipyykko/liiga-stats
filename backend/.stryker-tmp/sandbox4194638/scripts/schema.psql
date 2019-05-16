@@ -1,0 +1,244 @@
+DROP TABLE IF EXISTS 
+  matches, tournaments, seasons, teams, match_team_infos, match_team_statistics,
+  players, match_player_statistics, match_events, match_team_tactics, goals CASCADE;
+
+CREATE TABLE matches (
+  id INT UNIQUE NOT NULL,
+  tournament_id INT,
+  season_id INT,
+  round INT,
+  date TIMESTAMPTZ,
+  status INT,
+  min INT,
+  width INT,
+  height INT,
+  home_team_id INT,
+  away_team_id INT,
+  home_score INT,
+  away_score INT,
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE tournaments (
+  id INT UNIQUE NOT NULL,
+  name VARCHAR(255),
+  country VARCHAR(64),
+  type VARCHAR(32),
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE seasons (
+  id INT NOT NULL,
+  tournament_id INT NOT NULL,
+  name VARCHAR(255),
+  first_match_id INT NULL,
+  start_year INT,
+  end_year INT,
+
+  PRIMARY KEY (id, tournament_id)
+);
+
+CREATE TABLE teams (
+  id INT UNIQUE NOT NULL,
+  name VARCHAR(128),
+  display_name VARCHAR(64),
+  country VARCHAR(2),
+  logo VARCHAR(255),
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE match_team_infos (
+  match_id INT NOT NULL,
+  team_id INT NOT NULL,
+  score INT,
+  score_pen INT,
+  number_color VARCHAR(16),
+  shirt_color VARCHAR(16),
+  coach_name VARCHAR(64),
+  coach_surname VARCHAR(64),
+
+  PRIMARY KEY (match_id, team_id)
+);
+
+CREATE TABLE match_team_tactics (
+  team_id INT NOT NULL,
+  match_id INT NOT NULL,
+  player_id INT NOT NULL,
+  position INT,
+  second INT
+);
+
+CREATE TABLE match_team_statistics (
+  team_id INT NOT NULL,
+  match_id INT NOT NULL,
+  status INT,
+  s INT,
+  st INT,
+  f INT,
+  pa INT,
+  pap float(3),
+  bpm float(3),
+  bpp float(3),
+  ck INT,
+  cw INT,
+  cwp INT,
+  offs INT,
+  yc INT,
+  rc INT,
+
+  PRIMARY KEY (team_id, match_id)
+);
+
+CREATE TABLE players (
+  id INT NOT NULL,
+  name VARCHAR(64),
+  surname VARCHAR(64),
+  display_name VARCHAR(64),
+  photo VARCHAR(255),
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE match_player_statistics (
+  player_id INT NOT NULL,
+  match_id INT NOT NULL,
+  team_id INT NOT NULL,
+  number INT,
+  position_id INT,
+  starting BOOLEAN,
+  replaced_player_id INT NULL,
+  replacement_player_id INT NULL,
+  isi INT,
+  mof INT,
+  g INT,
+  a INT,
+  s INT,
+  st INT,
+  f INT,
+  fop INT,
+  t INT,
+  lb INT,
+  pa INT,
+  pap float(3),
+  offs INT,
+  c INT,
+  cw INT,
+  cwp float(3),
+  d INT,
+  spda float(3),
+  spdm float(3),
+
+  PRIMARY KEY (player_id, match_id, team_id)
+);
+
+CREATE TABLE match_events (
+  id INT NOT NULL, 
+  match_id INT NOT NULL,
+  team_id INT NOT NULL,
+  player_id INT NOT NULL,
+  opponent_player_id INT NULL,
+  parent_event_id INT NULL,
+  action_code INT,
+  standard INT,
+  type VARCHAR(128),
+  title VARCHAR(128),
+  half INT,
+  second INT,
+  pos_x float(3),
+  pos_y float(3),
+  pos_dest_x float(3),
+  pos_dest_y float(3),
+  offset_left float(3),
+  video_url VARCHAR(255),
+
+  PRIMARY KEY (id, match_id, action_code)
+);
+
+CREATE TABLE goals (
+  scorer_id INT NOT NULL,
+  assistant_id INT NULL,
+  match_id INT NOT NULL,
+  team_id INT NOT NULL,
+  opposing_team_id INT NOT NULL,
+  opposing_goalkeeper_id INT, 
+  half INT,
+  second INT,
+  standard INT,
+  type INT,
+  side INT,
+  home_team_score INT,
+  away_team_score INT,
+  home_team_prev_score INT,
+  away_team_prev_score INT,
+
+  PRIMARY KEY (match_id, home_team_score, away_team_score)
+);
+
+ALTER TABLE matches
+  ADD CONSTRAINT "match_tournament_fk" FOREIGN KEY (tournament_id) REFERENCES tournaments (id) ON DELETE CASCADE;
+ALTER TABLE matches
+  ADD CONSTRAINT "match_season_tournament_fk" FOREIGN KEY (season_id, tournament_id) REFERENCES seasons (id, tournament_id) ON DELETE CASCADE;
+ALTER TABLE matches
+  ADD CONSTRAINT "match_home_team_fk" FOREIGN KEY (home_team_id) REFERENCES teams (id);
+ALTER TABLE matches
+  ADD CONSTRAINT "match_away_team_fk" FOREIGN KEY (away_team_id) REFERENCES teams (id);
+
+ALTER TABLE seasons
+  ADD CONSTRAINT "season_tournament_fk" FOREIGN KEY (tournament_id) REFERENCES tournaments (id) ON DELETE CASCADE;
+ALTER TABLE seasons
+  ADD CONSTRAINT "season_first_match_fk" FOREIGN KEY (first_match_id) REFERENCES matches (id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE match_team_infos
+  ADD CONSTRAINT "team_match_info_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
+ALTER TABLE match_team_infos
+  ADD CONSTRAINT "team_match_info_team" FOREIGN KEY (team_id) REFERENCES teams (id);
+
+ALTER TABLE match_team_statistics
+  ADD CONSTRAINT "team_match_statistics_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE match_team_statistics
+  ADD CONSTRAINT "team_match_statistics_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
+
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_replaced_player_fk" FOREIGN KEY (replaced_player_id) REFERENCES players (id);
+ALTER TABLE match_player_statistics
+  ADD CONSTRAINT "player_match_statistics_replacement_player_fk" FOREIGN KEY (replacement_player_id) REFERENCES players (id);
+
+ALTER TABLE match_events
+  ADD CONSTRAINT "match_event_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
+ALTER TABLE match_events
+  ADD CONSTRAINT "match_event_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE match_events
+  ADD CONSTRAINT "match_event_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);
+ALTER TABLE match_events
+  ADD CONSTRAINT "match_event_opponent_fk" FOREIGN KEY (opponent_player_id) REFERENCES players (id);
+ALTER TABLE match_events
+  ADD CONSTRAINT "match_event_parent_fk" FOREIGN KEY (parent_event_id) REFERENCES match_events (id);
+
+ALTER TABLE match_team_tactics
+  ADD CONSTRAINT "team_match_tactic_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE match_team_tactics
+  ADD CONSTRAINT "team_match_tactic_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
+ALTER TABLE match_team_tactics
+  ADD CONSTRAINT "team_match_tactic_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);
+
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_scorer_fk" FOREIGN KEY (scorer_id) REFERENCES players (id);
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_assistant_fk" FOREIGN KEY (assistant_id) REFERENCES players (id);
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_opposing_team_fk" FOREIGN KEY (opposing_team_id) REFERENCES teams (id);
+ALTER TABLE goals
+  ADD CONSTRAINT "goal_opposing_gk_fk" FOREIGN KEY (opposing_goalkeeper_id) REFERENCES players (id);

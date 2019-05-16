@@ -4,7 +4,6 @@ const sinon = require('sinon')
 var expect = chai.expect
 chai.use(require('sinon-chai'))
 
-import API from 'api'
 import { Model } from 'objection'
 
 import {

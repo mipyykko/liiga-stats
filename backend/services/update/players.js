@@ -78,10 +78,6 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
   let updatedIds = players.filter(p => !!p.name).map(p => p.id)
 
   const inserts = _.flatten(await Promise.all(matches.map(async (match) => {
-/*     if (!updateableIds || updateableIds.length === 0) {
-      return
-    } */
-
     const { match_id, players: matchPlayers, events } = match
 
     const matchPlayerIds = _.uniq(filterEmptyNames(matchPlayers).map(p => p.player_id))
@@ -91,11 +87,14 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
       return
     }
 
-    
     let detailedEvent, idx = 0
 
     while (idx < events.length && (!detailedEvent || !detailedEvent.players)) {
       detailedEvent = await API.fetchDetailedEvent(match_id, events[idx++].event_id)
+    }
+
+    if (!detailedEvent) {
+      return 
     }
 
     const { players: eventPlayers } = detailedEvent

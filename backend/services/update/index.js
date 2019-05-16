@@ -8,7 +8,6 @@ import {
   getForMatches
 } from './matches'
 import {
-  getUniquePlayers,
   getUniquePlayersWithStats,
   getUpdateablePlayers,
   getPlayerStatistics,
@@ -42,7 +41,7 @@ import {
   MatchEvent
 } from 'models'
 
-const updateKnexService = {
+const updateService = {
   async updateSeason(tournamentid, seasonid, options = {}) {
     const seasons = await API.fetchTournamentSeasons(tournamentid)
     const seasonMatches = await API.fetchTournamentSeason(tournamentid, seasonid)
@@ -88,14 +87,14 @@ const updateKnexService = {
       console.time('update tournaments, match, seasons')
       const ret = await transaction(Tournament, Match, Season,
         async (Tournament, Match, Season, trx) => {
-          [updatedTournaments, updatedSeasons] = await insertMany(
-            [updateableTournaments, updateableSeasons],
-            [Tournament, Season],
+          [updatedTournaments, updatedSeasons, updatedMatches] = await insertMany(
+            [updateableTournaments, updateableSeasons, updateableMatches],
+            [Tournament, Season, Match],
             trx)
 
-          updatedMatches = await Promise.all(updateableMatches.map(m => Match
+/*           updatedMatches = await Promise.all(updateableMatches.map(m => Match
             .query(trx)
-            .upsertGraph(m, { insertMissing: true })))
+            .upsertGraph(m, { insertMissing: true }))) */
         })
       console.timeEnd('update tournaments, match, seasons')
 
@@ -174,4 +173,4 @@ const updateKnexService = {
   }
 }
 
-export default updateKnexService
+export default updateService

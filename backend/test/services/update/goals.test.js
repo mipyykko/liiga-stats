@@ -15,6 +15,7 @@ describe('Update service: goals', () => {
 
     it('returns null on no goals or null match', () => {
       expect(getMatchGoals(testMatches[0])).eql(null)
+      expect(getMatchGoals({ ...testMatches[0], goals: [] })).eql(null)
       expect(getMatchGoals({})).eql(null)
     })
   })

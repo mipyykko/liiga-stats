@@ -181,14 +181,38 @@ export const testMatches = [
       },
       { 
         player_id: 2,
-        opponent_player_id: 1, // ditto
+        opponent_player_id: 1, 
         type: 'goal',
         half: 2,
         minute: 87,
         second: 27,
         action_code: 8010,
         event_id: 3
-      }
+      },
+      {
+        player_id: 2,
+        opponent_player_id: 0,
+        type: 'yc',
+        half: 2,
+        minute: 88,
+        second: 10,
+        action_code: 12345,
+        event_id: 4,
+        pos_x: 0.0,
+        pos_y: 0.0
+      },
+      {
+        player_id: 2, // duplicate event with no opponent
+        opponent_player_id: 0,
+        type: 'yc',
+        half: 2,
+        minute: 88,
+        second: 10,
+        action_code: 12345,
+        event_id: 4,
+        pos_x: 16.0,
+        pos_y: 25.0
+      },
     ],
     players: [
       {
@@ -297,6 +321,9 @@ export const testMatches = [
   }, {
     match_id: 2,
     status: 5,
+    round: 30,
+    date: '31-12-2019',
+    min: 98,
     first_team: { 
       team_id: 1,
       name: 'first team',
@@ -381,7 +408,7 @@ export const testMatches = [
   },
 ]
 
-const expectedMatches = [
+export const expectedMatches = [
   {
     id: 1,
     tournament_id: 1,
@@ -394,6 +421,19 @@ const expectedMatches = [
     away_team_id: 2,
     home_score: 1,
     away_score: 1
+  },
+  {
+    id: 2,
+    tournament_id: 1,
+    season_id: 1,
+    round: 30,
+    date: '31-12-2019',
+    min: 98,
+    status: 5,
+    home_team_id: 1,
+    away_team_id: 3,
+    home_score: 0,
+    away_score: 2
   }
 ]
 
@@ -415,6 +455,17 @@ export const expectedTeams = [
     name: 'third team',
     display_name: 'third team',
     logo: 'logo3.jpg'
+  }
+]
+
+export const testSeasonMatches = [
+  { 
+    match_id: 1,
+    status: 5 
+  },
+  { 
+    match_id: 2,
+    status: 5
   }
 ]
 
@@ -653,7 +704,7 @@ export const expectedEvents = [
     opponent_player_id: 2, // this should be the goalie
     type: 'goal',
     half: 1,
-    second: 1,
+    second: 1201,
     action_code: 8010,
     match_id: 1
   },
@@ -664,7 +715,7 @@ export const expectedEvents = [
     type: 'sub',
     team_id: 2,
     half: 2,
-    second: 0,
+    second: 2760,
     action_code: 14000,
     pos_x: 12.0,
     pos_y: 12.0,
@@ -676,10 +727,22 @@ export const expectedEvents = [
     opponent_player_id: 1, // ditto
     type: 'goal',
     half: 2,
-    second: 27,
+    second: 5247,
     action_code: 8010,
     match_id: 1
-  }
+  },
+  {
+    id: 4,
+    player_id: 2, 
+    opponent_player_id: null,
+    type: 'yc',
+    half: 2,
+    second: 5290,
+    action_code: 12345,
+    pos_x: 16.0,
+    pos_y: 25.0,
+    match_id: 1
+  },
 ]  
 
 export const detailedEvent = {

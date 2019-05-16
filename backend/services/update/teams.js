@@ -1,4 +1,4 @@
-import { Team, MatchTeamStatistic } from 'models'
+import { Team } from 'models'
 
 import _ from 'lodash'
 

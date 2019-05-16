@@ -20,7 +20,9 @@ export const getMatches = async (matches, options = { force: false }) => {
     : matches.filter(match => {
       const foundMatch = foundMatches.find(m => m.id == match.match_id)
 
-      return !foundMatch || match.status < foundMatch.status
+      // TODO: more criteria on when to fetch --- more complete stats etc.
+      // TODO: don't try to get matches after current date
+      return !foundMatch || match.status > foundMatch.status
     })
 
   return (await Promise.all(fetchableMatches.map(async (match) => await API.fetchMatch(match.match_id)))).filter(v => !!v)
@@ -54,11 +56,11 @@ export const getUpdateableMatches = async (
     const { team_id: second_team_id } = second_team
 
     // TODO: get these away or in any case don't run when not needed
-    const [home_statistics, away_statistics] = ['first', 'second'].map(t => getTeamStatistics(match, t))
+/*     const [home_statistics, away_statistics] = ['first', 'second'].map(t => getTeamStatistics(match, t))
     const [home_team_info, away_team_info] = ['first', 'second'].map(t => getTeamInfo(match, t))
     const [home_team_tactics, away_team_tactics] = [first_team_id, second_team_id].map(t => getTeamTactics(match, t))
     const [home_players, away_players] = [first_team_id, second_team_id].map(t => getPlayerStatisticsForTeam(match, t))
-    const goals = getMatchGoals(match)
+    const goals = getMatchGoals(match) */
 
     return {
       id: match_id,
@@ -73,7 +75,7 @@ export const getUpdateableMatches = async (
       home_score: score_first_team,
       away_score: score_second_team,
       // TODO: separate...
-      home_statistics: options.teamStatistics
+/*       home_statistics: options.teamStatistics
         ? home_statistics
         : null,
       away_statistics: options.teamStatistics 
@@ -99,7 +101,7 @@ export const getUpdateableMatches = async (
         : null,
       goals: options.goals
         ? goals
-        : null
+        : null */
     }
   })
 }
