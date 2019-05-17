@@ -11,20 +11,20 @@ export class Match extends Model {
       type: 'object',
 
       properties: { 
-        id: { type: 'integer' },
-        tournament_id: { type: 'integer' },
-        season_id: { type: 'integer' },
-        round: { type: 'integer' },
-        date: { type: 'date-time' },
-        time: { type: 'time' },
-        status: { type: 'integer' },
-        min: { type: 'integer' },
-        width: { type: 'integer' },
-        height: { type: 'integer' },
-        home_team_id: { type: 'integer' },
-        away_team_id: { type: 'integer' },
-        home_score: { type: 'integer' },
-        away_score: { type: 'integer' } 
+        id: { type: 'number' },
+        tournament_id: { type: 'number' },
+        season_id: { type: 'number' },
+        round: { type: 'number' },
+        date: { type: 'string' },
+        time: { type: 'string' },
+        status: { type: 'number' },
+        min: { type: 'number' },
+        width: { type: 'number' },
+        height: { type: 'number' },
+        home_team_id: { type: 'number' },
+        away_team_id: { type: 'number' },
+        home_score: { type: 'number' },
+        away_score: { type: 'number' } 
       }
     }
   }

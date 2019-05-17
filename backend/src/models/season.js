@@ -15,12 +15,12 @@ export class Season extends Model {
       type: 'object',
 
       properties: {
-        id: { type: 'integer' },
-        tournament_id: { type: 'integer' },
+        id: { type: 'number' },
+        tournament_id: { type: 'number' },
         name: { type: 'string' },
-        start_year: { type: 'integer' },
-        end_year: { type: ['integer', 'null'] },
-        first_match_id: { type: 'integer' }
+        start_year: { type: 'number' },
+        end_year: { type: ['number', 'null'] },
+        first_match_id: { type: 'number' }
       }
     }
   }

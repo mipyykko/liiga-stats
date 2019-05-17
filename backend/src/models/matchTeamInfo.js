@@ -15,10 +15,10 @@ export class MatchTeamInfo extends Model {
       type: 'object',
 
       properties: {
-        match_id: { type: 'integer' },
-        team_id: { type: 'integer' },
-        score: { type: 'integer' },
-        score_pen: { type: 'integer' },
+        match_id: { type: 'number' },
+        team_id: { type: 'number' },
+        score: { type: 'number' },
+        score_pen: { type: 'number' },
         number_color: { type: 'string' },
         shirt_color: { type: 'string' },
         coach_name: { type: 'string' },

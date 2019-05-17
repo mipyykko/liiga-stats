@@ -10,7 +10,7 @@ export class Player extends Model {
       type: 'object',
 
       properties: {
-        id: { type: 'integer' },
+        id: { type: 'number' },
         name: { type: 'string' },
         surname: { type: 'string' },
         display_name: { type: 'string' },

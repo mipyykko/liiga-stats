@@ -10,7 +10,7 @@ export class Team extends Model {
       type: 'object',
 
       properties: {
-        id: { type: 'integer' },
+        id: { type: 'number' },
         name: { type: 'string' },
         display_name: { type: 'string' },
         country: { type: 'string' },

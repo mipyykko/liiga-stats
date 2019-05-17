@@ -1,8 +1,7 @@
-import config from 'config'
-import { Model } from 'objection'
-import Knex from 'knex'
+const config = require('./config')
+const path = require('path')
 
-const knex = Knex({
+module.exports = {
   client: 'pg',
   connection: {
     host: config.POSTGRES_HOST,
@@ -11,9 +10,8 @@ const knex = Knex({
     database: config.POSTGRES_DATABASE
   },
   pool: { min: 0, max: 100 },
-  //debug: true
-})
-
-Model.knex(knex)
-
-export { knex, Model }
+  migrations: {
+    directory: path.join(__dirname, 'src', 'db', 'migrations')
+  },
+  debug: true
+}

@@ -1,5 +1,5 @@
 import fetchPonyfill from 'fetch-ponyfill'
-import config from '../config'
+import config from '../../config'
 const { fetch } = fetchPonyfill()
 
 export default class API {

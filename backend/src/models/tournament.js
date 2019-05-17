@@ -11,10 +11,10 @@ export class Tournament extends Model {
       type: 'object',
 
       properties: {
-        id: { type: 'integer '},
+        id: { type: 'number' },
         name: { type: 'string' },
         country: { type: 'string' },
-        type: { type: 'integer' }
+        type: { type: 'number' }
       }
     }
   }

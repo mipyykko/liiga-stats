@@ -1,0 +1,13 @@
+{
+  "name": "liiga",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:mipyykko/liiga-stats.git",
+  "author": "Mikko Pyykkö <mipyykko@gmail.com>",
+  "license": "MIT",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "private": true
+}

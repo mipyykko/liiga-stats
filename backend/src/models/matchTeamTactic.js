@@ -15,11 +15,11 @@ export class MatchTeamTactic extends Model {
       type: 'object',
 
       properties: { 
-        team_id: { type: 'integer' },
-        match_id: { type: 'integer' },
-        player_id: { type: 'integer' },
-        position: { type: ['integer', 'null'] },
-        second: { type: 'integer' }
+        team_id: { type: 'number' },
+        match_id: { type: 'number' },
+        player_id: { type: 'number' },
+        position: { type: ['number', 'null'] },
+        second: { type: 'number' }
       }
     }
   }

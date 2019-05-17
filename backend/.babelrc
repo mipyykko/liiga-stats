@@ -1,5 +1,15 @@
 {
-  "presets": ["@babel/preset-env"],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "modules": "commonjs",
+        "targets": {
+          "node": true
+        }
+      } 
+    ]
+  ],
   "env": {
     "test": {
       "plugins": ["istanbul"]
