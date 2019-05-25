@@ -6,7 +6,6 @@ var expect = chai.expect
 chai.use(require('sinon-chai'))
 
 //import { Model } from 'objection'
-import * as objection from 'objection'
 import { insert, insertMany, update } from 'services/common'
 import _ from 'lodash'
 

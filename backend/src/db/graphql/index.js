@@ -3,14 +3,18 @@ const graphQlBuilder = require('objection-graphql').builder
 module.exports = () => {
   const models = require('models')
   
+  // instead of snake_case, we create camelCase plural field names
+  // and use just the entity name with the first letter lower cased as singular
   const graphQlSchema = Object.entries(models).reduce((builder, [name, model]) => 
     builder.model(model, {
       listFieldName: camelCase(model.getTableName()),
-      fieldName: name[0].toLowerCase() + name.slice(1)
+      fieldName: decapitalize(name)
     }), 
   graphQlBuilder()).build()
 
   return graphQlSchema
 }
 
-const camelCase = (s) => s.split('_').map((a, idx) => idx === 0 ? a : a[0].toUpperCase() + a.slice(1)).join('')
+const camelCase = (s) => s.split('_').map((a, idx) => idx === 0 ? a : capitalize(a)).join('')
+const capitalize = (s) => s[0].toUpperCase() + s.slice(1)
+const decapitalize = (s) => s[0].toLowerCase() + s.slice(1)

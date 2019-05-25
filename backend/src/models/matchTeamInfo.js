@@ -19,8 +19,8 @@ export class MatchTeamInfo extends Model {
         team_id: { type: 'number' },
         score: { type: 'number' },
         score_pen: { type: 'number' },
-        number_color: { type: 'string' },
-        shirt_color: { type: 'string' },
+        number_color: { type: ['string', 'null'] },
+        shirt_color: { type: ['string', 'null'] },
         coach_name: { type: 'string' },
         coach_surname: { type: 'string' }
       }

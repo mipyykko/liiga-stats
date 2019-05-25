@@ -1,5 +1,6 @@
 import { Model } from 'db'
 import path from 'path'
+import _ from 'lodash'
 
 export class Match extends Model {
   static get tableName() {
@@ -30,13 +31,6 @@ export class Match extends Model {
   }
 
   static get relationMappings() {
-/*     const Tournament = require('./tournament')
-    const Season = require('./season')
-    const Team = require('./team')
-    const MatchPlayerStatistic = require('./matchPlayerStatistic')
-    const MatchTeamStatistic = require('./matchTeamStatistic')
-    const MatchTeamInfo = require('./matchTeamInfo')
- */    
     return {
       tournament: {
         relation: Model.BelongsToOneRelation,
