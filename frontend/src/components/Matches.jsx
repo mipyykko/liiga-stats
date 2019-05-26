@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, createRef } from 'react'
 import moment from 'moment'
 import _ from 'lodash'
 import { gql } from 'apollo-boost'
@@ -16,7 +16,7 @@ import { 
 import {
   ArrowLeft, ArrowRight
 } from '@material-ui/icons'
-import ScrollMenu from 'react-horizontal-scrolling-menu'
+import Slider from 'react-slick'
 
 const useStyles = makeStyles({
   root: {
@@ -81,11 +81,11 @@ const MatchTeamScore = ({ team, score, winner }) => {
     </Grid>
   )
 }
-const Match = ({ match }) => { 
-  const classes = useStyles({ status: match.status })
+const Match = ({ match, selected, onClick }) => { 
+  const classes = useStyles({ status: match.status, selected })
 
   return(
-    <Paper className={classes.gridListTile}>
+    <Paper className={classes.gridListTile} onDragStart={e => e.preventDefault()} onMouseUp={onClick} style={{ 'userSelect': 'none' }}>
       <Grid item xs={12} container direction="column">
         <MatchTeamScore team={match.home_team} score={match.status > 1 ? match.home_score : null} winner={match.home_score > match.away_score} />
         <MatchTeamScore team={match.away_team} score={match.status > 1 ? match.away_score : null} winner={match.away_score > match.home_score} />
@@ -98,7 +98,6 @@ const Match = ({ match }) => {
 }
 
 const Matches = React.memo((props) => { 
-  console.log('rerender with', props)
   const [selected, setSelected] = useState(null)
   const [byRound, setByRound] = useState({})
   const [round, setRound] = useState(1)
@@ -117,10 +116,14 @@ const Matches = React.memo((props) => {
     }
   }, [loading, data.matches])
 
+  let slider = null
+
   useEffect(() => {
     console.log('set selected round effect run with', round)
-    setSelected(byRound[round])
-    console.log((data.matches || []).find(match => match.id === Number(byRound[round])))
+    if (slider) {
+      const roundIdx = (data.matches || []).findIndex(match => match.id === Number(byRound[round])) 
+      slider.slickGoTo(roundIdx)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round])
 
@@ -134,17 +137,65 @@ const Matches = React.memo((props) => {
       <Match
         key={match.id}
         match={match}
+        selected={match.id === Number(selected)}
+        onClick={() => setSelected(`${match.id}`)}
       />
     ))
-  )}, [data.matches])
+  )}, [selected, data.matches])
 
-  const scrollToRandom = () => {
-    const relem = _.sample(data.matches.map(m => m.id))
-    setSelected(`${relem}`)
-  } 
+  const Next = ({ currentSlide, slideCount, className, onClick}) => {
+    const slidesToShow = slider ? ((slider.props.responsive.find(p => p.breakpoint === slider.state.breakpoint) || {}).settings || slider.props).slidesToShow : null
+    const disabled = slidesToShow ? currentSlide + slidesToShow >= slideCount : false
 
-  /*      
-*/
+    return (<ArrowRight className={className} style={{ color: 'black', display: disabled ? 'none' : '' }} onClick={onClick} />)
+  }
+
+  const Prev = ({ currentSlide, slideCount, className, onClick}) => {
+    const disabled = currentSlide === 0
+
+    return (<ArrowLeft className={className} disabled={disabled} style={{ color: 'black', display: disabled ? 'none' : '' }} onClick={onClick} />)
+  }
+
+  const sliderSettings = {
+    slidesToShow: 5,
+    focusOnSelect: true,
+    infinite: false,
+    dots: false,
+    nextArrow: <Next />,
+    prevArrow: <Prev />,
+    swipeToSlide: true,
+    lazyLoad: 'progressive',
+    centerPadding: '20px',
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 4
+        }
+      },
+      {
+        breakpoint: 800,
+        settings: {
+          slidesToShow: 3,
+        }
+      },
+      {
+        breakpoint: 640,
+        settings: {
+          slidesToShow: 2,
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1
+        }
+      }
+    ]
+    
+  }
+
+
   return (
     <Grid container className={classes.root} spacing={2} direction="row" alignItems="center">
       {loading  
@@ -158,19 +209,13 @@ const Matches = React.memo((props) => {
               {Object.keys(byRound).map(r => (<MenuItem key={`round-${r}`} value={r}>{r}</MenuItem>))}
             </Select>
           </Grid>
-          <Grid item xs={11}>
-            <ScrollMenu
-              data={menuItems}
-              scrollBy={1}
-              arrowLeft={<ArrowLeft />}
-              arrowRight={<ArrowRight />}
-              onSelect={onSelect}
-              selected={selected}
-              scrollToSelected={true}
-              hideSingleArrow={true}
-              inertiaScrolling={true}
-              transition={0.5}
-            />
+          <Grid item xs={10}>
+            <Slider
+              ref={t => slider = t}
+              {...sliderSettings}
+            >
+              {menuItems}
+            </Slider>
           </Grid>
         </React.Fragment>}
     </Grid>

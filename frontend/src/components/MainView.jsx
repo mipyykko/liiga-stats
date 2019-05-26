@@ -33,7 +33,9 @@ const MainView = (props) => {
           {(seasonData.seasons || []).map(s => (<MenuItem key={`${s.tournament_id}-${s.id}`} value={s}>{s.name}</MenuItem>))}
         </Select>
       </Grid>
-      {tournamentId && seasonId && <Matches tournamentId={tournamentId} seasonId={seasonId} />}
+      <Grid container justify='flex-start'>
+        {tournamentId && seasonId && <Matches tournamentId={tournamentId} seasonId={seasonId} />}
+      </Grid>
     </Container>
   )
 }
