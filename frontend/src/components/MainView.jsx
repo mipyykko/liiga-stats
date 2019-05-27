@@ -1,40 +1,50 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, {  useEffect, useCallback } from 'react'
 import { gql } from 'apollo-boost'
 import { useQuery } from 'react-apollo-hooks'
+import { useDispatch, useSelector } from 'react-redux'
+import { SELECT_SEASON, SELECT_TOURNAMENT } from '../store/actions'
 
 import { Container, Grid, Select, MenuItem } from '@material-ui/core'
 
-import Matches from './Matches'
+import MatchList from './MatchList'
+
+import _ from 'lodash'
 
 const MainView = (props) => {
-  const [season, setSeason] = useState({})
+  const dispatch = useDispatch()
+  const seasonId = useSelector(state => state.season.id)
+  const tournamentId = useSelector(state => state.tournament.id)
+
+  const setSeason = useCallback((id) => dispatch({ type: SELECT_SEASON, payload: { id }}), [dispatch])
+  const setTournament = useCallback((id) => dispatch({ type: SELECT_TOURNAMENT, payload: { id }}), [dispatch])
 
   const { data: seasonData, loading: seasonLoading } = useQuery(ALL_SEASONS)
 
-  const tournamentId = useMemo(() => season.tournament_id, [season])
-  const seasonId = useMemo(() => season.id, [season])
-
   useEffect(() => {
-    if (!seasonLoading && seasonData.seasons.length > 0) {
-      console.log('set season')
-      setSeason(seasonData.seasons[0])
+    if (seasonLoading || seasonId || tournamentId) {
+      return
     }
-  }, [seasonLoading, seasonData.seasons])
 
-  console.log('hmm', season.tournament_id, season.id)
+    if (seasonData.seasons.length > 0) {
+      const latestSeason = _.orderBy(seasonData.seasons, 'end_year', 'desc')[0]
+
+      setTournament(latestSeason.tournament_id)
+      setSeason(latestSeason.id)
+    }
+  }, [seasonId, tournamentId, setSeason, setTournament, seasonLoading, seasonData.seasons])
 
   return (
     <Container>
       <Grid container justify='flex-end'>
         <Select
-          value={season}
+          value={seasonId}
           onChange={e => setSeason(e.target.value)}
         >
-          {(seasonData.seasons || []).map(s => (<MenuItem key={`${s.tournament_id}-${s.id}`} value={s}>{s.name}</MenuItem>))}
+          {(seasonData.seasons || []).map(s => (<MenuItem key={`${s.tournament_id}-${s.id}`} value={s.id}>{s.name}</MenuItem>))}
         </Select>
       </Grid>
       <Grid container justify='flex-start'>
-        {tournamentId && seasonId && <Matches tournamentId={tournamentId} seasonId={seasonId} />}
+        <MatchList tournamentId={tournamentId} seasonId={seasonId} />
       </Grid>
     </Container>
   )
@@ -45,7 +55,8 @@ const ALL_SEASONS = gql`
   seasons {
     id,
     name,
-    tournament_id
+    tournament_id,
+    end_year
   }
 }
 `
