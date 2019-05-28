@@ -7,6 +7,7 @@ import { SELECT_SEASON, SELECT_TOURNAMENT } from '../store/actions'
 import { Container, Grid, Select, MenuItem } from '@material-ui/core'
 
 import MatchList from './MatchList'
+import MatchView from './MatchView'
 
 import _ from 'lodash'
 
@@ -14,6 +15,7 @@ const MainView = (props) => {
   const dispatch = useDispatch()
   const seasonId = useSelector(state => state.season.id)
   const tournamentId = useSelector(state => state.tournament.id)
+  const matchId = useSelector(state => state.match.id)
 
   const setSeason = useCallback((id) => dispatch({ type: SELECT_SEASON, payload: { id }}), [dispatch])
   const setTournament = useCallback((id) => dispatch({ type: SELECT_TOURNAMENT, payload: { id }}), [dispatch])
@@ -45,6 +47,9 @@ const MainView = (props) => {
       </Grid>
       <Grid container justify='flex-start'>
         <MatchList tournamentId={tournamentId} seasonId={seasonId} />
+      </Grid>
+      <Grid container direction="column" justify='flex-start'>
+        <MatchView matchId={matchId} />
       </Grid>
     </Container>
   )

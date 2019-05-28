@@ -14,8 +14,7 @@ export class Player extends Model {
         name: { type: 'string' },
         surname: { type: 'string' },
         display_name: { type: 'string' },
-        country: { type: 'string' },
-        logo: { type: 'string' }
+        photo: { type: 'string' },
       }
     }
   }

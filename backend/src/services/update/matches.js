@@ -63,7 +63,7 @@ export const getUpdateableMatches = async (
     const goals = getMatchGoals(match) */
 
     return {
-      id: match_id,
+      id: Number(match_id),
       tournament_id: Number(tournament_id),
       season_id: Number(season_id),
       round,

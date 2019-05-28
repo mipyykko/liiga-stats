@@ -24,7 +24,7 @@ export const getUpdateableTournaments = async (seasons, tournamentid, options = 
   }
 
   return [{
-    id: tournamentid,
+    id: Number(tournamentid),
     name, 
     country
   }]

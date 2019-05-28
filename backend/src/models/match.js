@@ -1,6 +1,5 @@
 import { Model } from 'db'
-import path from 'path'
-import _ from 'lodash'
+import { getPath } from 'models/utils'
 
 export class Match extends Model {
   static get tableName() {
@@ -17,7 +16,7 @@ export class Match extends Model {
         season_id: { type: 'number' },
         round: { type: 'number' },
         date: { type: 'string' },
-        time: { type: 'string' },
+        //time: { type: 'string' },
         status: { type: 'number' },
         min: { type: 'number' },
         width: { type: 'number' },
@@ -34,7 +33,7 @@ export class Match extends Model {
     return {
       tournament: {
         relation: Model.BelongsToOneRelation,
-        modelClass: path.join(__dirname, 'tournament'),
+        modelClass: getPath('tournament'),
         join: {
           from: 'matches.tournament_id',
           to: 'tournaments.id'
@@ -42,7 +41,7 @@ export class Match extends Model {
       },
       season: {
         relation: Model.BelongsToOneRelation,
-        modelClass: path.join(__dirname, 'season'),
+        modelClass: getPath('season'),
         join: {
           from: [
             'matches.tournament_id',
@@ -56,7 +55,7 @@ export class Match extends Model {
       },
       home_team: {
         relation: Model.HasOneRelation,
-        modelClass: path.join(__dirname, 'team'),
+        modelClass: getPath('team'),
         join: {
           from: 'matches.home_team_id',
           to: 'teams.id'
@@ -64,7 +63,7 @@ export class Match extends Model {
       },
       away_team: {
         relation: Model.HasOneRelation,
-        modelClass: path.join(__dirname, 'team'),
+        modelClass: getPath('team'),
         join: {
           from: 'matches.away_team_id',
           to: 'teams.id'
@@ -72,7 +71,7 @@ export class Match extends Model {
       },
       home_players: {
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'matchPlayerStatistic'),
+        modelClass: getPath('matchPlayerStatistic'),
         join: {
           from: [
             'matches.home_team_id',
@@ -86,7 +85,7 @@ export class Match extends Model {
       },
       away_players: {
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'matchPlayerStatistic'),
+        modelClass: getPath('matchPlayerStatistic'),
         join: {
           from: [
             'matches.away_team_id',
@@ -100,7 +99,7 @@ export class Match extends Model {
       },
       home_statistics: {
         relation: Model.HasOneRelation,
-        modelClass: path.join(__dirname, 'matchTeamStatistic'),
+        modelClass: getPath('matchTeamStatistic'),
         join: {
           from: [
             'matches.home_team_id',
@@ -114,7 +113,7 @@ export class Match extends Model {
       },
       away_statistics: {
         relation: Model.HasOneRelation,
-        modelClass: path.join(__dirname, 'matchTeamStatistic'),
+        modelClass: getPath('matchTeamStatistic'),
         join: {
           from: [
             'matches.away_team_id',
@@ -128,7 +127,7 @@ export class Match extends Model {
       },
       home_team_info: {
         relation: Model.HasOneRelation,
-        modelClass: path.join(__dirname, 'matchTeamInfo'),
+        modelClass: getPath('matchTeamInfo'),
         join: {
           from: [
             'matches.home_team_id',
@@ -142,7 +141,7 @@ export class Match extends Model {
       },
       away_team_info: {
         relation: Model.HasOneRelation,
-        modelClass: path.join(__dirname, 'matchTeamInfo'),
+        modelClass: getPath('matchTeamInfo'),
         join: {
           from: [
             'matches.away_team_id',
@@ -156,7 +155,7 @@ export class Match extends Model {
       },
       home_team_tactics: { 
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'matchTeamTactic'),
+        modelClass: getPath('matchTeamTactic'),
         join: {
           from: [
             'matches.home_team_id',
@@ -170,7 +169,7 @@ export class Match extends Model {
       },
       away_team_tactics: { 
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'matchTeamTactic'),
+        modelClass: getPath('matchTeamTactic'),
         join: {
           from: [
             'matches.away_team_id',
@@ -184,7 +183,7 @@ export class Match extends Model {
       },
       goals: {
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'goal'),
+        modelClass: getPath('goal'),
         join: {
           from: [
             'matches.id'
@@ -193,6 +192,19 @@ export class Match extends Model {
             'goals.match_id'
           ]
         }
+      },
+      events: {
+        relation: Model.HasManyRelation,
+        modelClass: getPath('matchEvent'),
+        join: {
+          from: [
+            'matches.id'
+          ],
+          to: [
+            'match_events.match_id'
+          ]
+        }
+
       }
     }
   }

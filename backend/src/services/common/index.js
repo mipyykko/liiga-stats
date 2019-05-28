@@ -6,7 +6,7 @@ export const insert = async (data, entity, trx = null) => {
   }
 
   const chunks = _.chunk(data, 1000)
-
+  
   return _.flattenDepth(
     await Promise.all(chunks.map(async chunk => await entity.query(trx).insert(chunk))),
     1)

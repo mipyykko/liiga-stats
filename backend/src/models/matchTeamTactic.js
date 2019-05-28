@@ -1,5 +1,5 @@
 import { Model } from 'db'
-import path from 'path'
+import { getPath } from 'models/utils'
 
 export class MatchTeamTactic extends Model {
   static get tableName() {
@@ -28,7 +28,7 @@ export class MatchTeamTactic extends Model {
     return {
       player: { 
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'player'), 
+        modelClass: getPath('player'), 
         join: { 
           from: 'match_team_tactics.player_id',
           to: 'players.id'

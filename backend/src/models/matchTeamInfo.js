@@ -1,5 +1,5 @@
 import { Model } from 'db'
-import path from 'path'
+import { getPath } from 'models/utils'
 
 export class MatchTeamInfo extends Model {
   static get tableName() {
@@ -28,13 +28,10 @@ export class MatchTeamInfo extends Model {
   }
 
   static get relationMappings() {
-/*     const Match = require('./match')
-    const Team = require('./team')
- */
     return {
       match: {
         relation: Model.BelongsToOneRelation,
-        modelClass: path.join(__dirname, 'match'),
+        modelClass: getPath('match'),
         join: {
           from: 'match_team_infos.match_id',
           to: 'matches.id'
@@ -42,7 +39,7 @@ export class MatchTeamInfo extends Model {
       },
       team: {
         relation: Model.BelongsToOneRelation,
-        modelClass: path.join(__dirname, 'team'),
+        modelClass: getPath('team'),
         join: {
           from: 'match_team_infos.team_id',
           to: 'teams.id'

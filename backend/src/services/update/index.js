@@ -81,7 +81,7 @@ const updateService = {
       let updatedMatches, updatedSeasons, updatedTournaments
 
       const ret = await transaction(Tournament, Match, Season,
-        async (Tournament, Match, Season, trx) => {
+        async (Tournament, Match, Season, trx) => 
           [updatedTournaments, updatedSeasons, updatedMatches] = await insertMany(
             [updateableTournaments, updateableSeasons, updateableMatches],
             [Tournament, Season, Match],
@@ -90,7 +90,7 @@ const updateService = {
 /*           updatedMatches = await Promise.all(updateableMatches.map(m => Match
             .query(trx)
             .upsertGraph(m, { insertMissing: true }))) */
-        })
+      )
 
       const updateableTeamStatistics = _.concat(
         getForMatches(matches, getTeamStatistics, 'first'),

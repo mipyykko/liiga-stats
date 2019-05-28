@@ -1,5 +1,5 @@
 import { Model } from 'db'
-import path from 'path'
+import { getPath } from 'models/utils'
 
 export class Tournament extends Model {
   static get tableName() {
@@ -20,12 +20,10 @@ export class Tournament extends Model {
   }
 
   static get relationMappings() {
-    // const Season = require('./season')
-
     return {
       seasons: {
         relation: Model.HasManyRelation,
-        modelClass: path.join(__dirname, 'season'),
+        modelClass: getPath('season'),
         join: {
           from: 'tournaments.id',
           to: 'seasons.tournament_id'

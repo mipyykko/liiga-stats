@@ -1,7 +1,7 @@
 import API from 'api'
-import { Player, MatchPlayerStatistic } from 'models'
+import { Player } from 'models'
 import _ from 'lodash'
-
+import { convertTimeToSec } from 'utils'
 import { getTactics } from './teams'
 
 export const getStartingLineUps = (match) => {
@@ -24,8 +24,8 @@ export const getSubstitutions = (match) => {
 
 const isStarting = (lineup, player_id) => lineup.some(t => t.player_id === player_id)
 
-const getPlayerReplaced = (subs, player_id) => _.get(subs.find(s => s.opponent_player_id === player_id), 'player_id')
-const getPlayerReplacement = (subs, player_id) => _.get(subs.find(s => s.player_id === player_id), 'opponent_player_id')
+const getInSubstitution = (subs, player_id) => _.pick(subs.find(s => s.opponent_player_id === player_id), ['player_id', 'minute', 'second'])
+const getOutSubstitution = (subs, player_id) => _.pick(subs.find(s => s.player_id === player_id), ['opponent_player_id', 'minute', 'second'])
 
 export const getPlayerStatistics = (match) => {
   const { match_id } = match
@@ -33,15 +33,22 @@ export const getPlayerStatistics = (match) => {
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
+  
+  return matchPlayers.map(player => {
+    const inSubstitution = getInSubstitution(subs, player.player_id)
+    const outSubstitution = getOutSubstitution(subs, player.player_id)
 
-  return matchPlayers.map(player => ({
-    ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
-    match_id,
-    ...player.statistics,
-    starting: isStarting(lineups, player.player_id),
-    replaced_player_id: getPlayerReplaced(subs, player.player_id),
-    replacement_player_id: getPlayerReplacement(subs, player.player_id)
-  }))
+    return {
+      ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
+      match_id,
+      ...player.statistics,
+      starting: isStarting(lineups, player.player_id),
+      in_sub_second: convertTimeToSec(inSubstitution.minute, inSubstitution.second),
+      out_sub_second: convertTimeToSec(outSubstitution.minute, outSubstitution.second),
+      replaced_player_id: inSubstitution.player_id,
+      replacement_player_id: outSubstitution.opponent_player_id
+    }
+  })
 }
 
 export const getPlayerStatisticsForTeam = (match, team_id) => {
