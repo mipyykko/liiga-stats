@@ -1,13 +1,13 @@
 import { Model } from 'db'
 import { getPath } from 'models/utils'
 
-export class MatchPlayerStatistic extends Model {
+export class SeasonPlayerStatistic extends Model {
   static get tableName() {
-    return 'match_player_statistics'
+    return 'season_player_statistics'
   }
 
   static get idColumn() {
-    return ['player_id', 'match_id'] // 'team_id'
+    return ['player_id', 'tournament_id', 'season_id', 'team_id']
   }
 
   /*
@@ -40,8 +40,13 @@ export class MatchPlayerStatistic extends Model {
 
       properties: {
         player_id: { type: 'integer' },
-        match_id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
+        season_id: { type: 'integer' },
         team_id: { type: 'integer' },
+        gt: { type: ['integer', 'null'] }, // games total,
+        gst: { type: ['integer', 'null'] }, // games started,
+        gin: { type: ['integer', 'null'] }, // games subbed in,
+        gout: { type: ['integer', 'null'] }, // games subbed out
         isi: { type: ['integer', 'null'] },
         mof: { type: ['integer', 'null'] },
         g: { type: ['integer', 'null'] },
@@ -74,19 +79,25 @@ export class MatchPlayerStatistic extends Model {
 
   static get relationMappings() {
     return {
-      match: {
+      season: {
         relation: Model.HasOneRelation,
-        modelClass: getPath('match'),
+        modelClass: getPath('season'),
         join: {
-          from: 'match_player_statistics.match_id',
-          to: 'matches.id'
+          from: [
+            'season_player_statistics.season_id',
+            'season_player_statistics.tournament_id'
+          ],
+          to: [
+            'seasons.id',
+            'seasons.tournament_id'
+          ]
         }
       },
       player: {
         relation: Model.HasOneRelation,
         modelClass: getPath('player'),
         join: {
-          from: 'match_player_statistics.player_id',
+          from: 'season_player_statistics.player_id',
           to: 'players.id'
         }
       },
@@ -94,7 +105,7 @@ export class MatchPlayerStatistic extends Model {
         relation: Model.HasOneRelation,
         modelClass: getPath('team'),
         join: { 
-          from: 'match_player_statistics.team_id',
+          from: 'season_player_statistics.team_id',
           to: 'teams.id'
         }
       }

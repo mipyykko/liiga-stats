@@ -18,6 +18,13 @@ const matchController = {
     res.json(match)
     next()
   },
+
+  async getTest(req, res, next) {
+    const result = await matchService.test()
+
+    res.json(result)
+    next()
+  }
 }
 
 export default matchController

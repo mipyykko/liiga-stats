@@ -1,12 +1,12 @@
 import { Model } from 'db'
 
-export class MatchTeamStatistic extends Model {
+export class SeasonTeamStatistic extends Model {
   static get tableName() {
-    return 'match_team_statistics'
+    return 'season_team_statistics'
   }
 
   static get idColumn() {
-    return ['team_id', 'match_id']
+    return ['team_id', 'season_id', 'tournament_id']
   }
   
   static get jsonSchema() {
@@ -35,8 +35,14 @@ export class MatchTeamStatistic extends Model {
       
       properties: {
         team_id: { type: 'integer' },
-        match_id: { type: 'integer' },
+        season_id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
         status: { type: 'integer' }, // what the hell is this?
+        w: { type: ['integer', 'null'] }, // won
+        d: { type: ['integer', 'null'] }, // drew
+        l: { type: ['integer', 'null'] }, // lost,
+        gf: { type: ['integer', 'null'] }, // goals for
+        ga: { type: ['integer', 'null'] }, // goals against
         s: { type: ['integer', 'null'] },
         st: { type: ['integer', 'null'] },
         f: { type: ['integer', 'null'] },

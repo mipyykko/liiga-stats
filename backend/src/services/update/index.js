@@ -10,6 +10,7 @@ import {
 import {
   getUniquePlayersWithStats,
   getUpdateablePlayers,
+  getMatchPlayers,
   getPlayerStatistics,
   getUpdateablePlayersFromEvents
 } from './players'
@@ -17,8 +18,9 @@ import {
   getUniqueTeamsFromMatches,
   getUpdateableTeams,
   getTeamStatistics,
-  getTeamInfo,
-  getTactics
+  getMatchTeam,
+  getTactics,
+  getSeasonTeams
 } from './teams'
 import { getUpdateableTournaments } from './tournaments'
 import { getUpdateableSeasons } from './seasons'
@@ -35,10 +37,14 @@ import {
   Team,
   MatchTeamStatistic,
   MatchPlayerStatistic,
-  MatchTeamInfo,
+  MatchPlayer,
+  MatchTeam,
   MatchTeamTactic,
   Goal,
-  MatchEvent
+  MatchEvent,
+  SeasonTeam,
+  SeasonPlayerStatistic,
+  SeasonTeamStatistic
 } from 'models'
 
 const updateService = {
@@ -97,21 +103,21 @@ const updateService = {
         getForMatches(matches, getTeamStatistics, 'second')
       )
   
-      const updateableTeamInfos = _.concat(
-        getForMatches(matches, getTeamInfo, 'first'),
-        getForMatches(matches, getTeamInfo, 'second')
+      const updateableMatchTeams = _.concat(
+        getForMatches(matches, getMatchTeam, 'first'),
+        getForMatches(matches, getMatchTeam, 'second')
       )
 
       const updateableTactics = _.flatten(getForMatches(matches, getTactics))
-
+      const updateableMatchPlayers = _.flatten(getForMatches(matches, getMatchPlayers))
       const updateablePlayerStatistics = _.flatten(getForMatches(matches, getPlayerStatistics))
       const updateableGoals = _.flatten(getForMatches(matches, getMatchGoals))
-
       const updateableEvents = _.flatten(getForMatches(matches, getMatchEvents))
 
       const [
         updatedTeamStatistics,
-        updatedTeamInfos,
+        updatedMatchPlayers,
+        updatedMatchTeams,
         updatedPlayerStatistics,
         updatedTactics,
         updatedGoals,
@@ -119,7 +125,8 @@ const updateService = {
       ] = await insertMany(
         [
           updateableTeamStatistics,
-          updateableTeamInfos,
+          updateableMatchPlayers,
+          updateableMatchTeams,
           updateablePlayerStatistics,
           updateableTactics,
           updateableGoals,
@@ -127,7 +134,8 @@ const updateService = {
         ],
         [
           MatchTeamStatistic,
-          MatchTeamInfo,
+          MatchPlayer,
+          MatchTeam,
           MatchPlayerStatistic,
           MatchTeamTactic,
           Goal,
@@ -149,7 +157,8 @@ const updateService = {
           player_details: updatedPlayerDetails.map(p => p.id),
           player_statistics: updatedPlayerStatistics.map(p => [p.player_id, p.match_id, p.team_id]),
           matches: updatedMatches.map(m => m.id),
-          team_infos: updatedTeamInfos.map(m => [m.match_id, m.team_id]),
+          match_players: updatedMatchPlayers.map(m => [m.player_id, m.match_id]),
+          match_teams: updatedMatchTeams.map(m => [m.match_id, m.team_id]),
           goals: updatedGoals.map(g => [g.match_id, g.home_team_score, g.away_team_score]),
           tactics: updatedTactics.map(t => [t.team_id, t.match_id, t.player_id, t.second]),
           events: updatedEvents.map(e => [e.id, e.match_id, e.action_code])

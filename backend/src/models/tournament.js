@@ -11,7 +11,7 @@ export class Tournament extends Model {
       type: 'object',
 
       properties: {
-        id: { type: 'number' },
+        id: { type: 'integer' },
         name: { type: 'string' },
         country: { type: 'string' },
         type: { type: 'number' }

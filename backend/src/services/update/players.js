@@ -1,7 +1,7 @@
 import API from 'api'
 import { Player } from 'models'
 import _ from 'lodash'
-import { convertTimeToSec } from 'utils'
+import { convertTimeToSec, calculateFromPercentage } from 'utils'
 import { getTactics } from './teams'
 
 export const getStartingLineUps = (match) => {
@@ -31,6 +31,19 @@ export const getPlayerStatistics = (match) => {
   const { match_id } = match
 
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
+
+  return matchPlayers.map(player => ({
+    ..._.pick(player, ['player_id', 'team_id']),
+    ...player.statistics,
+    match_id,
+    p: calculateFromPercentage(player.statistics.pa, player.statistics.pap),
+  }))
+}
+
+export const getMatchPlayers = (match) => {
+  const { match_id } = match
+
+  const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
   
@@ -41,7 +54,6 @@ export const getPlayerStatistics = (match) => {
     return {
       ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
       match_id,
-      ...player.statistics,
       starting: isStarting(lineups, player.player_id),
       in_sub_second: convertTimeToSec(inSubstitution.minute, inSubstitution.second),
       out_sub_second: convertTimeToSec(outSubstitution.minute, outSubstitution.second),
