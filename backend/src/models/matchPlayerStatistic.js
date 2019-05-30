@@ -1,7 +1,10 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { PlayerStatisticModel } from 'models/base/playerStatistic'
 
-export class MatchPlayerStatistic extends Model {
+export class MatchPlayerStatistic extends PlayerStatisticModel {
+  constructor(...args) {
+    super(...args)
+  }
+
   static get tableName() {
     return 'match_player_statistics'
   }
@@ -35,39 +38,15 @@ export class MatchPlayerStatistic extends Model {
     t: "Recovered balls"
   */
   static get jsonSchema() {
-    return {
-      type: 'object',
+    const baseSchema = PlayerStatisticModel.getJsonSchema()
 
+    return {
+      ...baseSchema,
       properties: {
         player_id: { type: 'integer' },
         match_id: { type: 'integer' },
         team_id: { type: 'integer' },
-        isi: { type: ['integer', 'null'] },
-        mof: { type: ['integer', 'null'] },
-        g: { type: ['integer', 'null'] },
-        a: { type: ['integer', 'null'] },
-        gf: { type: ['integer', 'null'] }, // first goal
-        gw: { type: ['integer', 'null'] }, // winning goal
-        geq: { type: ['integer', 'null'] }, // equalizing goal
-        ga: { type: ['integer', 'null'] }, // goals against (gk)
-        pen: { type: ['integer', 'null'] }, // penalty shots
-        peng: { type: ['integer', 'null'] }, // penalty goals
-        s: { type: ['integer', 'null'] },
-        st: { type: ['integer', 'null'] },
-        f: { type: ['integer', 'null'] },
-        fop: { type: ['integer', 'null'] },
-        t: { type: ['integer', 'null'] },
-        lb: { type: ['integer', 'null'] },
-        p: { type: ['integer', 'null'] }, 
-        pa: { type: ['integer', 'null'] },
-        pap: { type: ['number', 'null'] },
-        offs: { type: ['integer', 'null'] },
-        c: { type: ['integer', 'null'] },
-        cw: { type: ['integer', 'null'] },
-        cwp: { type: ['number', 'null'] },
-        d: { type: ['integer', 'null'] },
-        spda:{ type: ['number', 'null'] },
-        spdm: { type: ['number', 'null'] },
+        ...baseSchema.properties,      
       }
     }
   }
@@ -75,24 +54,24 @@ export class MatchPlayerStatistic extends Model {
   static get relationMappings() {
     return {
       match: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('match'),
+        relation: PlayerStatisticModel.HasOneRelation,
+        modelClass: 'match',
         join: {
           from: 'match_player_statistics.match_id',
           to: 'matches.id'
         }
       },
       player: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('player'),
+        relation: PlayerStatisticModel.HasOneRelation,
+        modelClass: 'player',
         join: {
           from: 'match_player_statistics.player_id',
           to: 'players.id'
         }
       },
       team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('team'),
+        relation: PlayerStatisticModel.HasOneRelation,
+        modelClass: 'team',
         join: { 
           from: 'match_player_statistics.team_id',
           to: 'teams.id'

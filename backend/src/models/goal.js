@@ -1,6 +1,6 @@
-import { Model } from 'db'
+import { BaseModel } from 'models/base'
 
-export class Goal extends Model {
+export class Goal extends BaseModel {
   static get tableName() {
     return 'goals'
   }
@@ -31,5 +31,34 @@ export class Goal extends Model {
         away_team_prev_score: { type: 'integer' }
       }
     }
+  }
+
+  static get relationMappings() {
+    return {
+      scorer: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'goals.scorer_id',
+          to: 'players.id'
+        }
+      },
+      assistant: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'goals.assistant_id',
+          to: 'players.id'
+        }
+      },
+      opposing_goalkeeper: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'goals.opposing_goalkeeper_id',
+          to: 'players.id'
+        }
+      }
+    } 
   }
 }

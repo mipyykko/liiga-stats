@@ -1,7 +1,6 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { BaseModel }from 'models/base'
 
-export class Match extends Model {
+export class Match extends BaseModel {
   static get tableName() {
     return 'matches'
   }
@@ -13,6 +12,7 @@ export class Match extends Model {
       }
     }
   }
+
   static get jsonSchema() {
     return {
       type: 'object',
@@ -39,16 +39,16 @@ export class Match extends Model {
   static get relationMappings() {
     return {
       tournament: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('tournament'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'tournament',
         join: {
           from: 'matches.tournament_id',
           to: 'tournaments.id'
         }
       },
       season: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('season'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'season',
         join: {
           from: [
             'matches.tournament_id',
@@ -61,25 +61,25 @@ export class Match extends Model {
         }
       },
       // TODO: find better name?
-/*       home_team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('team'),
+      home_team: {
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'team',
         join: {
           from: 'matches.home_team_id',
           to: 'teams.id'
         },
       },
       away_team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('team'),
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'team',
         join: {
           from: 'matches.away_team_id',
           to: 'teams.id'
         }
-      }, */
+      },
       home_players: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchPlayer'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchPlayer',
         join: {
           from: [
             'matches.home_team_id',
@@ -92,8 +92,8 @@ export class Match extends Model {
         },
       },
       away_players: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchPlayer'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchPlayer',
         join: {
           from: [
             'matches.away_team_id',
@@ -133,9 +133,9 @@ export class Match extends Model {
           ]
         }
       }, */
-      home_team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('matchTeam'),
+      home_team_info: {
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'matchTeam',
         join: {
           from: [
             'matches.home_team_id',
@@ -147,9 +147,9 @@ export class Match extends Model {
           ]
         }
       },
-      away_team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('matchTeam'),
+      away_team_info: {
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'matchTeam',
         join: {
           from: [
             'matches.away_team_id',
@@ -190,8 +190,8 @@ export class Match extends Model {
         }
       }, */
       goals: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('goal'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'goal',
         join: {
           from: [
             'matches.id'
@@ -202,8 +202,8 @@ export class Match extends Model {
         }
       },
       events: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchEvent'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchEvent',
         join: {
           from: [
             'matches.id'

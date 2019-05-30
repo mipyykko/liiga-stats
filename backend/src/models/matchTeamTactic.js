@@ -1,7 +1,6 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { BaseModel } from 'models/base'
 
-export class MatchTeamTactic extends Model {
+export class MatchTeamTactic extends BaseModel {
   static get tableName() {
     return 'match_team_tactics'
   }
@@ -27,8 +26,8 @@ export class MatchTeamTactic extends Model {
   static get relationMappings() {
     return {
       player: { 
-        relation: Model.HasManyRelation,
-        modelClass: getPath('player'), 
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'player', 
         join: { 
           from: 'match_team_tactics.player_id',
           to: 'players.id'

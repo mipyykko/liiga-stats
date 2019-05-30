@@ -1,6 +1,6 @@
-import { Model } from 'db'
+import { BaseModel } from 'models/base'
 
-export class MatchEvent extends Model {
+export class MatchEvent extends BaseModel {
   static get tableName() {
     return 'match_events'
   }
@@ -23,8 +23,8 @@ export class MatchEvent extends Model {
         parent_event_id: { type: ['integer', 'null']},
         parent_event_action_code: { type: ['integer', 'null']},
         standard: { type: 'integer' },
-        type: { type: 'integer' },
-        title: { type: 'integer' },
+        type: { type: 'string' },
+        title: { type: 'string' },
         half: { type: 'integer' },
         second: { type: 'integer' },
         pos_x: { type: ['number', 'null'] },

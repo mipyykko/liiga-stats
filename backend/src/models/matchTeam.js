@@ -1,7 +1,6 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { BaseModel } from 'models/base'
 
-export class MatchTeam extends Model {
+export class MatchTeam extends BaseModel {
   static get tableName() {
     return 'match_teams'
   }
@@ -30,24 +29,24 @@ export class MatchTeam extends Model {
   static get relationMappings() {
     return {
       match: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('match'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'match',
         join: {
           from: 'match_teams.match_id',
           to: 'matches.id'
         }
       },
       team: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('team'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'team',
         join: {
           from: 'match_teams.team_id',
           to: 'teams.id'
         }
       },
       goals: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('goal'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'goal',
         join: {
           from: [
             'match_teams.match_id',
@@ -60,8 +59,8 @@ export class MatchTeam extends Model {
         }
       },
       statistics: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('matchTeamStatistic'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'matchTeamStatistic',
         join: {
           from: [
             'match_teams.team_id',
@@ -74,8 +73,8 @@ export class MatchTeam extends Model {
         }
       },
       tactics: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchTeamTactic'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchTeamTactic',
         join: {
           from: [
             'match_teams.team_id',

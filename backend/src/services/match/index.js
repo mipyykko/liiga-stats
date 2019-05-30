@@ -2,10 +2,18 @@ import { Match } from 'models'
 import { knex } from 'db'
 export default class MatchService {
   static async findMatch(match_id) {
-    console.log(Match)
+    const fields = [
+      'tournament', 'season', 
+      'home_team', 'home_team.statistics', 
+      'away_team', 'away_team.statistics',
+      'home_players', 'home_players.player', 'home_players.statistics',
+      'away_players', 'away_players.player', 'away_players.statistics',
+      'goals', 'events',
+      'goals.scorer'
+    ]
     return Match
       .query()
-      .eager('[tournament, season, home_team, away_team, home_statistics, away_statistics, home_team_info, away_team_info, home_team_tactics, away_team_tactics, home_players, away_players, goals]')
+      .eager(`[${fields.join(',')}]`)
       .findById(match_id)
   }
 

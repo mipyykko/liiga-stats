@@ -1,7 +1,6 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { BaseModel } from 'models/base'
 
-export class MatchPlayer extends Model {
+export class MatchPlayer extends BaseModel {
   static get tableName() {
     return 'match_players'
   }
@@ -32,48 +31,48 @@ export class MatchPlayer extends Model {
   static get relationMappings() {
     return {
       player: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('player'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
         join: {
           from: 'match_players.player_id',
           to: 'players.id'
         }
       },
       replaced_player: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('player'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
         join: {
           from: 'match_players.replaced_player_id',
           to: 'players.id'
         }
       },
       replacement_player: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('player'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
         join: {
           from: 'match_players.replacement_player_id',
           to: 'players.id'
         }
       },
       match: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('match'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'match',
         join: {
           from: 'match_players.match_id',
           to: 'matches.id'
         }
       },
       team: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('team'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'team',
         join: {
           from: 'match_players.team_id',
           to: 'teams.id'
         }
       },
       statistics: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('matchPlayerStatistic'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'matchPlayerStatistic',
         join: {
           from: [
             'match_players.player_id',
@@ -86,8 +85,8 @@ export class MatchPlayer extends Model {
         }
       },
       tactics: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchTeamTactic'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchTeamTactic',
         join: {
           from: [
             'match_players.player_id',

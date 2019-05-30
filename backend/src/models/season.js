@@ -1,7 +1,6 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { BaseModel } from 'models/base'
 
-export class Season extends Model {
+export class Season extends BaseModel {
   static get tableName() {
     return 'seasons'
   }
@@ -28,8 +27,8 @@ export class Season extends Model {
   static get relationMappings() {
     return {
       tournament: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('tournament'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'tournament',
         join: {
           from: 'seasons.tournament_id',
           to: 'tournaments.id'

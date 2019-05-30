@@ -1,7 +1,6 @@
-import { Model } from 'db'
-import { getPath } from './utils'
+import { BaseModel } from 'models/base'
 
-export class SeasonTeam extends Model {
+export class SeasonTeam extends BaseModel {
   static get tableName() {
     return 'season_teams'
   }

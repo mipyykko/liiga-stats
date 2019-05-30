@@ -1,7 +1,9 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { PlayerStatisticModel } from 'models/base/playerStatistic'
 
-export class SeasonPlayerStatistic extends Model {
+export class SeasonPlayerStatistic extends PlayerStatisticModel {
+  constructor(...args) {
+    super(...args)
+  }
   static get tableName() {
     return 'season_player_statistics'
   }
@@ -35,44 +37,16 @@ export class SeasonPlayerStatistic extends Model {
     t: "Recovered balls"
   */
   static get jsonSchema() {
-    return {
-      type: 'object',
+    const baseSchema = PlayerStatisticModel.getJsonSchema()
 
+    return {
+      ...baseSchema,
       properties: {
+        ...baseSchema.properties,
         player_id: { type: 'integer' },
         tournament_id: { type: 'integer' },
         season_id: { type: 'integer' },
         team_id: { type: 'integer' },
-        gt: { type: ['integer', 'null'] }, // games total,
-        gst: { type: ['integer', 'null'] }, // games started,
-        gin: { type: ['integer', 'null'] }, // games subbed in,
-        gout: { type: ['integer', 'null'] }, // games subbed out
-        isi: { type: ['integer', 'null'] },
-        mof: { type: ['integer', 'null'] },
-        g: { type: ['integer', 'null'] },
-        a: { type: ['integer', 'null'] },
-        gf: { type: ['integer', 'null'] }, // first goal
-        gw: { type: ['integer', 'null'] }, // winning goal
-        geq: { type: ['integer', 'null'] }, // equalizing goal
-        ga: { type: ['integer', 'null'] }, // goals against (gk)
-        pen: { type: ['integer', 'null'] }, // penalty shots
-        peng: { type: ['integer', 'null'] }, // penalty goals
-        s: { type: ['integer', 'null'] },
-        st: { type: ['integer', 'null'] },
-        f: { type: ['integer', 'null'] },
-        fop: { type: ['integer', 'null'] },
-        t: { type: ['integer', 'null'] },
-        lb: { type: ['integer', 'null'] },
-        p: { type: ['integer', 'null'] }, 
-        pa: { type: ['integer', 'null'] },
-        pap: { type: ['number', 'null'] },
-        offs: { type: ['integer', 'null'] },
-        c: { type: ['integer', 'null'] },
-        cw: { type: ['integer', 'null'] },
-        cwp: { type: ['number', 'null'] },
-        d: { type: ['integer', 'null'] },
-        spda:{ type: ['number', 'null'] },
-        spdm: { type: ['number', 'null'] },
       }
     }
   }
@@ -80,8 +54,8 @@ export class SeasonPlayerStatistic extends Model {
   static get relationMappings() {
     return {
       season: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('season'),
+        relation: PlayerStatisticModel.HasOneRelation,
+        modelClass: 'season',
         join: {
           from: [
             'season_player_statistics.season_id',
@@ -94,16 +68,16 @@ export class SeasonPlayerStatistic extends Model {
         }
       },
       player: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('player'),
+        relation: PlayerStatisticModel.HasOneRelation,
+        modelClass: 'player',
         join: {
           from: 'season_player_statistics.player_id',
           to: 'players.id'
         }
       },
       team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('team'),
+        relation: PlayerStatisticModel.HasOneRelation,
+        modelClass: 'team',
         join: { 
           from: 'season_player_statistics.team_id',
           to: 'teams.id'
