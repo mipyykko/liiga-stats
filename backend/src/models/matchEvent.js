@@ -36,4 +36,25 @@ export class MatchEvent extends BaseModel {
       }
     }
   } 
+
+  static get relationMappings() {
+    return {
+      player: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'match_events.player_id',
+          to: 'players.id'
+        }
+      },
+      opponent_player: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'match_events.opponent_player_id',
+          to: 'players.id'
+        }
+      }
+    }
+  }
 }

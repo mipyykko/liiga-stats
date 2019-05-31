@@ -23,7 +23,7 @@ const MainView = (props) => {
   const { data: seasonData, loading: seasonLoading } = useQuery(ALL_SEASONS)
 
   useEffect(() => {
-    if (seasonLoading || seasonId || tournamentId) {
+    if (seasonLoading) {
       return
     }
 

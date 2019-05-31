@@ -32,6 +32,8 @@ export const getPlayerStatistics = (match) => {
 
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
 
+  // TODO: can return the wrong amount of passes when percentage is 0 -
+  // to fix this, we need to go through the subevents
   return matchPlayers.map(player => ({
     ..._.pick(player, ['player_id', 'team_id']),
     ...player.statistics,
@@ -79,7 +81,8 @@ export const getUpdateablePlayers = async (players, options = { force: false }) 
           ...p,
           id: undefined,
           player_id: p.id,
-        })), 'id')
+        })), 
+      'player_id')
   )
 
   const inserts = insertablePlayers.map(player => ({
@@ -96,7 +99,10 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
     return []
   }
 
-  const playerMap = _.reduce(players, (arr, el) => ({ ...arr, [el.id]: el}), {})
+  // TODO: this should maybe update existing
+  // if there were fields missing but they exist now
+  
+  const playerMap = _.reduce(players, (acc, curr) => ({ ...acc, [curr.id]: curr }), {})
 
   let updatedIds = players.filter(p => !!p.name).map(p => p.id)
 

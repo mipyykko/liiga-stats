@@ -33,6 +33,7 @@ module.exports = () => {
       
       return args
     })
+    .setBuilderOptions({ skipUndefined: true })
     .build()
 
   return graphQlSchema

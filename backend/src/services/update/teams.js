@@ -88,9 +88,10 @@ export const getUniqueTeamsFromMatches = (matches) => getUniqueTeams(
   _.flatten(matches.map(match => [match.first_team, match.second_team])), 
 )
 
-export const getSeasonTeams = (seasonId, tournamentId, teams) => (teams || []).map(team => ({
-  team_id: team.id, 
-  season_id: seasonId, 
-  tournament_id: tournamentId 
-}))
+export const getSeasonTeams = (teams, tournamentId, seasonId) => 
+  (teams || []).map(team => ({
+    team_id: team.team_id, 
+    tournament_id: tournamentId, 
+    season_id: seasonId, 
+  }))
 
