@@ -1,6 +1,6 @@
-import { Model } from 'db'
+import { BaseModel } from 'models/base'
 
-export class MatchEvent extends Model {
+export class MatchEvent extends BaseModel {
   static get tableName() {
     return 'match_events'
   }
@@ -14,19 +14,19 @@ export class MatchEvent extends Model {
       type: 'object',
 
       properties: {
-        id: { type: 'number' },
-        match_id: { type: 'number' },
-        team_id: { type: 'number' },
-        player_id: { type: 'number' },
-        opponent_player_id: { type: ['number', 'null']},
-        action_code: { type: 'number' },
-        parent_event_id: { type: ['number', 'null']},
-        parent_event_action_code: { type: ['number', 'null']},
-        standard: { type: 'number' },
+        id: { type: 'integer' },
+        match_id: { type: 'integer' },
+        team_id: { type: 'integer' },
+        player_id: { type: 'integer' },
+        opponent_player_id: { type: ['integer', 'null']},
+        action_code: { type: 'integer' },
+        parent_event_id: { type: ['integer', 'null']},
+        parent_event_action_code: { type: ['integer', 'null']},
+        standard: { type: 'integer' },
         type: { type: 'string' },
         title: { type: 'string' },
-        half: { type: 'number' },
-        second: { type: 'number' },
+        half: { type: 'integer' },
+        second: { type: 'integer' },
         pos_x: { type: ['number', 'null'] },
         pos_y: { type: ['number', 'null'] },
         pos_dest_x: { type: ['number', 'null'] },
@@ -36,4 +36,25 @@ export class MatchEvent extends Model {
       }
     }
   } 
+
+  static get relationMappings() {
+    return {
+      player: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'match_events.player_id',
+          to: 'players.id'
+        }
+      },
+      opponent_player: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'match_events.opponent_player_id',
+          to: 'players.id'
+        }
+      }
+    }
+  }
 }

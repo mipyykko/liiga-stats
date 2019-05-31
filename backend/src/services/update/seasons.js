@@ -33,4 +33,3 @@ export const getUpdateableSeasons = async (seasons, seasonid, tournamentid, opti
     first_match_id: first_match
   }]
 }
-

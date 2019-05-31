@@ -145,7 +145,11 @@ fragment TeamDetails on Teams {
   logo
 }
 
-fragment TeamInfoDetails on MatchTeamInfos {
+fragment MatchTeamDetails on MatchTeams {
+  match_id,
+  team_id,
+  score,
+  score_pen,
   number_color,
   shirt_color,
   coach_name,
@@ -160,7 +164,7 @@ fragment PlayerDetails on Players {
   photo
 }
 
-fragment MatchPlayerDetails on MatchPlayerStatistics {
+fragment MatchPlayerDetails on MatchPlayers {
   number, 
   position_id, 
   starting, 
@@ -168,37 +172,43 @@ fragment MatchPlayerDetails on MatchPlayerStatistics {
   out_sub_second,
   replaced_player_id, 
   replacement_player_id, 
+}
+
+fragment MatchPlayerStatisticDetails on MatchPlayerStatistics {
   isi, 
-  cw, 
   t, 
   fop, 
+  p,
+  pa,  
   pap, 
   g, 
   a, 
   spdm, 
   mof, 
   s, 
-  c, 
   spda, 
   offs, 
   d, 
   f, 
   lb, 
   st, 
+  c, 
+  cw, 
   cwp, 
-  pa  
 }
 
-fragment TeamStatisticDetails on MatchTeamStatistics {
+fragment MatchTeamStatisticDetails on MatchTeamStatistics {
   status,
   s,
   st,
   f,
+  p,
   pa,
   pap,
   bpm,
   bpp,
   ck,
+  c,
   cw,
   cwp,
   offs,
@@ -206,7 +216,7 @@ fragment TeamStatisticDetails on MatchTeamStatistics {
   rc
 }
 
-fragment TeamTacticDetails on MatchTeamTactics {
+fragment MatchTeamTacticDetails on MatchTeamTactics {
   player_id,
   position,
   second
@@ -266,44 +276,50 @@ fragment MatchDetails on Matches {
   away_score
 }
 
-query findMatch($id: Float!) {
+query findMatch($id: Int!) {
   match(id: $id) {
     ...MatchDetails,
     home_team {
-      ...TeamDetails
+      ...TeamDetails,
     },
     away_team {
       ...TeamDetails
     },
     home_team_info {
-      ...TeamInfoDetails
+      ...MatchTeamDetails,
+      statistics {
+        ...MatchTeamStatisticDetails
+      },
+      tactics {
+        ...MatchTeamTacticDetails
+      }
     },
     away_team_info {
-      ...TeamInfoDetails
+      ...MatchTeamDetails,
+      statistics {
+        ...MatchTeamStatisticDetails
+      }
+      tactics {
+        ...MatchTeamTacticDetails
+      }
     },
     home_players {
+      ...MatchPlayerDetails,
       player {
         ...PlayerDetails
       },
-      ...MatchPlayerDetails
+      statistics {
+        ...MatchPlayerStatisticDetails
+      }
     },
     away_players {
+      ...MatchPlayerDetails,
       player {
         ...PlayerDetails
       },
-      ...MatchPlayerDetails
-    },
-    home_statistics {
-      ...TeamStatisticDetails
-    },
-    away_statistics {
-      ...TeamStatisticDetails
-    },
-    home_team_tactics {
-      ...TeamTacticDetails
-    },
-    away_team_tactics {
-      ...TeamTacticDetails
+      statistics {
+        ...MatchPlayerStatisticDetails
+      }
     },
     goals {
       ...GoalDetails

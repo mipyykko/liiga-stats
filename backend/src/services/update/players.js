@@ -1,7 +1,7 @@
 import API from 'api'
 import { Player } from 'models'
 import _ from 'lodash'
-import { convertTimeToSec } from 'utils'
+import { convertTimeToSec, calculateFromPercentage } from 'utils'
 import { getTactics } from './teams'
 
 export const getStartingLineUps = (match) => {
@@ -31,6 +31,21 @@ export const getPlayerStatistics = (match) => {
   const { match_id } = match
 
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
+
+  // TODO: can return the wrong amount of passes when percentage is 0 -
+  // to fix this, we need to go through the subevents
+  return matchPlayers.map(player => ({
+    ..._.pick(player, ['player_id', 'team_id']),
+    ...player.statistics,
+    match_id,
+    p: calculateFromPercentage(player.statistics.pa, player.statistics.pap),
+  }))
+}
+
+export const getMatchPlayers = (match) => {
+  const { match_id } = match
+
+  const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
   const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
   
@@ -41,7 +56,6 @@ export const getPlayerStatistics = (match) => {
     return {
       ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
       match_id,
-      ...player.statistics,
       starting: isStarting(lineups, player.player_id),
       in_sub_second: convertTimeToSec(inSubstitution.minute, inSubstitution.second),
       out_sub_second: convertTimeToSec(outSubstitution.minute, outSubstitution.second),
@@ -67,7 +81,8 @@ export const getUpdateablePlayers = async (players, options = { force: false }) 
           ...p,
           id: undefined,
           player_id: p.id,
-        })), 'id')
+        })), 
+      'player_id')
   )
 
   const inserts = insertablePlayers.map(player => ({
@@ -84,7 +99,10 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
     return []
   }
 
-  const playerMap = _.reduce(players, (arr, el) => ({ ...arr, [el.id]: el}), {})
+  // TODO: this should maybe update existing
+  // if there were fields missing but they exist now
+  
+  const playerMap = _.reduce(players, (acc, curr) => ({ ...acc, [curr.id]: curr }), {})
 
   let updatedIds = players.filter(p => !!p.name).map(p => p.id)
 

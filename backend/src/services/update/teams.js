@@ -1,5 +1,5 @@
 import { Team } from 'models'
-
+import { calculateFromPercentage } from 'utils'
 import _ from 'lodash'
 
 export const getUpdateableTeams = async (teams, options = { force: false }) => {
@@ -42,23 +42,27 @@ export const getUpdateableTeams = async (teams, options = { force: false }) => 
 } */
 
 export const getTeamStatistics = (match, team) => {
+  const statistics = _.get(match, `[${team}_team]['statistics']`, {})
+
   return {
     match_id: match.match_id,
     team_id: _.get(match, `[${team}_team]['team_id']`),
-    ..._.get(match, `[${team}_team]['statistics']`)
+    ...statistics,
+    p: calculateFromPercentage(statistics.pa, statistics.pap),
+    c: calculateFromPercentage(statistics.cw, statistics.cwp)
   }
 }
 
-export const getTeamInfo = (match, team) => {
+export const getMatchTeam = (match, team) => {
   return {
     match_id: match.match_id,
-    team_id: _.get(match, `[${team}_team]['team_id']`),
+    team_id: _.get(match, `${team}_team.team_id`),
     score: _.get(match, `score_${team}_team`),
     score_pen: _.get(match, `score_pen_${team}_team`),
     number_color: _.get(match, `${team}_team_number_color`),
     shirt_color: _.get(match, `${team}_team_shirt_color`),
-    coach_name: _.get(match, `${team}_team_coach_name`),
-    coach_surname: _.get(match, `${team}_team_coach_surname`)
+    coach_name: _.get(match, `${team}_team_coach.name`),
+    coach_surname: _.get(match, `${team}_team_coach.surname`)
   }
 }
 
@@ -83,4 +87,11 @@ export const getUniqueTeams = (teams, by = 'team_id') => _.uniqBy(teams, by)
 export const getUniqueTeamsFromMatches = (matches) => getUniqueTeams(
   _.flatten(matches.map(match => [match.first_team, match.second_team])), 
 )
+
+export const getSeasonTeams = (teams, tournamentId, seasonId) => 
+  (teams || []).map(team => ({
+    team_id: team.team_id, 
+    tournament_id: tournamentId, 
+    season_id: seasonId, 
+  }))
 

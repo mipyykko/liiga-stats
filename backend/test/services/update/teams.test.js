@@ -49,11 +49,11 @@ describe('Update service: teams', () => {
     })
   })
 
-  describe('getTeamInfo', () => {
+/*   describe('getTeamInfo', () => {
     it('returns team info for each team', () => {
       ['first', 'second'].map(t => expect(getTeamInfo(testMatches[1], t)).eql(expectedTeamInfos[t]))
     })
-  })
+  }) */
 
   describe('getTeamStatistics', () => {
     it('returns team statistics for each team', () => {

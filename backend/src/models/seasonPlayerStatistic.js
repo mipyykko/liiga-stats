@@ -1,16 +1,15 @@
 import { PlayerStatisticModel } from 'models/base/playerStatistic'
 
-export class MatchPlayerStatistic extends PlayerStatisticModel {
+export class SeasonPlayerStatistic extends PlayerStatisticModel {
   constructor(...args) {
     super(...args)
   }
-
   static get tableName() {
-    return 'match_player_statistics'
+    return 'season_player_statistics'
   }
 
   static get idColumn() {
-    return ['player_id', 'match_id'] // 'team_id'
+    return ['player_id', 'tournament_id', 'season_id', 'team_id']
   }
 
   /*
@@ -43,29 +42,36 @@ export class MatchPlayerStatistic extends PlayerStatisticModel {
     return {
       ...baseSchema,
       properties: {
+        ...baseSchema.properties,
         player_id: { type: 'integer' },
-        match_id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
+        season_id: { type: 'integer' },
         team_id: { type: 'integer' },
-        ...baseSchema.properties,      
       }
     }
   }
 
   static get relationMappings() {
     return {
-      match: {
+      season: {
         relation: PlayerStatisticModel.HasOneRelation,
-        modelClass: 'match',
+        modelClass: 'season',
         join: {
-          from: 'match_player_statistics.match_id',
-          to: 'matches.id'
+          from: [
+            'season_player_statistics.season_id',
+            'season_player_statistics.tournament_id'
+          ],
+          to: [
+            'seasons.id',
+            'seasons.tournament_id'
+          ]
         }
       },
       player: {
         relation: PlayerStatisticModel.HasOneRelation,
         modelClass: 'player',
         join: {
-          from: 'match_player_statistics.player_id',
+          from: 'season_player_statistics.player_id',
           to: 'players.id'
         }
       },
@@ -73,7 +79,7 @@ export class MatchPlayerStatistic extends PlayerStatisticModel {
         relation: PlayerStatisticModel.HasOneRelation,
         modelClass: 'team',
         join: { 
-          from: 'match_player_statistics.team_id',
+          from: 'season_player_statistics.team_id',
           to: 'teams.id'
         }
       }

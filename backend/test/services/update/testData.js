@@ -51,8 +51,11 @@ export const testMatches = [
       name: 'first team',
       logo: 'logo1.jpg',
       statistics: {
-        cw: 3,
-        yc: 2
+        yc: 2,
+        pa: 15,
+        pap: 50,
+        cw: 7,
+        cwp: 31.82
       }
     },
     second_team: {
@@ -60,8 +63,11 @@ export const testMatches = [
       name: 'second team',
       logo: 'logo2.jpg',
       statistics: {
-        cw: 96,
-        yc: 6
+        yc: 6,
+        pa: 21,
+        pap: 45.65,
+        cw: 9,
+        cwp: 9.09
       }
     },
   },
@@ -78,8 +84,11 @@ export const testMatches = [
       name: 'first team',
       logo: 'logo1.jpg',
       statistics: {
-        cw: 3,
-        yc: 2
+        yc: 2,
+        pa: 15,
+        pap: 50,
+        cw: 7,
+        cwp: 31.82
       }
     },
     second_team: {
@@ -87,8 +96,11 @@ export const testMatches = [
       name: 'second team',
       logo: 'logo2.jpg',
       statistics: {
-        cw: 96,
-        yc: 6
+        yc: 6,
+        pa: 21,
+        pap: 45.65,
+        cw: 9,
+        cwp: 9.09
       }
     },
     score_first_team: 1,
@@ -225,7 +237,9 @@ export const testMatches = [
         number: 1,
         statistics: { 
           g: 1,
-          isi: 500
+          isi: 500,
+          pa: 5,
+          pap: 50
         }
       },
       {
@@ -237,7 +251,9 @@ export const testMatches = [
         number: 1,
         statistics: {
           g: 1,
-          isi: 500
+          isi: 500,
+          pa: 5,
+          pap: 50
         }
       },
       // a duplicate with ok stats and null stats
@@ -250,7 +266,9 @@ export const testMatches = [
         number: 2,
         statistics: {
           g: 0,
-          isi: 150
+          isi: 150,
+          pa: 1,
+          pap: 33.33
         }
       },
       {
@@ -261,7 +279,9 @@ export const testMatches = [
         number: 2,
         statistics: {
           g: null,
-          isi: null
+          isi: null,
+          pa: null,
+          pap: null
         }
       },
       // player with null stats and no duplicate
@@ -273,7 +293,9 @@ export const testMatches = [
         number: 3,
         statistics: {
           g: null,
-          isi: null
+          isi: null,
+          pa: null,
+          pap: null
         }
       },
       {
@@ -285,7 +307,9 @@ export const testMatches = [
         team_id: 2,
         statistics: {
           g: null,
-          isi: null
+          isi: null,
+          pa: null,
+          pap: null
         }
       }
     ],
@@ -458,6 +482,24 @@ export const expectedTeams = [
   }
 ]
 
+export const expectedSeasonTeams = [
+  {
+    tournament_id: 1,
+    season_id: 1,
+    team_id: 1
+  },
+  {
+    tournament_id: 1,
+    season_id: 1,
+    team_id: 2
+  },
+  {
+    tournament_id: 1,
+    season_id: 1,
+    team_id: 3
+  }
+]
+
 export const testSeasonMatches = [
   { 
     match_id: 1,
@@ -473,19 +515,29 @@ export const expectedTeamStatistics = {
   first: {
     team_id: 1,
     match_id: 1,
-    cw: 3,
+    c: 22,
+    cw: 7,
+    cwp: 31.82,
+    p: 30,
+    pa: 15,
+    pap: 50,
     yc: 2,
   },
   second: {
     team_id: 2,
     match_id: 1,
-    cw: 96,
+    p: 46,
+    pa: 21,
+    pap: 45.65,
+    c: 99,
+    cw: 9,
+    cwp: 9.09,
     yc: 6
   }
 }
 
-export const expectedTeamInfos = {
-  first: {
+export const expectedMatchTeams = [
+  {
     match_id: 1,
     team_id: 1,
     score: 1,
@@ -495,7 +547,7 @@ export const expectedTeamInfos = {
     coach_name: 'first',
     coach_surname: 'coach'
   },
-  second: {
+  {
     match_id: 1,
     team_id: 2,
     score: 1,
@@ -505,7 +557,7 @@ export const expectedTeamInfos = {
     coach_name: 'second',
     coach_surname: 'coach'
   }
-}
+]
 
 export const expectedTactics = [
   {
@@ -548,7 +600,9 @@ export const expectedUniquePlayers = [
     number: 1,
     statistics: {
       g: 1,
-      isi: 500
+      isi: 500,
+      pa: 5,
+      pap: 50
     }
   },
   {
@@ -560,7 +614,9 @@ export const expectedUniquePlayers = [
     number: 2,
     statistics: {
       g: 0,
-      isi: 150
+      isi: 150,
+      pa: 1,
+      pap: 33.33
     }
   },
   {
@@ -571,7 +627,9 @@ export const expectedUniquePlayers = [
     number: 3,
     statistics: {
       g: null,
-      isi: null
+      isi: null,
+      pa: null,
+      pap: null
     }
   },
   {
@@ -582,7 +640,9 @@ export const expectedUniquePlayers = [
     team_id: 2,
     statistics: {
       g: null,
-      isi: null
+      isi: null,
+      pa: null,
+      pap: null
     }
   },
   {
@@ -626,39 +686,52 @@ export const expectedPlayerStatistics = [
     player_id: 1,
     team_id: 1,
     match_id: 1,
-    position_id: 31,
-    number: 1,
-    starting: true,
     g: 1,
     isi: 500,
-    replaced_player_id: undefined,
-    replacement_player_id: undefined
+    p: 10,
+    pa: 5,
+    pap: 50,
   },
   {
     player_id: 2,
     team_id: 2,
     match_id: 1,
-    position_id: 32,
-    number: 2,
-    starting: true,
-    replaced_player_id: undefined,
-    replacement_player_id: 3,
     g: 0,
-    isi: 150
+    isi: 150,
+    p: 3,
+    pa: 1,
+    pap: 33.33
+
   },
   {
     player_id: 3,
     team_id: 2,
     match_id: 1,
-    position_id: 32,
-    number: 3,
-    starting: false,
-    replaced_player_id: 2,
-    replacement_player_id: undefined,
     g: null,
-    isi: null
+    isi: null,
+    p: null,
+    pa: null,
+    pap: null
   }
 ]
+
+export const expectedMatchPlayers = [
+  {
+    player_id: 1,
+    team_id: 1,
+    match_id: 1,
+  },
+  {
+    player_id: 2,
+    team_id: 2,
+    match_id: 1,
+  },
+  {
+    player_id: 3,
+    team_id: 2,
+    match_id: 1,
+  }
+] 
 
 export const expectedGoals = [
   { 
@@ -785,14 +858,16 @@ export const expectedDetailedPlayers = [
 export const expectedUpdated = { 
   updated: { 
     tournaments: [ 1 ],
-    seasons: [ [ undefined, undefined ] ],
+    seasons: [ [ 1, 1 ] ],
     teams: [ 1, 2, 3 ],
     team_statistics: [ [ 1, 1 ], [ 2, 1 ] ],
     players: [ 1, 2, 3, 5 ],
     player_details: [ 1, 2 ],
+    match_players: [ [ 1, 1], [ 2, 1 ], [ 3, 1] ],
     player_statistics: [ [ 1, 1, 1 ], [ 2, 1, 2 ], [ 3, 1, 2 ] ],
     matches: [ 1, 2 ],
-    team_infos: [ [ 1, 1 ], [ 1, 2 ] ],
+    match_teams: [ [ 1, 1 ], [ 1, 2 ] ],
+    season_teams: [ [ 1, 1, 1 ], [ 1, 1, 2], [ 1, 1, 3] ],
     goals: [ [ 1, 1, 0 ], [ 1, 1, 1 ] ],
     tactics: [ 
       [ 1, 1, 1, 0 ],

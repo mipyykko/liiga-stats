@@ -1,9 +1,16 @@
-import { Model } from 'db'
-import { getPath } from 'models/utils'
+import { BaseModel }from 'models/base'
 
-export class Match extends Model {
+export class Match extends BaseModel {
   static get tableName() {
     return 'matches'
+  }
+
+  static get modifiers() {
+    return {
+      unique(builder) {
+        builder.distinct('id')
+      }
+    }
   }
 
   static get jsonSchema() {
@@ -11,20 +18,20 @@ export class Match extends Model {
       type: 'object',
 
       properties: { 
-        id: { type: 'number' },
-        tournament_id: { type: 'number' },
-        season_id: { type: 'number' },
-        round: { type: 'number' },
+        id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
+        season_id: { type: 'integer' },
+        round: { type: 'integer' },
         date: { type: 'string' },
         //time: { type: 'string' },
-        status: { type: 'number' },
-        min: { type: 'number' },
-        width: { type: 'number' },
-        height: { type: 'number' },
-        home_team_id: { type: 'number' },
-        away_team_id: { type: 'number' },
-        home_score: { type: 'number' },
-        away_score: { type: 'number' } 
+        status: { type: 'integer' },
+        min: { type: 'integer' },
+        width: { type: 'integer' },
+        height: { type: 'integer' },
+        home_team_id: { type: 'integer' },
+        away_team_id: { type: 'integer' },
+        home_score: { type: 'integer' },
+        away_score: { type: 'integer' } 
       }
     }
   }
@@ -32,16 +39,16 @@ export class Match extends Model {
   static get relationMappings() {
     return {
       tournament: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('tournament'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'tournament',
         join: {
           from: 'matches.tournament_id',
           to: 'tournaments.id'
         }
       },
       season: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: getPath('season'),
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'season',
         join: {
           from: [
             'matches.tournament_id',
@@ -53,51 +60,52 @@ export class Match extends Model {
           ]
         }
       },
+      // TODO: find better name?
       home_team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('team'),
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'team',
         join: {
           from: 'matches.home_team_id',
           to: 'teams.id'
         },
       },
       away_team: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('team'),
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'team',
         join: {
           from: 'matches.away_team_id',
           to: 'teams.id'
         }
       },
       home_players: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchPlayerStatistic'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchPlayer',
         join: {
           from: [
             'matches.home_team_id',
             'matches.id'
           ],
           to: [
-            'match_player_statistics.team_id',
-            'match_player_statistics.match_id'
+            'match_players.team_id',
+            'match_players.match_id'
           ]
         },
       },
       away_players: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchPlayerStatistic'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchPlayer',
         join: {
           from: [
             'matches.away_team_id',
             'matches.id'
           ],
           to: [
-            'match_player_statistics.team_id',
-            'match_player_statistics.match_id'
+            'match_players.team_id',
+            'match_players.match_id'
           ]
         },
       },
-      home_statistics: {
+/*       home_statistics: {
         relation: Model.HasOneRelation,
         modelClass: getPath('matchTeamStatistic'),
         join: {
@@ -124,36 +132,36 @@ export class Match extends Model {
             'match_team_statistics.match_id'
           ]
         }
-      },
+      }, */
       home_team_info: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('matchTeamInfo'),
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'matchTeam',
         join: {
           from: [
             'matches.home_team_id',
             'matches.id'
           ],
           to: [
-            'match_team_infos.team_id',
-            'match_team_infos.match_id'
+            'match_teams.team_id',
+            'match_teams.match_id'
           ]
         }
       },
       away_team_info: {
-        relation: Model.HasOneRelation,
-        modelClass: getPath('matchTeamInfo'),
+        relation: BaseModel.HasOneRelation,
+        modelClass: 'matchTeam',
         join: {
           from: [
             'matches.away_team_id',
             'matches.id'
           ],
           to: [
-            'match_team_infos.team_id',
-            'match_team_infos.match_id'
+            'match_teams.team_id',
+            'match_teams.match_id'
           ]
         }
       },
-      home_team_tactics: { 
+/*       home_team_tactics: { 
         relation: Model.HasManyRelation,
         modelClass: getPath('matchTeamTactic'),
         join: {
@@ -180,10 +188,10 @@ export class Match extends Model {
             'match_team_tactics.match_id'
           ]
         }
-      },
+      }, */
       goals: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('goal'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'goal',
         join: {
           from: [
             'matches.id'
@@ -194,8 +202,8 @@ export class Match extends Model {
         }
       },
       events: {
-        relation: Model.HasManyRelation,
-        modelClass: getPath('matchEvent'),
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchEvent',
         join: {
           from: [
             'matches.id'

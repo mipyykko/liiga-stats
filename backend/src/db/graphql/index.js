@@ -1,4 +1,6 @@
+const graphql = require('graphql')
 const graphQlBuilder = require('objection-graphql').builder
+const forOwn = require('lodash/forOwn')
 
 module.exports = () => {
   const models = require('models')
@@ -10,7 +12,29 @@ module.exports = () => {
       listFieldName: camelCase(model.getTableName()),
       fieldName: decapitalize(name)
     }), 
-  graphQlBuilder()).build()
+  graphQlBuilder())
+    .argFactory((fields, modelClass) => {
+      const args = {}
+
+      forOwn(fields, (field, propName) => {
+        if (field.type instanceof graphql.GraphQLObjectType 
+          || field.type instanceof graphql.GraphQLList) {
+          return
+        }
+        
+        args[propName + 'Uniq'] = {
+          type: field.type,
+
+          query: (query, value) => {
+            query.distinct(value)
+          }
+        }
+      })
+      
+      return args
+    })
+    .setBuilderOptions({ skipUndefined: true })
+    .build()
 
   return graphQlSchema
 }

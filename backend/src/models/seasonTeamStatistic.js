@@ -1,16 +1,16 @@
 import { TeamStatisticModel } from 'models/base/teamStatistic'
 
-export class MatchTeamStatistic extends TeamStatisticModel {
+export class SeasonTeamStatistic extends TeamStatisticModel {
   constructor(...args) {
     super(...args)
   }
 
   static get tableName() {
-    return 'match_team_statistics'
+    return 'season_team_statistics'
   }
 
   static get idColumn() {
-    return ['team_id', 'match_id']
+    return ['team_id', 'season_id', 'tournament_id']
   }
   
   static get jsonSchema() {
@@ -19,9 +19,10 @@ export class MatchTeamStatistic extends TeamStatisticModel {
     return {
       ...baseSchema,
       properties: {
+        ...baseSchema.properties,
         team_id: { type: 'integer' },
-        match_id: { type: 'integer' },
-        ...baseSchema.properties
+        season_id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
       }
     }
   }

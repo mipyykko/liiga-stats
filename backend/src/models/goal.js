@@ -1,6 +1,6 @@
-import { Model } from 'db'
+import { BaseModel } from 'models/base'
 
-export class Goal extends Model {
+export class Goal extends BaseModel {
   static get tableName() {
     return 'goals'
   }
@@ -14,22 +14,51 @@ export class Goal extends Model {
       type: 'object',
 
       properties: {
-        scorer_id: { type: 'number' },
-        assistant_id: { type: ['number', 'null'] },
-        match_id: { type: 'number' },
-        team_id: { type: 'number' },
-        opposing_team_id: { type: 'number' }, 
-        opposing_goalkeeper_id: { type: 'number' },
-        half: { type: 'number' },
-        second: { type: 'number' },
-        standard: { type: 'number' },
-        type: { type: 'number' },
-        side: { type: 'number' },
-        home_team_score: { type: 'number' },
-        away_team_score: { type: 'number' },
-        home_team_prev_score: { type: 'number' },
-        away_team_prev_score: { type: 'number' }
+        scorer_id: { type: 'integer' },
+        assistant_id: { type: ['integer', 'null'] },
+        match_id: { type: 'integer' },
+        team_id: { type: 'integer' },
+        opposing_team_id: { type: 'integer' }, 
+        opposing_goalkeeper_id: { type: 'integer' },
+        half: { type: 'integer' },
+        second: { type: 'integer' },
+        standard: { type: 'integer' },
+        type: { type: 'integer' },
+        side: { type: 'integer' },
+        home_team_score: { type: 'integer' },
+        away_team_score: { type: 'integer' },
+        home_team_prev_score: { type: 'integer' },
+        away_team_prev_score: { type: 'integer' }
       }
     }
+  }
+
+  static get relationMappings() {
+    return {
+      scorer: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'goals.scorer_id',
+          to: 'players.id'
+        }
+      },
+      assistant: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'goals.assistant_id',
+          to: 'players.id'
+        }
+      },
+      opposing_goalkeeper: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: 'player',
+        join: {
+          from: 'goals.opposing_goalkeeper_id',
+          to: 'players.id'
+        }
+      }
+    } 
   }
 }

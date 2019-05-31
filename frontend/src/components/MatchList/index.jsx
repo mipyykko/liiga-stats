@@ -125,7 +125,7 @@ const MatchList = React.memo((props) => {
 })
 
 const ALL_MATCHES = gql`
-query findMatchesBy($tournament_id: Float!, $season_id: Float!) {
+query findMatchesBy($tournament_id: Int!, $season_id: Int!) {
   matches(orderBy: date, tournament_id: $tournament_id, season_id: $season_id) {
     id,
     home_team {
