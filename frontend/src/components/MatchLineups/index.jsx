@@ -13,7 +13,7 @@ import { convertHalfSecToMinuteString } from '../../util'
 import { Player } from '../Player'
 
 const MatchLineups = React.memo(({ id }) => {
-  const { data, error, loading } = useQuery(MATCH_LINEUPS_SUBS, { variables: { id: id }})
+  const { data, error, loading } = useQuery(MATCH_LINEUPS, { variables: { id: id }})
 
   if (loading) {
     return null
@@ -24,35 +24,35 @@ const MatchLineups = React.memo(({ id }) => {
     return null
   }
 
-  const { lineupSubs } = data
-
-  const [homeLineup, awayLineup] = ['home', 'away']
-    .map(team => (lineupSubs[`${team}_players`] || []).sort(lineupComparator))
-  const substitutions = (lineupSubs.substitutions || [])
-    .reduce((acc, curr) => ({
-      ...acc,
-      [curr.player.id]: { ...acc[curr.player.id], out: curr },
-      [curr.opponent_player.id]: { ...acc[curr.opponent_player.id], in: curr }
-    }), {}) 
+  const { match } = data
     // todo: subbed for/to, cards, goal/assist images on list
-
-
   return (
     <Paper elevation={2}>
       <Grid container>
-        <LineUp data={homeLineup} substitutions={substitutions} />
-        <LineUp data={awayLineup} substitutions={substitutions} />
+        <LineUp team='home' data={match} />
+        <LineUp team='away' data={match} />
       </Grid>
     </Paper>
   )
 })
 
-const LineUp = React.memo(({ data, substitutions }) => {
+const LineUp = React.memo(({ team, data }) => {
   const classes = useStyles()
+
+  const lineup = (data[`${team}_players`] || []).sort(lineupComparator)
+  // TODO: done twice
+  const substitutions = (data.events || [])
+    .filter(e => e.type === 'sub')
+    .reduce((acc, curr) => ({
+      ...acc,
+      [curr.player.id]: { ...acc[curr.player.id], out: curr },
+      [curr.opponent_player.id]: { ...acc[curr.opponent_player.id], in: curr }
+    }), {}) 
+  const cards = (data.events || []).filter(e => e.type !== 'sub')
 
   return (
     <Grid item xs={6}>
-      {data.map((entry, index) => (
+      {lineup.map((entry, index) => (
         <React.Fragment key={`lineup-${entry.player.id}`}>
           {index === 11 ? <hr /> : null}
           <Grid container>
@@ -61,6 +61,8 @@ const LineUp = React.memo(({ data, substitutions }) => {
             </Grid>
             <Grid item xs={8} container justify='flex-start'>
               <Player data={entry.player} onClick={() => console.log(entry.player)} />
+              {' '}
+              <Cards data={cards.filter(card => card.player.id === entry.player.id)} />
             </Grid>  
             <Grid item xs={2} container justify='flex-end'>
               <Substitutions data={substitutions} id={entry.player.id} />
@@ -84,6 +86,18 @@ const Substitutions = React.memo(({ data, id }) => {
       {data[id].out ? <Typography variant="subtitle2">{convertHalfSecToMinuteString(data[id].out.second, data[id].out.half)}<KeyboardArrowDown fontSize='inherit' /></Typography> : null}
     </React.Fragment>
 )})
+
+const Cards = React.memo(({ data }) => {
+  return (
+    <React.Fragment>
+      {data.map(card => {
+        const time = convertHalfSecToMinuteString(card.second, card.half)
+
+        return <Typography variant="subtitle2">{card.type}{' '}{time}</Typography>
+      })}
+    </React.Fragment>
+  )
+})
 
 const lineupComparator = (a, b) => {
   if (a.starting !== b.starting) {
@@ -111,8 +125,8 @@ const useStyles = makeStyles({
   }
 })
 
-const MATCH_LINEUPS_SUBS = gql`
-fragment SubstitutionDetails on MatchEvents {
+const MATCH_LINEUPS = gql`
+fragment EventDetails on MatchEvents {
   player {
     id,
     display_name
@@ -122,7 +136,8 @@ fragment SubstitutionDetails on MatchEvents {
     display_name
   },
   half,
-  second
+  second,
+  type
 }
 
 fragment MatchPlayerDetails on MatchPlayers {
@@ -144,10 +159,10 @@ fragment PlayerDetails on Players {
 }
 
 query getLineupsSubs($id: Int!) {
-  lineupSubs: match(id: $id) {
+  match(id: $id) {
     id,
-    substitutions: events(type: "sub") {
-      ...SubstitutionDetails
+    events(typeIn: ["sub", "yc", "rc", "yrc"]) {
+      ...EventDetails
     },
     home_players {
       ...MatchPlayerDetails,
