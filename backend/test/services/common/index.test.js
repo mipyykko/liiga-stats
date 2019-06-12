@@ -1,4 +1,7 @@
-const chai = require('chai')
+/* import * as chai from 'chai'
+import * as sinon from 'sinon'
+import * as util from 'util'
+ */const chai = require('chai')
 const sinon = require('sinon')
 const util = require('util')
 

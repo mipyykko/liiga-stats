@@ -1,7 +1,9 @@
 import { Match } from 'models'
 import { knex } from 'db'
+
 export default class MatchService {
   static async findMatch(match_id) {
+
     const fields = [
       'tournament', 'season', 
       'home_team', 'home_team.statistics', 
@@ -11,6 +13,7 @@ export default class MatchService {
       'goals', 'events',
       'goals.scorer'
     ]
+
     return Match
       .query()
       .eager(`[${fields.join(',')}]`)

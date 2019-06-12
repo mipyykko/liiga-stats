@@ -1,5 +1,5 @@
-const config = require('./config')
-const path = require('path')
+import * as config from './config'
+import * as path from 'path'
 
 module.exports = {
   client: 'pg',

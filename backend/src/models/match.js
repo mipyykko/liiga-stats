@@ -77,6 +77,14 @@ export class Match extends BaseModel {
           to: 'teams.id'
         }
       },
+      players: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchPlayer',
+        join: {
+          from: 'matches.id',
+          to: 'match_players.match_id'
+        },
+      },
       home_players: {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchPlayer',

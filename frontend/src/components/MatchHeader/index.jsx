@@ -1,25 +1,37 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Grid, Typography } from '@material-ui/core'
 import { useStyles } from './styles'
 import _ from 'lodash'
 import { Player } from '../Player'
 import { convertHalfSecToMinuteString } from '../../util'
+import { gql } from 'apollo-boost'
+import { useQuery } from 'react-apollo-hooks'
 
-export const MatchHeader = React.memo((props) => {
-  const { match } = props
+const MatchHeader = React.memo(({ id }) => {
+  const [match, setMatch] = useState({})
+  const { data, loading } = useQuery(MATCH_INFO, { variables: { id: id }})
+
   const classes = useStyles()
 
-  if (!match.home_players) {
+  useEffect(() => {
+    if (loading) {
+      return
+    }
+
+    setMatch(data.match)
+  }, [data, loading])
+
+/*   if (!match.home_players) {
     return
   }
 
   const players = _.flatten(_.concat(([match.home_players, match.away_players]))).map(p => p.player).reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
-  
+ */  
   return (
     //<Paper elevation={2}>
       <Grid container item direction="row" justify="center" className={classes.matchHeaderBlock}>
-        <MatchTeam match={match} team='home' players={players} />
-        <MatchTeam match={match} team='away' players={players} />
+        <MatchTeam match={match} team='home' />
+        <MatchTeam match={match} team='away' />
       </Grid>
     //</Paper>
   )   
@@ -28,34 +40,38 @@ export const MatchHeader = React.memo((props) => {
 const Logo = React.memo(({ team, onClick = () => {} }) => {
   const classes = useStyles()
 
-  return <div onClick={onClick}><img src={team.logo} className={classes.img} alt={team.name} /></div>
+  return team ? <div onClick={onClick}><img src={team.logo} className={classes.img} alt={team.name} /></div> : null
 })
 
-const MatchTeam = React.memo(({ match, team, players }) => {
-  const matchTeam = match[`${team}_team`]
+const MatchTeam = React.memo(({ match, team }) => { // had: players
+  const matchTeam = (match || {})[`${team}_team`]
   const direction = `row${team === 'home' ? '' : '-reverse'}`
 
   return (
     <Grid item xs={5} container alignItems="flex-start" direction={direction}>
       <Team team={matchTeam} direction={direction} onClick={() => console.log(matchTeam)} />
       <Grid item />
-      <ScoreColumn team={team} match={match} players={players} />
+      <ScoreColumn team={team} match={match} /> 
     </Grid>
   )
 })
 
 const Team = React.memo(({ team, direction, onClick }) => {
-  return (
+  return team ? (
     <Grid item container xs={3} direction={direction} alignItems="center">
       <Logo team={team} onClick={onClick} />
       <Typography variant="h6">{team.name}</Typography>
     </Grid>
-)})
+  ) : null
+})
 
-const ScoreColumn = React.memo((props) => {
-  const { team, match, players } = props
-  const teamId = match[`${team}_team`].id
-  const goals = match.goals.filter(goal => goal.type === 1 ? goal.team_id === teamId : goal.team_id !== teamId)
+const ScoreColumn = React.memo(({ team, match }) => {
+  if (!match) {
+    return null 
+  }
+
+  const teamId = (match[`${team}_team`] || {}).id
+  const goals = (match.goals || []).filter(goal => goal.type === 1 ? goal.team_id === teamId : goal.team_id !== teamId)
   const score = match[`${team}_score`]
   const home = team === 'home'
 
@@ -63,11 +79,10 @@ const ScoreColumn = React.memo((props) => {
     <Grid item xs={6} container style={{ flexGrow: 1 }} alignItems="stretch" direction="column">
       <Score score={score} home={home} />
       {goals.map(goal => {
-        const scorer = players[goal.scorer_id]
-        const type = goal.type
+        const { scorer, type } = goal
         const minute = convertHalfSecToMinuteString(goal.second, goal.half)
 
-        return <Goal key={`goal-${goal.scorer_id}-${minute}`} scorer={scorer} type={type} minute={minute} home={home} />
+        return <Goal key={`goal-${scorer.id}-${minute}`} scorer={scorer} type={type} minute={minute} home={home} />
       })}
     </Grid>
   )  
@@ -99,3 +114,89 @@ const Goal = React.memo(({ scorer, type, minute, home }) => {
   )
 })
 
+const MATCH_INFO = gql`
+fragment MatchDetails on Matches {
+  id,
+  tournament_id,
+  season_id,
+  round,
+  date,
+  status,
+  min,
+  width,
+  height,
+  home_team_id,
+  away_team_id,
+  home_score,
+  away_score
+}
+
+fragment TeamDetails on Teams {
+  id,
+  name,
+  display_name,
+  country,
+  logo
+}
+
+fragment MatchTeamDetails on MatchTeams {
+  match_id,
+  team_id,
+  score,
+  score_pen,
+  number_color,
+  shirt_color,
+  coach_name,
+  coach_surname
+}
+
+fragment GoalDetails on Goals {
+  scorer_id, 
+  assistant_id,
+  team_id,
+  opposing_team_id,
+  half,
+  second,
+  standard,
+  type,
+  side,
+  home_team_score,
+  away_team_score,
+  home_team_prev_score,
+  away_team_prev_score
+}
+
+query findMatchInfo($id: Int!) {
+  match(id: $id) {
+    ...MatchDetails,
+    home_team {
+      ...TeamDetails,
+    },
+    away_team {
+      ...TeamDetails
+    },
+    home_team_info {
+      ...MatchTeamDetails
+    },
+    away_team_info {
+      ...MatchTeamDetails
+    },
+    goals {
+      ...GoalDetails,
+      scorer {
+        id,
+        name,
+        surname,
+        display_name
+      },
+      assistant {
+        id,
+        name,
+        surname,
+        display_name
+      }
+    }
+  }
+}
+`
+export default MatchHeader

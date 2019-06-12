@@ -6,6 +6,7 @@ import { ApolloServer } from 'apollo-server-express'
 import config from '../config'
 
 import routes from './routes'
+import schema from 'db/graphql'
 
 const app = express()
 
@@ -13,17 +14,15 @@ app.use(bodyParser.json())
 app.use(cors())
 app.use(morgan('combined'))
 
-const schema = require('db/graphql')()
-
 const apollo = new ApolloServer({
   schema: schema
 })
 
-process.on('unhandledRejection', (error, p) => {
+/* process.on('unhandledRejection', (error, p) => {
   console.log('=== UNHANDLED REJECTION ===')
   console.dir(error)
   process.exit(1)
-})
+}) */
 
 app.use('/api', routes)
 
