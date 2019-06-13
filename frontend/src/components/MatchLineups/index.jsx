@@ -61,7 +61,6 @@ const LineUp = React.memo(({ team, data }) => {
             </Grid>
             <Grid item xs={8} container justify='flex-start'>
               <Player data={entry.player} onClick={() => console.log(entry.player)} />
-              {' '}
               <Cards data={cards.filter(card => card.player.id === entry.player.id)} />
             </Grid>  
             <Grid item xs={2} container justify='flex-end'>
@@ -93,8 +92,19 @@ const Cards = React.memo(({ data }) => {
       {data.map(card => {
         const time = convertHalfSecToMinuteString(card.second, card.half)
 
-        return <Typography variant="subtitle2">{card.type}{' '}{time}</Typography>
+        return <Card key={`card-${card.id}`} type={card.type} time={time} />
       })}
+    </React.Fragment>
+  )
+})
+
+const Card = React.memo(({ type, time }) => {
+  const classes = useStyles({ type })
+
+  return (
+    <React.Fragment>
+      <Typography variant='subtitle2' className={classes.card}>&nbsp;&#9646;</Typography>
+      <Typography variant='subtitle2' className={classes.time}>&nbsp;{time}</Typography>    
     </React.Fragment>
   )
 })
@@ -122,11 +132,27 @@ const useStyles = makeStyles({
   lineups: {
     minWidth: 400,
     maxWidth: 400
-  }
+  },
+  card: props => ({
+    textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black',
+    color: props.type === 'rc' ? '#FF0000': '#FFFF00',
+    '&::after': props.type === 'yrc' ? {
+      position: 'relative',
+      left: '-0.2em',
+      color: '#FF0000',
+      content: '"▮"',
+      textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black',
+    } : null
+  }),
+  time: props => (props.type === 'yrc' ? {
+    position: 'relative',
+    left: '-0.2em',
+  } : {})
 })
 
 const MATCH_LINEUPS = gql`
 fragment EventDetails on MatchEvents {
+  id,
   player {
     id,
     display_name

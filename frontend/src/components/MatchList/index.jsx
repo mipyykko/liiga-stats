@@ -40,7 +40,7 @@ const MatchList = React.memo((props) => {
     if (loading) {
       return
     }
-
+    
     const firstMatchOfLatestRound = _(data.matches)
       .filter(match => match.status >= 4)
       .orderBy('date', 'desc')
@@ -52,9 +52,15 @@ const MatchList = React.memo((props) => {
       .reduce((obj, match) => ({ ...obj, [match[0].round]: match[0].id }), {})
 
     setMatchesByRound(roundMap)
-    setRound(firstMatchOfLatestRound.round)
-    setSelected(firstMatchOfLatestRound.id)
-  }, [loading, data.matches])
+
+    // we alreay had a selected, ie. rehydrated
+    if (selected) {
+      setRound(data.matches.find(match => match.id === selected).round)
+    } else {
+      setRound(firstMatchOfLatestRound.round)
+      setSelected(firstMatchOfLatestRound.id)
+    }
+  }, [selected, loading, data.matches])
 
   useEffect(() => {
     // scroll the match list to first match of round on change
