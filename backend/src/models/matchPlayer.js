@@ -101,6 +101,65 @@ export class MatchPlayer extends BaseModel {
           ]
         }
       },
+      goals: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'goal',
+        join: {
+          from: [
+            'match_players.player_id',
+            'match_players.match_id'
+          ],
+          to: [
+            'goals.scorer_id',
+            'goals.match_id'
+          ]
+        }
+      },
+      cards: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchEvent',
+        join: {
+          from: [
+            'match_players.player_id',
+            'match_players.match_id'
+          ],
+          to: [
+            'match_events.player_id',
+            'match_events.match_id'
+          ]
+        },
+        modify: builder => builder.whereIn('type', ['yc', 'rc', 'yrc'])
+      },
+      substitution_in: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchEvent',
+        join: {
+          from: [
+            'match_players.match_id',
+            'match_players.player_id'
+          ],
+          to: [
+            'match_events.match_id',
+            'match_events.opponent_player_id'
+          ]
+        },
+        modify: builder => builder.where('type', 'sub')
+      },
+      substitution_out: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchEvent',
+        join: {
+          from: [
+            'match_players.match_id',
+            'match_players.player_id'
+          ],
+          to: [
+            'match_events.match_id',
+            'match_events.player_id'
+          ]
+        },
+        modify: builder => builder.where('type', 'sub')
+      }
     }
   }
 

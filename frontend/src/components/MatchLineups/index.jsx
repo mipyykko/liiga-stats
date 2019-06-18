@@ -23,14 +23,20 @@ const MatchLineups = React.memo(({ id }) => {
     console.log(error)
     return null
   }
+  
+  const { matchPlayers } = data
 
-  const { match } = data
+  if (!matchPlayers) {
+    return null
+  }
+
+  console.log('match players', matchPlayers)
     // todo: subbed for/to, cards, goal/assist images on list
   return (
     <Paper elevation={2}>
       <Grid container>
-        <LineUp team='home' data={match} />
-        <LineUp team='away' data={match} />
+        <LineUp data={matchPlayers.filter(mp => mp.team_id === mp.match.home_team_id)} />
+        <LineUp data={matchPlayers.filter(mp => mp.team_id === mp.match.away_team_id)} />
       </Grid>
     </Paper>
   )
@@ -39,16 +45,7 @@ const MatchLineups = React.memo(({ id }) => {
 const LineUp = React.memo(({ team, data }) => {
   const classes = useStyles()
 
-  const lineup = (data[`${team}_players`] || []).sort(lineupComparator)
-  // TODO: done twice
-  const substitutions = (data.events || [])
-    .filter(e => e.type === 'sub')
-    .reduce((acc, curr) => ({
-      ...acc,
-      [curr.player.id]: { ...acc[curr.player.id], out: curr },
-      [curr.opponent_player.id]: { ...acc[curr.opponent_player.id], in: curr }
-    }), {}) 
-  const cards = (data.events || []).filter(e => e.type !== 'sub')
+  const lineup = (data || []).sort(lineupComparator)
 
   return (
     <Grid item xs={6}>
@@ -61,10 +58,11 @@ const LineUp = React.memo(({ team, data }) => {
             </Grid>
             <Grid item xs={8} container justify='flex-start'>
               <Player data={entry.player} onClick={() => console.log(entry.player)} />
-              <Cards data={cards.filter(card => card.player.id === entry.player.id)} />
+              <Goals data={entry.goals} />
+              <Cards data={entry.cards} onClick={() => console.log('card', entry.player)}/>
             </Grid>  
             <Grid item xs={2} container justify='flex-end'>
-              <Substitutions data={substitutions} id={entry.player.id} />
+              <Substitutions subIn={entry.substitution_in} subOut={entry.substitution_out} />
             </Grid>
           </Grid>
         </React.Fragment>
@@ -73,37 +71,58 @@ const LineUp = React.memo(({ team, data }) => {
   )
 })
 
-const Substitutions = React.memo(({ data, id }) => {
-  if (!data[id]) {
+const Substitutions = React.memo(({ subIn, subOut }) => {
+  if (!subIn && !subOut) {
     return null
   }
 
-  // TODO: this is stupid, fix
   return (
     <React.Fragment>
-      {data[id].in ? <Typography variant="subtitle2">{convertHalfSecToMinuteString(data[id].in.second, data[id].in.half)}<KeyboardArrowUp fontSize='inherit' /></Typography> : null}
-      {data[id].out ? <Typography variant="subtitle2">{convertHalfSecToMinuteString(data[id].out.second, data[id].out.half)}<KeyboardArrowDown fontSize='inherit' /></Typography> : null}
+      {subIn.length > 0 ? <Typography variant="subtitle2">{convertHalfSecToMinuteString(subIn[0].second, subIn[0].half)}<KeyboardArrowUp fontSize='inherit' /></Typography> : null}
+      {subOut.length > 0 ? <Typography variant="subtitle2">{convertHalfSecToMinuteString(subOut[0].second, subOut[0].half)}<KeyboardArrowDown fontSize='inherit' /></Typography> : null}
     </React.Fragment>
 )})
 
-const Cards = React.memo(({ data }) => {
+const Cards = React.memo(({ data, onClick }) => {
   return (
     <React.Fragment>
       {data.map(card => {
         const time = convertHalfSecToMinuteString(card.second, card.half)
 
-        return <Card key={`card-${card.id}`} type={card.type} time={time} />
+        return <Card key={`card-${card.id}`} type={card.type} time={time} onClick={onClick} />
       })}
     </React.Fragment>
   )
 })
 
-const Card = React.memo(({ type, time }) => {
-  const classes = useStyles({ type })
+const Card = React.memo(({ type, time, onClick }) => {
+  const classes = useStyles({ cardType: type })
 
   return (
     <React.Fragment>
-      <Typography variant='subtitle2' className={classes.card}>&nbsp;&#9646;</Typography>
+      <Typography variant='subtitle2' className={classes.card} onClick={onClick}>&nbsp;&#9646;</Typography>
+      <Typography variant='subtitle2' className={classes.time}>&nbsp;{time}</Typography>    
+    </React.Fragment>
+  )
+})
+
+const Goals = React.memo(({ data }) => (
+  <React.Fragment>
+    {data.map(goal => {
+      const time = convertHalfSecToMinuteString(goal.second, goal.half)
+
+      return <Goal key={`goal-${goal.second}`} standard={goal.standard} type={goal.type} time={time} />
+    })}
+  </React.Fragment>
+))
+
+
+const Goal = React.memo(({ type, standard, time }) => {
+  const classes = useStyles({ goalType: type, standard })
+
+  return (
+    <React.Fragment>
+      <Typography variant='subtitle2' className={classes.goal}>&nbsp;<span role='img' aria-label='goal'>&#9917;</span></Typography>
       <Typography variant='subtitle2' className={classes.time}>&nbsp;{time}</Typography>    
     </React.Fragment>
   )
@@ -115,10 +134,12 @@ const lineupComparator = (a, b) => {
   }
 
   if (a.position_id % 10 !== b.position_id % 10) {
+    // from gk to forward line
     return a.position_id % 10 - b.position_id % 10
   }
 
-  return Math.round(a.position_id / 10) - Math.round(b.position_id / 10)   
+  // from right to left
+  return Math.round(b.position_id / 10) - Math.round(a.position_id / 10)   
 }
 
 const useStyles = makeStyles({
@@ -133,30 +154,42 @@ const useStyles = makeStyles({
     minWidth: 400,
     maxWidth: 400
   },
+  goal: {
+    color: props => props.goalType === 2 ? '#FF0000' : 'default',
+    '&::after': props => props.standard === 6 ? {
+      position: 'relative',
+      left: '-0.6rem',
+      content: '"P"',
+      fontSize: '75%',
+      textShadow: '-2px 0 2px white, 0 2px 2px white, 2px 0 2px white, 0 -2px 2px white',
+      color: '#FF0000',
+      fontWeight: 'bold',
+      display: 'inline-block',
+      width: '0.1em'
+    } : null
+  },
   card: props => ({
     textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black',
-    color: props.type === 'rc' ? '#FF0000': '#FFFF00',
-    '&::after': props.type === 'yrc' ? {
+    color: props.cardType === 'rc' ? '#FF0000': '#FFFF00',
+    '&::after': props.cardType === 'yrc' ? {
       position: 'relative',
       left: '-0.2em',
       color: '#FF0000',
       content: '"▮"',
       textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black',
+      display: 'inline-block',
+      width: '0.3em'
     } : null
   }),
-  time: props => (props.type === 'yrc' ? {
+/*   time: props => (props.cardType === 'yrc' ? {
     position: 'relative',
     left: '-0.2em',
-  } : {})
+  } : {}),*/
 })
 
 const MATCH_LINEUPS = gql`
-fragment EventDetails on MatchEvents {
+fragment CardDetails on MatchEvents {
   id,
-  player {
-    id,
-    display_name
-  },
   opponent_player {
     id,
     display_name
@@ -166,15 +199,68 @@ fragment EventDetails on MatchEvents {
   type
 }
 
+fragment SubDetails on MatchEvents {
+  id,
+  half,
+  second
+}
+
+fragment SubPlayerDetails on Players {
+  id,
+  display_name
+}
+
 fragment MatchPlayerDetails on MatchPlayers {
   number, 
+  team_id,
   position_id, 
+  player {
+    id,
+    display_name
+  },
   starting, 
-  in_sub_second,
-  out_sub_second,
-  replaced_player_id, 
-  replacement_player_id, 
 }
+
+fragment GoalDetails on Goals {
+  assistant {
+    id
+  },
+  standard,
+  type,
+  half,
+  second,
+}
+
+query getMatchPlayers($id: Int!) {
+  matchPlayers(match_id: $id) {
+    ...MatchPlayerDetails,
+    match {
+      home_team_id,
+      away_team_id
+    },
+    cards {
+      ...CardDetails
+    },
+    substitution_in {
+      ...SubDetails,
+      player {
+        ...SubPlayerDetails
+      }
+    },
+    substitution_out {
+      ...SubDetails,
+      opponent_player {
+        ...SubPlayerDetails
+      }
+    },
+    goals {
+      ...GoalDetails
+    }
+  }
+}
+`
+
+/* 
 
 fragment PlayerDetails on Players {
   id,
@@ -184,12 +270,6 @@ fragment PlayerDetails on Players {
   photo
 }
 
-query getLineupsSubs($id: Int!) {
-  match(id: $id) {
-    id,
-    events(typeIn: ["sub", "yc", "rc", "yrc"]) {
-      ...EventDetails
-    },
     home_players {
       ...MatchPlayerDetails,
       player {
@@ -202,8 +282,6 @@ query getLineupsSubs($id: Int!) {
         ...PlayerDetails
       }
     }
-  }
-}
-`
 
+*/
 export default MatchLineups

@@ -147,7 +147,7 @@ export const getUpdateablePlayersFromEvents = async (players, matches, options =
 
 export const getUniquePlayers = (param) => _.uniqBy(
   _.flatten(
-    param instanceof Array 
+    Array.isArray(param) 
       ? param.map(match => match.players)
       : param.players),
   'player_id'

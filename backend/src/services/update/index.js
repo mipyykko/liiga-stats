@@ -195,7 +195,7 @@ const updateService = {
 const getKey = (data, entity) => {
   let id = entity.getIdColumn ? entity.getIdColumn() : 'id'
 
-  if (!(id instanceof Array)) {
+  if (!Array.isArray(id)) {
     return data[id]
   }
 

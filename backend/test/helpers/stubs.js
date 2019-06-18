@@ -1,6 +1,6 @@
 export const extendStub = (paramlist, retvals) => (stub) => {
   paramlist.map((_, idx) => {
-    const params = paramlist[idx] instanceof Array 
+    const params = Array.isArray(paramlist[idx]) 
       ? paramlist[idx]
       : [paramlist[idx]]
 

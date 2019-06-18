@@ -8,7 +8,7 @@ import {
 
 import MatchHeader from './MatchHeader'
 import MatchLineups from './MatchLineups'
-
+import MatchTactics from './MatchTactics'
 
 const MatchView = (props) => {
   const { matchId } = props
@@ -18,6 +18,7 @@ const MatchView = (props) => {
   return (
     <Grid container className={classes.root} spacing={2} direction="column">
       <MatchHeader id={matchId} />
+      <MatchTactics id={matchId} />
       <MatchLineups id={matchId} />
     </Grid>
   )

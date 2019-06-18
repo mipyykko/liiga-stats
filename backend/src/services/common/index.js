@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { shallowCompare } from 'utils'
 
 export const insert = async (data, entity, trx = null) => {
-  if (!(data instanceof Array)) {
+  if (!Array.isArray(data)) {
     return await entity.query(trx).insert(data)
   }
 
@@ -27,7 +27,7 @@ export const insertMany = async (data, entities, trx = null) => {
 }
 
 export const update = async (data, entity, trx = null, id = 'id') => {
-  if (!(data instanceof Array)) {
+  if (!Array.isArray(data)) {
     return await entity
       .query(trx)
       .skipUndefined()
@@ -43,11 +43,11 @@ export const update = async (data, entity, trx = null, id = 'id') => {
     1)
 } 
 
-const getId = (data, id) => id instanceof Array
+const getId = (data, id) => Array.isArray(id)
   ? id.map(i => data[i])
   : data[id]
 
-const compareById = (data1, data2, id) => id instanceof Array
+const compareById = (data1, data2, id) => Array.isArray(id)
   ? id.all(k => data1[k] === data2[k])
   : data1[id] === data2[id]
 
@@ -61,7 +61,7 @@ export const upsert = async (data, entity, trx = null, id) => {
       : 'id'
 
   // not an array, upsert single
-  if (!(data instanceof Array)) {
+  if (!Array.isArray(data)) {
     const existing = await entity
       .query(trx)
       .findById(getId(data, _id))

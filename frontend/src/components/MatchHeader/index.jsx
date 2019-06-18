@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Grid, Typography } from '@material-ui/core'
 import { useStyles } from './styles'
 import _ from 'lodash'
@@ -8,25 +8,10 @@ import { gql } from 'apollo-boost'
 import { useQuery } from 'react-apollo-hooks'
 
 const MatchHeader = React.memo(({ id }) => {
-  const [match, setMatch] = useState({})
-  const { data, loading } = useQuery(MATCH_INFO, { variables: { id: id }})
+  const { data: { match }, loading } = useQuery(MATCH_INFO, { variables: { id: id }})
 
   const classes = useStyles()
 
-  useEffect(() => {
-    if (loading) {
-      return
-    }
-
-    setMatch(data.match)
-  }, [data, loading])
-
-/*   if (!match.home_players) {
-    return
-  }
-
-  const players = _.flatten(_.concat(([match.home_players, match.away_players]))).map(p => p.player).reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
- */  
   return (
     //<Paper elevation={2}>
       <Grid container item direction="row" justify="center" className={classes.matchHeaderBlock}>
@@ -79,10 +64,10 @@ const ScoreColumn = React.memo(({ team, match }) => {
     <Grid item xs={6} container style={{ flexGrow: 1 }} alignItems="stretch" direction="column">
       <Score score={score} home={home} />
       {goals.map(goal => {
-        const { scorer, type } = goal
+        const { scorer, type, standard } = goal
         const minute = convertHalfSecToMinuteString(goal.second, goal.half)
 
-        return <Goal key={`goal-${scorer.id}-${minute}`} scorer={scorer} type={type} minute={minute} home={home} />
+        return <Goal key={`goal-${scorer.id}-${minute}`} scorer={scorer} type={type} minute={minute} standard={standard} home={home} />
       })}
     </Grid>
   )  
@@ -94,7 +79,7 @@ const Score = React.memo(({ score, home }) => (
   </Grid>
 ))
 
-const Goal = React.memo(({ scorer, type, minute, home }) => {
+const Goal = React.memo(({ scorer, type, standard, minute, home }) => {
   return (
     <Grid container spacing={1} justify={`flex-${home ? 'end' : 'start'}`} direction="row">
       <Grid item>
@@ -107,7 +92,7 @@ const Goal = React.memo(({ scorer, type, minute, home }) => {
       </Grid>
       <Grid item>
         <Typography variant="body2">
-          {type === 2 ? 'og' : ''}
+          {type === 2 ? '(og)' : standard === 6 ? '(p)' : ''}
         </Typography>
       </Grid>
     </Grid>

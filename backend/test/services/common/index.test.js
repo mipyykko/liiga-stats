@@ -25,7 +25,7 @@ describe('Common services', () => {
 
     queryStub = sinon.stub(Model, 'query')
     insertStub = sinon.spy((data) => (
-      data instanceof Array 
+      Array.isArray(data) 
         ? data.map(d => ({...d, status: 'ok' }))
         : {...data, status: 'ok' }
     ))
