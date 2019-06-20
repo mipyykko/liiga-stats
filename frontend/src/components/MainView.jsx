@@ -49,11 +49,13 @@ const MainView = (props) => {
         <MatchList tournamentId={tournamentId} seasonId={seasonId} />
       </Grid>
       <Grid container direction="column" justify='flex-start'>
-        <MatchView matchId={matchId} />
+        <MatchView />
       </Grid>
     </Container>
   )
 }
+
+// was: matchview matchid
 
 const ALL_SEASONS = gql`
 {

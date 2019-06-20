@@ -6,15 +6,22 @@ import { Player } from '../Player'
 import { convertHalfSecToMinuteString } from '../../util'
 import { gql } from 'apollo-boost'
 import { useQuery } from 'react-apollo-hooks'
+import { useSelector } from 'react-redux'
 
-const MatchHeader = React.memo(({ id }) => {
+const MatchHeader = React.memo(() => {
+  const id = useSelector(state => state.match.id)
   const { data: { match }, loading } = useQuery(MATCH_INFO, { variables: { id: id }})
 
-  const classes = useStyles()
+  const classes = useStyles({
+    homeNumberColor: hex2rgba(_.get(match, 'home_team_info.number_color', ''), 0.4),
+    homeShirtColor: hex2rgba(_.get(match, 'home_team_info.shirt_color', ''), 0.4),
+    awayNumberColor: hex2rgba(_.get(match, 'away_team_info.number_color'), 0.4),
+    awayShirtColor: hex2rgba(_.get(match, 'away_team_info.shirt_color'), 0.4)
+  })
 
   return (
     //<Paper elevation={2}>
-      <Grid container item direction="row" justify="center" className={classes.matchHeaderBlock}>
+      <Grid container item direction='row' justify='center' className={classes.matchHeaderBlock}>
         <MatchTeam match={match} team='home' />
         <MatchTeam match={match} team='away' />
       </Grid>
@@ -28,24 +35,37 @@ const Logo = React.memo(({ team, onClick = () => {} }) => {
   return team ? <div onClick={onClick}><img src={team.logo} className={classes.img} alt={team.name} /></div> : null
 })
 
+const hex2rgba = (hex, alpha = 1) => {
+  const [r, g, b] = (mapColor(hex).match(/\w\w/g) || []).map(x => parseInt(x, 16));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const mapColor = (color) => (color || '').replace('0x', '#')
+
 const MatchTeam = React.memo(({ match, team }) => { // had: players
+  const classes = useStyles()
   const matchTeam = (match || {})[`${team}_team`]
+  const color = mapColor(_.get(match, `${team}_team_info.number_color`, ''))
   const direction = `row${team === 'home' ? '' : '-reverse'}`
 
+  console.log(color)
+
   return (
-    <Grid item xs={5} container alignItems="flex-start" direction={direction}>
-      <Team team={matchTeam} direction={direction} onClick={() => console.log(matchTeam)} />
+    <Grid item xs={5} container alignItems="flex-start" direction={direction} className={classes.header}>
+      <Team color={color} team={matchTeam} direction={direction} onClick={() => console.log(matchTeam)} />
       <Grid item />
       <ScoreColumn team={team} match={match} /> 
     </Grid>
   )
 })
 
-const Team = React.memo(({ team, direction, onClick }) => {
+const Team = React.memo(({ team, direction, onClick, color }) => {
+  const classes = useStyles({ color })
+
   return team ? (
-    <Grid item container xs={3} direction={direction} alignItems="center">
+    <Grid item container xs={4} direction={direction} justify='center' alignItems='center'>
       <Logo team={team} onClick={onClick} />
-      <Typography variant="h6">{team.name}</Typography>
+      <Typography variant="h6" className={classes.team}>{team.name}</Typography>
     </Grid>
   ) : null
 })

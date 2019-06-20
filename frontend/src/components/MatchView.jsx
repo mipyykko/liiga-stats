@@ -17,9 +17,9 @@ const MatchView = (props) => {
 
   return (
     <Grid container className={classes.root} spacing={2} direction="column">
-      <MatchHeader id={matchId} />
-      <MatchTactics id={matchId} />
-      <MatchLineups id={matchId} />
+      <MatchHeader />
+      <MatchTactics />
+      <MatchLineups />
     </Grid>
   )
 }

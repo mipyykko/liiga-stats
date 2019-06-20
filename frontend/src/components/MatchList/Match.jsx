@@ -9,7 +9,7 @@ const MatchTeamScore = React.memo(({ data: { name, score, winner }}) => {
   return (    
     <Grid container spacing={0} direction="row" alignItems="center">
       <Grid item container justify='flex-start' xs={10}>
-        <Typography variant="subtitle2" className={classes.matchTeam}>{name}</Typography>
+        <Typography variant="subtitle2" className={classes.matchTeam} noWrap>{name}</Typography>
       </Grid>
       <Grid item xs={2}>
         <Typography variant="subtitle2" className={classes.matchScore}>{score}</Typography>

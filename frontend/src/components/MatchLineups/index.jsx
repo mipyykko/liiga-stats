@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { gql } from 'apollo-boost'
 import { useQuery } from 'react-apollo-hooks'
+import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 
 import {
@@ -12,7 +13,8 @@ import { KeyboardArrowDown, KeyboardArrowUp } from '@material-ui/icons'
 import { convertHalfSecToMinuteString } from '../../util'
 import { Player } from '../Player'
 
-const MatchLineups = React.memo(({ id }) => {
+const MatchLineups = React.memo(() => {
+  const id = useSelector(state => state.match.id)
   const { data, error, loading } = useQuery(MATCH_LINEUPS, { variables: { id: id }})
 
   if (loading) {

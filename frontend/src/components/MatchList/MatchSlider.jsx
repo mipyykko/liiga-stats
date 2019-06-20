@@ -58,19 +58,19 @@ const sliderSettings = (slider) => ({
       }
     },
     {
-      breakpoint: 800,
+      breakpoint: 860,
       settings: {
         slidesToShow: 4,
       }
     },
     {
-      breakpoint: 640,
+      breakpoint: 700,
       settings: {
         slidesToShow: 3,
       }
     },
     {
-      breakpoint: 480,
+      breakpoint: 540,
       settings: {
         slidesToShow: 2
       }

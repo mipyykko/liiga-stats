@@ -1,13 +1,13 @@
 import React from 'react'
 import { gql } from 'apollo-boost'
 import { useQuery } from 'react-apollo-hooks'
+import { useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Grid,
   Typography,
   Paper
 } from '@material-ui/core'
-import ContainerDimensions from 'react-container-dimensions'
 import pitchImage from '../../assets/Football_pitch_v2.svg'
 import memoize from 'lodash/memoize'
 
@@ -22,10 +22,8 @@ const useQueries = (id) => {
   }
 }
 
-
-const isHomeAway = React.memo(({ id, data }) => data.match.home_team_info.id === id ? 'home' : 'away')
-
-const MatchTactics = ({ id, second = 0 }) => {
+const MatchTactics = ({ second = 0 }) => {
+  const id = useSelector(state => state.match.id)
   const { data, error, loading } = useQueries(id)
   const classes = useStyles()
 
@@ -50,37 +48,35 @@ const MatchTactics = ({ id, second = 0 }) => {
   return (
     <Paper elevation={2}>
       <Grid container className={classes.root} justify='center'>
-        <Grid item container xs={6} direction='row' className={classes.pitch}>
-          <ContainerDimensions>
-            {({ width, height }) => (
-              <svg xmlns='http://www.w3.org/2000/svg' width={width} height={height}>
-                {tactics.map(player => {
-                  const { player_id, team_id, match_player, position } = player
-                  const shirtColor = mapColor(teamInfo[team_id].shirt_color)
-                  const numberColor = mapColor(teamInfo[team_id].number_color)
-                  const number = match_player[0].number
-                  
-                  return (
-                    <PlayerIcon
-                      containerWidth={width}
-                      containerHeight={height}
-                      key={`playericon-${player_id}`}
-                      shirtColor={shirtColor}
-                      numberColor={numberColor}
-                      number={number}
-                      position={position}
-                      home={team_id === match.home_team_id}
-                    />
-                  )
-                })}
-              </svg>
-            )}
-          </ContainerDimensions>
+        <Grid item container xs={6} direction='row' justify='center'>
+          <svg className={classes.pitch} xmlns='http://www.w3.org/2000/svg' /*width={1.55 * height} height={height}*/>
+            {tactics.map(player => {
+              const { player_id, team_id, match_player, position } = player
+              const shirtColor = mapColor(teamInfo[team_id].shirt_color)
+              const numberColor = mapColor(teamInfo[team_id].number_color)
+              const number = match_player[0].number
+              
+              return (
+                <PlayerIcon
+                  containerWidth={408}
+                  containerHeight={276}
+                  key={`playericon-${player_id}`}
+                  shirtColor={shirtColor}
+                  numberColor={numberColor}
+                  number={number}
+                  position={position}
+                  home={team_id === match.home_team_id}
+                />
+              )
+            })}
+          </svg>
         </Grid>
       </Grid>
     </Paper>
   )
 }
+
+//             <Grid item container xs={6} direction='row' justify='center' className={classes.pitch}
 
 const PlayerIcon = (props) => {
   const { containerHeight, containerWidth, position, number, home } = props
@@ -99,7 +95,7 @@ const PlayerIcon = (props) => {
   })  
 
   return (
-    <g style={{ transform: `translate(${x}px, ${y}px)` }}>
+    <g style={{ position: 'absolute', transform: `translate(${x}px, ${y}px)` }}>
       <circle 
         className={classes.playerCircle}
         cx={1} cy={1}  
@@ -172,7 +168,8 @@ const useStyles = makeStyles({
   },
   playerNumber: {
     fill: props => props.numberColor,
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    fontFamily: ['Cabin', 'Roboto', 'sans-serif']
   }
 })
 

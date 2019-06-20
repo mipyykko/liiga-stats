@@ -24,7 +24,7 @@ export const useStyles = makeStyles({
     userSelect: 'none', 
     padding: '10px 10px 5px 5px',
     margin: '4px',
-    minWidth: 100,
+    minWidth: 110,
     maxWidth: 150,
     'font-size': '9px',
     color: props.status === 1 ? '#808080' : '#000000',

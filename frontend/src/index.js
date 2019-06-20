@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
@@ -11,6 +12,9 @@ import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks'
 import { ThemeProvider } from '@material-ui/styles'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { store, persistor } from './store'
+
+import MatchHeader from './components/MatchHeader'
+import MatchTactics from './components/MatchTactics'
 
 const client = new ApolloClient({
   uri: 'http://localhost:3001/graphql'
@@ -28,7 +32,11 @@ ReactDOM.render(
       <ThemeProvider theme={theme}>
         <ApolloProvider client={client}>
           <ApolloHooksProvider client={client}>
-            <App />
+            <Router>
+              <Route path='/header' component={MatchHeader} />
+              <Route path='/tactics' component={MatchTactics} />
+              <Route path='/' exact component={App} />
+            </Router>
           </ApolloHooksProvider>
         </ApolloProvider>
       </ThemeProvider>
