@@ -21,10 +21,10 @@ export class MatchPlayer extends BaseModel {
         position_id: { type: ['integer', 'null'] },
         starting: { type: 'boolean' },
         // TODO: these aren't accurate because of the halves - rethink
-        in_sub_second: { type: ['integer', 'null'] },
+/*         in_sub_second: { type: ['integer', 'null'] },
         out_sub_second: { type: ['integer', 'null'] },
         replaced_player_id: { type: ['integer', 'null'] },
-        replacement_player_id: { type: ['integer', 'null'] },
+        replacement_player_id: { type: ['integer', 'null'] }, */
       }
     }
   }
@@ -39,7 +39,7 @@ export class MatchPlayer extends BaseModel {
           to: 'players.id'
         }
       },
-      replaced_player: {
+/*       replaced_player: {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: 'player',
         join: {
@@ -54,7 +54,7 @@ export class MatchPlayer extends BaseModel {
           from: 'match_players.replacement_player_id',
           to: 'players.id'
         }
-      },
+      }, */
       match: {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: 'match',

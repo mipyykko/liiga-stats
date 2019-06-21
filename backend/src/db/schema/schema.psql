@@ -148,10 +148,10 @@ CREATE TABLE match_players (
   number INT,
   position_id INT,
   starting BOOLEAN,
-  in_sub_second INT NULL,
+/*   in_sub_second INT NULL,
   out_sub_second INT NULL,
   replaced_player_id INT NULL,
-  replacement_player_id INT NULL,
+  replacement_player_id INT NULL, */
 
   PRIMARY KEY (player_id, match_id)
 );

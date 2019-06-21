@@ -103,6 +103,7 @@ export const upsertMany = async (data, entities, trx = null) => {
 export const splitSeasonName = (name) => {
   const seasonRegExp = /^(.*)\.\s+(.*) - (\d+)-?(\d+)?$/
 
+  // TODO: this pattern does not apply to all tournaments/seasons!
   try {
     // eslint-disable-next-line no-empty-pattern
     const [{}, country, tournamentName, start_year, end_year] = seasonRegExp.exec(name)

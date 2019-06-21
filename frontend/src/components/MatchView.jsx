@@ -1,18 +1,14 @@
 import React from 'react'
-import { gql } from 'apollo-boost'
+// import { gql } from 'apollo-boost'
 
-import { makeStyles } from '@material-ui/core/styles'
-import {
-  Grid,
-} from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
+import { Grid } from '@material-ui/core'
 
 import MatchHeader from './MatchHeader'
 import MatchLineups from './MatchLineups'
 import MatchTactics from './MatchTactics'
 
-const MatchView = (props) => {
-  const { matchId } = props
-
+const MatchView = () => {
   const classes = useStyles()
 
   return (
@@ -30,7 +26,7 @@ const useStyles = makeStyles({
     flexWrap: 'wrap',
     justifyContent: 'space-around',
     overflow: 'hidden',
-    margin: '5px 0 5px 0',
+    margin: '5px 0 5px 0'
   },
   lineups: {
     minWidth: 400,
@@ -38,7 +34,7 @@ const useStyles = makeStyles({
   }
 })
 
-const MATCH = gql`
+/* const MATCH = gql`
 fragment TeamDetails on Teams {
   id,
   name,
@@ -155,7 +151,7 @@ query findMatch($id: Int!) {
     }
   }
 }
-`
+` */
 
 /*
 fragment PlayerDetails on Players {

@@ -3,6 +3,8 @@ const sinon = require('sinon')
 const util = require('util')
 
 var expect = chai.expect
+var fail = chai.fail
+
 chai.use(require('sinon-chai'))
 
 import API from 'api'
@@ -102,9 +104,15 @@ describe('Update service: updating season', () => {
   it('returns error', async () => {
     insertManyStub.onCall(0).throws('an error happened')
 
-    const updated = await updateService.updateSeason(1, 1)
+    let updated
 
-    expect(updated).eql({ error: 'an error happened'})
+    try {
+      updated = await updateService.updateSeason(1, 1)
+      fail('should have thrown an error')
+    }
+    catch (error) {
+      expect(updated).eql({ error: 'an error happened'})
+    }
   })
   
   afterEach(() => {

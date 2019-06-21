@@ -86,7 +86,6 @@ const updateService = {
           updatedPlayerDetails = await update(updateablePlayerDetails, Player, trx)
         })
 
-      console.log('as here')
       let updatedMatches, updatedSeasons, updatedTournaments
 
       // insert
@@ -183,8 +182,6 @@ const updateService = {
         }
       }
     } catch (err) {
-      console.log(err, 'oh crud!')
-
       return {
         error: err.name
       }

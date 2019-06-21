@@ -2,6 +2,7 @@ import { combineReducers } from 'redux'
 import match from './match'
 import season from './season'
 import tournament from './tournament'
+import player from './player'
 
 export const withSelectId = (key, reducer) => (state, action) => {
   switch (action.type) {
@@ -15,5 +16,6 @@ export const withSelectId = (key, reducer) => (state, action) => {
 export default combineReducers({
   match: withSelectId('MATCH', match),
   season: withSelectId('SEASON', season),
-  tournament: withSelectId('TOURNAMENT', tournament)
+  tournament: withSelectId('TOURNAMENT', tournament),
+  player: withSelectId('PLAYER', player)
 })

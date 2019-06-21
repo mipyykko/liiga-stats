@@ -30,6 +30,7 @@ const getOutSubstitution = (subs, player_id) => _.pick(subs.find(s => s.player_i
 export const getPlayerStatistics = (match) => {
   const { match_id } = match
 
+  
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
 
   // TODO: can return the wrong amount of passes when percentage is 0 -
@@ -46,21 +47,21 @@ export const getMatchPlayers = (match) => {
   const { match_id } = match
 
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
-  const subs = getSubstitutions(match)
+  // const subs = getSubstitutions(match)
   const lineups = getStartingLineUps(match)
   
   return matchPlayers.map(player => {
-    const inSubstitution = getInSubstitution(subs, player.player_id)
-    const outSubstitution = getOutSubstitution(subs, player.player_id)
+/*     const inSubstitution = getInSubstitution(subs, player.player_id)
+    const outSubstitution = getOutSubstitution(subs, player.player_id) */
 
     return {
       ..._.pick(player, ['player_id', 'team_id', 'number', 'position_id']),
       match_id,
       starting: isStarting(lineups, player.player_id),
-      in_sub_second: convertTimeToSec(inSubstitution.minute, inSubstitution.second),
+/*       in_sub_second: convertTimeToSec(inSubstitution.minute, inSubstitution.second),
       out_sub_second: convertTimeToSec(outSubstitution.minute, outSubstitution.second),
       replaced_player_id: inSubstitution.player_id,
-      replacement_player_id: outSubstitution.opponent_player_id
+      replacement_player_id: outSubstitution.opponent_player_id */
     }
   })
 }
