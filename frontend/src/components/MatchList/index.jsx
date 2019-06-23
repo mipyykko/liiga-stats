@@ -23,14 +23,14 @@ const MatchList = React.memo(props => {
 
   const dispatch = useDispatch()
   const selected = useSelector(state => state.match.id)
+  const seasonId = useSelector(state => state.season.id)
+  const tournamentId = useSelector(state => state.tournament.id)
 
   const setSelected = useCallback(
     // eslint-disable-next-line no-sequences
     id => (console.log(id), dispatch({ type: SELECT_MATCH, payload: { id } })),
     [dispatch]
   )
-
-  const { tournamentId, seasonId } = props
 
   const { data, loading } = useQuery(ALL_MATCHES, {
     variables: { tournament_id: tournamentId, season_id: seasonId }

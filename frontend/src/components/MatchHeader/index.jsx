@@ -7,6 +7,7 @@ import { convertHalfSecToMinuteString } from '../../util'
 import { gql } from 'apollo-boost'
 import { useQuery } from 'react-apollo-hooks'
 import { useSelector } from 'react-redux'
+import moment from 'moment'
 
 const MatchHeader = React.memo(() => {
   const id = useSelector(state => state.match.id)
@@ -42,6 +43,7 @@ const MatchHeader = React.memo(() => {
       className={classes.matchHeaderBlock}
     >
       <MatchTeam match={match} team="home" />
+      <MatchStatus match={match} />
       <MatchTeam match={match} team="away" />
     </Grid>
     //</Paper>
@@ -68,6 +70,22 @@ const hex2rgba = (hex, alpha = 1) => {
 
 const mapColor = color => (color || '').replace('0x', '#')
 
+const MatchStatus = ({ match }) => {
+  const date = moment(Number(match.date)).format('D.M.YYYY HH:mm')
+  const lastGoal = _.last(match.goals
+    .filter(goal => goal.half === 1)) || {}
+
+  const halfTimeScore = `${lastGoal.home_team_score || 0}-${lastGoal.away_team_score || 0}` 
+
+  return (
+    <Grid item container xs={1} alignContent='center' justify='center' alignItems='center' direction='column'>
+      {match.status > 1 ? <Grid item><Typography variant='h6'>FT</Typography></Grid>: null}
+      <Grid item><Typography variant="h6">({halfTimeScore})</Typography></Grid>
+      <Typography variant='caption'>{date}</Typography>
+    </Grid>
+  )
+}
+
 const MatchTeam = React.memo(({ match, team }) => {
   // had: players
   const classes = useStyles()
@@ -75,6 +93,8 @@ const MatchTeam = React.memo(({ match, team }) => {
   const color = mapColor(_.get(match, `${team}_team_info.number_color`, ''))
   const direction = `row${team === 'home' ? '' : '-reverse'}`
 
+  /* 
+ */
   return (
     <Grid
       item
@@ -170,6 +190,7 @@ const Score = React.memo(({ score, home }) => (
 ))
 
 const Goal = React.memo(({ scorer, type, standard, minute, home }) => {
+  // TODO: fix this?
   return (
     <Grid
       container

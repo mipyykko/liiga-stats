@@ -9,6 +9,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import ApolloClient from 'apollo-boost'
 import { ApolloProvider } from 'react-apollo'
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks' 
+import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ThemeProvider } from '@material-ui/styles'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { store, persistor } from './store'
@@ -16,8 +17,11 @@ import { store, persistor } from './store'
 import MatchHeader from './components/MatchHeader'
 import MatchTactics from './components/MatchTactics'
 
+const cache = new InMemoryCache()
+
 const client = new ApolloClient({
-  uri: 'http://localhost:3001/graphql'
+  uri: 'http://localhost:3001/graphql',
+  cache
 })
 
 const theme = createMuiTheme({

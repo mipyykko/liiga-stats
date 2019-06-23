@@ -7,6 +7,7 @@ import { Grid } from '@material-ui/core'
 import MatchHeader from './MatchHeader'
 import MatchLineups from './MatchLineups'
 import MatchTactics from './MatchTactics'
+import PlayerView from './PlayerView'
 
 const MatchView = () => {
   const classes = useStyles()
@@ -14,8 +15,17 @@ const MatchView = () => {
   return (
     <Grid container className={classes.root} spacing={2} direction="column">
       <MatchHeader />
-      <MatchTactics />
-      <MatchLineups />
+      <Grid container spacing={2}>
+        <Grid item lg={4} md={6} xs={12} sm={12}>
+          <MatchTactics />
+        </Grid>
+        <Grid item lg={4} md={6} xs={12} sm={12}>
+          <MatchLineups />
+        </Grid>
+        <Grid item lg={4} md={6} xs={12} sm={12}>
+          <PlayerView />
+        </Grid>
+      </Grid>
     </Grid>
   )
 }

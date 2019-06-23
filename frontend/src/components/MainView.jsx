@@ -29,7 +29,7 @@ const MainView = props => {
   const { data: seasonData, loading: seasonLoading } = useQuery(ALL_SEASONS)
 
   useEffect(() => {
-    if (seasonLoading) {
+    if (seasonLoading || (seasonId && tournamentId)) {
       return
     }
 
@@ -60,7 +60,7 @@ const MainView = props => {
         </Select>
       </Grid>
       <Grid container justify="flex-start">
-        <MatchList tournamentId={tournamentId} seasonId={seasonId} />
+        <MatchList />
       </Grid>
       <Grid container direction="column" justify="flex-start">
         <MatchView />

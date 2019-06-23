@@ -1,5 +1,5 @@
 import { BaseModel } from 'models/base'
-
+import { knex } from 'db'
 export class MatchPlayer extends BaseModel {
   static get tableName() {
     return 'match_players'
@@ -115,6 +115,21 @@ export class MatchPlayer extends BaseModel {
           ]
         }
       },
+      goal_events: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchEvent',
+        join: {
+          from: [
+            'match_players.player_id',
+            'match_players.match_id'
+          ],
+          to: [
+            'match_events.player_id',
+            'match_events.match_id'
+          ]
+        },
+        modify: builder => builder.where('type', 'goal')
+      },
       cards: {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchEvent',
@@ -159,6 +174,22 @@ export class MatchPlayer extends BaseModel {
           ]
         },
         modify: builder => builder.where('type', 'sub')
+      },
+      statistics_test: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: 'matchPlayerStatistic',
+        join: {
+          from: [
+            'match_players.player_id',
+          ],
+          to: [
+            'match_player_statistics.player_id'
+          ],
+        },
+        modify: builder => builder
+          .sum({ g: 'g' })
+          .sum({ a: 'a' })
+          .groupBy('player_id')
       }
     }
   }

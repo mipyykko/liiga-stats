@@ -4,7 +4,7 @@ import { useQuery } from 'react-apollo-hooks'
 import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 
-import { Grid, Typography, Paper } from '@material-ui/core'
+import { Grid, Container, Typography, Paper } from '@material-ui/core'
 import { KeyboardArrowDown, KeyboardArrowUp } from '@material-ui/icons'
 import { convertHalfSecToMinuteString } from '../../util'
 import { Player } from '../Player'
@@ -223,7 +223,7 @@ const useStyles = makeStyles({
     maxWidth: 400
   },
   goal: {
-    color: props => (props.goalType === 2 ? '#FF0000' : 'default'),
+    color: props => (props.goalType === 2 ? '#FF0000' : 'initial'),
     '&::after': props =>
       props.standard === 6
         ? {

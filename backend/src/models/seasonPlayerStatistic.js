@@ -43,6 +43,8 @@ export class SeasonPlayerStatistic extends PlayerStatisticModel {
       ...baseSchema,
       properties: {
         ...baseSchema.properties,
+        gp: { type: 'integer' },
+        isi: { type: 'number' },
         player_id: { type: 'integer' },
         tournament_id: { type: 'integer' },
         season_id: { type: 'integer' },

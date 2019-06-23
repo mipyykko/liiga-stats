@@ -7,6 +7,7 @@ import player from './player'
 export const withSelectId = (key, reducer) => (state, action) => {
   switch (action.type) {
     case `SELECT_${key}`:
+      console.log('got select with', action)
       return { ...state, id: action.payload.id }
     default:
       return reducer(state, action)

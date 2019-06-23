@@ -26,6 +26,7 @@ export const getMatchEvents = (match) => {
     ..._.omit(event, ['event_id', 'minute', 'second', 'fitness_available', 'player_name', 'opponent_player_name', 'opponent_player_id']),
     id: event.event_id,
     match_id: match.match_id,
+    // TODO: 0 = ball
     opponent_player_id: event.opponent_player_id > 0 ? event.opponent_player_id : null,
     second: convertTimeToSec(event.minute, event.second)
   }))  

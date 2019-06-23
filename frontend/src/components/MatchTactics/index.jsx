@@ -7,7 +7,7 @@ import { Grid, Paper } from '@material-ui/core'
 import pitchImage from '../../assets/Football_pitch_v2.svg'
 import memoize from 'lodash/memoize'
 
-import { SET_HOVER_PLAYER } from '../../store/actions'
+import { SET_HOVER_PLAYER, SELECT_PLAYER } from '../../store/actions'
 
 const useQueries = id => {
   const tactics = useQuery(MATCH_TACTICS, { variables: { id } })
@@ -27,6 +27,11 @@ const MatchTactics = ({ second = 0 }) => {
 
   const setHoverPlayer = useCallback(
     id => dispatch({ type: SET_HOVER_PLAYER, payload: { id } }),
+    [dispatch]
+  )
+
+  const selectPlayer = useCallback(
+    id => dispatch({ type: SELECT_PLAYER, payload: { id }}),
     [dispatch]
   )
 
@@ -79,6 +84,7 @@ const MatchTactics = ({ second = 0 }) => {
                   position={position}
                   hover={hoverPlayerId === player_id}
                   home={team_id === match.home_team_id}
+                  onClick={() => selectPlayer(player_id)}
                   onMouseEnter={() => setHoverPlayer(player_id)}
                   onMouseLeave={() => setHoverPlayer(null)}
                 />
@@ -100,6 +106,7 @@ const PlayerIcon = props => {
     position,
     number,
     home,
+    onClick,
     onMouseEnter,
     onMouseLeave
   } = props
@@ -116,6 +123,7 @@ const PlayerIcon = props => {
   return (
     <g
       className={classes.playerIcon}
+      onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
