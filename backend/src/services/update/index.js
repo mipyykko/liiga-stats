@@ -113,8 +113,8 @@ const updateService = {
 
       const updateableTactics = _.flatten(getForMatches(matches, getTactics))
       const updateableMatchPlayers = _.flatten(getForMatches(matches, getMatchPlayers))
-      const updateablePlayerStatistics = _.flatten(getForMatches(matches, getPlayerStatistics))
       const updateableGoals = _.flatten(getForMatches(matches, getMatchGoals))
+      const updateablePlayerStatistics = _.flatten(getForMatches(matches, getPlayerStatistics, updateableGoals))
       const updateableEvents = _.flatten(getForMatches(matches, getMatchEvents))
 
       const updateableSeasonTeams = getSeasonTeams(uniqueTeams, Number(tournamentid), Number(seasonid))

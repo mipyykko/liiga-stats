@@ -21,9 +21,9 @@ const graphQlSchema = Object.entries(models)
     (builder, [name, model]) =>
       builder.model(model, {
         listFieldName: camelCase(model.getTableName()),
-        fieldName: decapitalize(name),
+        fieldName: decapitalize(name)
       }),
-    graphQlBuilder(),
+    graphQlBuilder()
   )
   .argFactory((fields, modelClass) => {
     const args = {}
@@ -41,7 +41,7 @@ const graphQlSchema = Object.entries(models)
 
         query: (query, value) => {
           query.distinct(value)
-        },
+        }
       }
     })
 
@@ -50,17 +50,29 @@ const graphQlSchema = Object.entries(models)
   .setBuilderOptions({ skipUndefined: true })
   .build()
 
-
 const customSchema = `
   extend type MatchPlayers {
     season_statistics: [SeasonPlayerStatistics]
   }
+
+  type Query {
+    season_player_statistics(player_id: Int!, tournament_id: Int!, season_id: Int!): [SeasonPlayerStatistics]
+  }
 `
-const statsSql = 'count(player_id) gp, avg(cast(nullif(isi, 0) as bigint)) isi, ' + 
-'sum(g) g, sum(a) a, sum(mof) mof, sum(s) s, sum(st) st, sum(f) f, sum(fop) fop, ' +
-'sum(t) t, sum(lb) lb, sum(p) p, sum(pa) pa, sum(offs) offs, sum(c) c, sum(cw) cw, ' +
-'sum(d) d, (cast(sum(pa) as float) / cast(sum(p) as float) * 100) pap, ' + 
-'(cast(sum(cw) as float) / cast(sum(c) as float) * 100) cwp'
+const playerStatsSql =
+  'team_id, count(player_id) gp, avg(cast(nullif(isi, 0) as bigint)) isi, ' +
+  'sum(g) g, sum(a) a, sum(mof) mof, sum(s) s, sum(st) st, sum(f) f, sum(fop) fop, ' +
+  'sum(t) t, sum(lb) lb, sum(p) p, sum(pa) pa, sum(offs) offs, sum(c) c, sum(cw) cw, ' +
+  'sum(d) d, (cast(sum(pa) as float) / cast(sum(p) as float) * 100) pap, ' +
+  '(cast(sum(cw) as float) / cast(sum(c) as float) * 100) cwp'
+
+const teamStatsSql =
+  'team_id, count(team_id) gp, sum(s) s, sum(st) st, sum(f) f, sum(p) p, ' +
+  'sum(pa) pa, sum(bpm) bpm, sum(ck) ck, sum(c) c, sum(cw) cw, sum(offs) offs, ' +
+  'sum(yc) yc, sum(rc) rc, sum(penf) penf, sum(pena) pena, ' +
+  '(cast(sum(pa) as float) / cast(sum(p) as float) * 100) pap, ' +
+  '(cast(sum(cw) as float) / cast(sum(c) as float) * 100) cwp, ' +
+  'avg(bpp) bpp' // TODO: change to use bpt
 
 const mergedSchema = mergeSchemas({
   schemas: [graphQlSchema, customSchema],
@@ -68,13 +80,25 @@ const mergedSchema = mergeSchemas({
     MatchPlayers: {
       season_statistics: async (obj, args, context, info) => {
         return await models.MatchPlayerStatistic.query()
-          .select(
-            knex.raw(statsSql),
-          )
+          .select(knex.raw(playerStatsSql))
           .where('player_id', obj.player.id)
-      },
+          .groupBy('team_id')
+      }
     },
-  },
+    Query: {
+      season_player_statistics: async (obj, args, context, info) => {
+        return await models.MatchPlayerStatistic.query()
+          .select(knex.raw(playerStatsSql))
+          .where('player_id', args.player_id)
+          .whereIn('match_id', builder => 
+            builder
+              .select('id')
+              .whereComposite(['tournament_id', 'season_id'], [args.tournament_id, args.season_id])
+              .from('matches'))
+          .groupBy('team_id')
+      }
+    }
+  }
 })
 
 export default mergedSchema

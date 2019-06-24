@@ -43,13 +43,22 @@ export const getUpdateableTeams = async (teams, options = { force: false }) => 
 
 export const getTeamStatistics = (match, team) => {
   const statistics = _.get(match, `[${team}_team]['statistics']`, {})
+  const team_id = _.get(match, `[${team}_team]['team_id']`)
+  const side = team === 'first' ? 1 : 2
 
   return {
     match_id: match.match_id,
-    team_id: _.get(match, `[${team}_team]['team_id']`),
+    team_id,
     ...statistics,
     p: calculateFromPercentage(statistics.pa, statistics.pap),
-    c: calculateFromPercentage(statistics.cw, statistics.cwp)
+    c: calculateFromPercentage(statistics.cw, statistics.cwp),
+    bpt: _.get(match, 'first_team.statistics.bpm', 0.0) +
+      _.get(match, 'second_team.statistics.bpm', 0.0),
+    min: _.max((match.players || []).map(p => _.get(p, 'statistics.mof', 0))),
+    penf: null, // TODO: penalties total
+    pena: null,
+    pengf: (match.goals || []).filter(g => g.side === side && g.standard === 6).length,
+    penga: (match.goals || []).filter(g => g.side !== side && g.standard === 6).length
   }
 }
 

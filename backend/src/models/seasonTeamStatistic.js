@@ -20,6 +20,7 @@ export class SeasonTeamStatistic extends TeamStatisticModel {
       ...baseSchema,
       properties: {
         ...baseSchema.properties,
+        gp: { type: 'integer' },
         team_id: { type: 'integer' },
         season_id: { type: 'integer' },
         tournament_id: { type: 'integer' },

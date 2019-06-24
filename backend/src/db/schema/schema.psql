@@ -88,6 +88,10 @@ CREATE TABLE match_team_statistics (
   rc INT,
   penf INT,
   pena INT,
+  pengf INT,
+  penga INT,
+  bpt float(3),
+  min float(3),
 
   PRIMARY KEY (team_id, match_id)
 );
@@ -127,6 +131,10 @@ CREATE TABLE season_team_statistics (
   rc INT,
   penf INT,
   pena INT,
+  pengf INT,
+  penga INT,
+  bpt float(3),
+  min float(3),
 
   PRIMARY KEY (team_id, season_id, tournament_id)
 );
@@ -170,6 +178,8 @@ CREATE TABLE match_player_statistics (
   ga INT,
   pen INT,
   peng INT,
+  pena INT,
+  penga INT,
   s INT,
   st INT,
   f INT,
@@ -269,6 +279,9 @@ CREATE TABLE goals (
   away_team_score INT,
   home_team_prev_score INT,
   away_team_prev_score INT,
+  winning BOOLEAN,
+  equalizing BOOLEAN,
+  first BOOLEAN,
 
   PRIMARY KEY (match_id, home_team_score, away_team_score)
 );
@@ -314,10 +327,6 @@ ALTER TABLE match_players
   ADD CONSTRAINT "match_players_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
 ALTER TABLE match_players
   ADD CONSTRAINT "match_players_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
-ALTER TABLE match_players
-  ADD CONSTRAINT "match_players_replaced_player_fk" FOREIGN KEY (replaced_player_id) REFERENCES players (id);
-ALTER TABLE match_players
-  ADD CONSTRAINT "match_players_replacement_player_fk" FOREIGN KEY (replacement_player_id) REFERENCES players (id);
 
 ALTER TABLE match_player_statistics
   ADD CONSTRAINT "match_player_statistics_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);

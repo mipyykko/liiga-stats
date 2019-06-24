@@ -28,7 +28,10 @@ export class Goal extends BaseModel {
         home_team_score: { type: 'integer' },
         away_team_score: { type: 'integer' },
         home_team_prev_score: { type: 'integer' },
-        away_team_prev_score: { type: 'integer' }
+        away_team_prev_score: { type: 'integer' },
+        winning: { type: 'boolean' },
+        equalizing: { type: 'boolean' },
+        first: { type: 'boolean' } 
       }
     }
   }

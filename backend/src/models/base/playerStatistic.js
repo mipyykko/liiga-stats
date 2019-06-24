@@ -15,7 +15,9 @@ export class PlayerStatisticModel extends BaseModel {
         geq: { type: ['integer', 'null'] }, // equalizing goal
         ga: { type: ['integer', 'null'] }, // goals against (gk)
         pen: { type: ['integer', 'null'] }, // penalty shots
-        peng: { type: ['integer', 'null'] }, // penalty goals
+        peng: { type: ['integer', 'null'] }, // penalty goals,
+        pena: { type: ['integer', 'null'] }, // penalty shots against (gk)
+        penga: { type: ['integer', 'null' ] }, // penalty goals against (gk)
         s: { type: ['integer', 'null'] },
         st: { type: ['integer', 'null'] },
         f: { type: ['integer', 'null'] },

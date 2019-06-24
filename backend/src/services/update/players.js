@@ -27,21 +27,37 @@ const isStarting = (lineup, player_id) => lineup.some(t => t.player_id === playe
 const getInSubstitution = (subs, player_id) => _.pick(subs.find(s => s.opponent_player_id === player_id), ['player_id', 'minute', 'second'])
 const getOutSubstitution = (subs, player_id) => _.pick(subs.find(s => s.player_id === player_id), ['opponent_player_id', 'minute', 'second'])
 
-export const getPlayerStatistics = (match) => {
+export const getPlayerStatistics = (match, goalsWithStatuses) => {
   const { match_id } = match
 
-  
   const matchPlayers = filterEmptyNames(getUniquePlayersWithStats(match))
 
   // TODO: can return the wrong amount of passes when percentage is 0 -
-  // to fix this, we need to go through the subevents
+  // to fix this, we would need to go through the subevents
   return matchPlayers.map(player => ({
     ..._.pick(player, ['player_id', 'team_id']),
     ...player.statistics,
     match_id,
     p: calculateFromPercentage(player.statistics.pa, player.statistics.pap),
+    ...getGoalStatuses(player, (goalsWithStatuses || []).filter(g => g.match_id === match_id)),
   }))
 }
+
+const getGoalStatuses = (player, goals) => {
+  const playerGoals = goals.filter(g => g.scorer_id === player.player_id)
+  const gkGoals = goals.filter(g => g.opposing_goalkeeper_id === player.player_id)
+
+  return {
+    gw: playerGoals.filter(g => g.winning).length || null,
+    geq: playerGoals.filter(g => g.equalizing).length || null,
+    gf: playerGoals.filter(g => g.first).length || null,
+    ga: gkGoals.length || null,
+    pen: null, // TODO: missed penalties
+    peng: playerGoals.filter(g => g.standard === 6).length || null,
+    pena: null, // TODO: ditto
+    penga: gkGoals.filter(g => g.standard === 6).length || null
+  }
+} 
 
 export const getMatchPlayers = (match) => {
   const { match_id } = match
