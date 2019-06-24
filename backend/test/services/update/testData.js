@@ -88,7 +88,8 @@ export const testMatches = [
         pa: 15,
         pap: 50,
         cw: 7,
-        cwp: 31.82
+        cwp: 31.82,
+        bpm: 12
       }
     },
     second_team: {
@@ -100,7 +101,8 @@ export const testMatches = [
         pa: 21,
         pap: 45.65,
         cw: 9,
-        cwp: 9.09
+        cwp: 9.09,
+        bpm: 24
       }
     },
     score_first_team: 1,
@@ -239,7 +241,8 @@ export const testMatches = [
           g: 1,
           isi: 500,
           pa: 5,
-          pap: 50
+          pap: 50,
+          mof: 92,
         }
       },
       {
@@ -253,7 +256,8 @@ export const testMatches = [
           g: 1,
           isi: 500,
           pa: 5,
-          pap: 50
+          pap: 50,
+          mof: 92,
         }
       },
       // a duplicate with ok stats and null stats
@@ -268,7 +272,8 @@ export const testMatches = [
           g: 0,
           isi: 150,
           pa: 1,
-          pap: 33.33
+          pap: 33.33,
+          mof: 91
         }
       },
       {
@@ -281,7 +286,8 @@ export const testMatches = [
           g: null,
           isi: null,
           pa: null,
-          pap: null
+          pap: null,
+          mof: null
         }
       },
       // player with null stats and no duplicate
@@ -295,7 +301,8 @@ export const testMatches = [
           g: null,
           isi: null,
           pa: null,
-          pap: null
+          pap: null,
+          mof: null
         }
       },
       {
@@ -522,6 +529,13 @@ export const expectedTeamStatistics = {
     pa: 15,
     pap: 50,
     yc: 2,
+    bpm: 12,
+    bpt: 36,
+    min: 92,
+    penf: null,
+    pena: null,
+    penga: 0,
+    pengf: 0
   },
   second: {
     team_id: 2,
@@ -532,7 +546,14 @@ export const expectedTeamStatistics = {
     c: 99,
     cw: 9,
     cwp: 9.09,
-    yc: 6
+    yc: 6,
+    bpm: 24,
+    bpt: 36,
+    min: 92,
+    penf: null,
+    pena: null,
+    penga: 0,
+    pengf: 0
   }
 }
 
@@ -602,7 +623,8 @@ export const expectedUniquePlayers = [
       g: 1,
       isi: 500,
       pa: 5,
-      pap: 50
+      pap: 50,
+      mof: 92
     }
   },
   {
@@ -616,7 +638,8 @@ export const expectedUniquePlayers = [
       g: 0,
       isi: 150,
       pa: 1,
-      pap: 33.33
+      pap: 33.33,
+      mof: 91
     }
   },
   {
@@ -629,7 +652,8 @@ export const expectedUniquePlayers = [
       g: null,
       isi: null,
       pa: null,
-      pap: null
+      pap: null,
+      mof: null
     }
   },
   {
@@ -691,6 +715,15 @@ export const expectedPlayerStatistics = [
     p: 10,
     pa: 5,
     pap: 50,
+    mof: 92,
+    ga: 1,
+    geq: null,
+    gf: 1,
+    gw: null,
+    pen: null,
+    pena: null,
+    peng: null,
+    penga: null
   },
   {
     player_id: 2,
@@ -700,8 +733,16 @@ export const expectedPlayerStatistics = [
     isi: 150,
     p: 3,
     pa: 1,
-    pap: 33.33
-
+    pap: 33.33,
+    mof: 91,
+    ga: 1,
+    geq: 1,
+    gf: null,
+    gw: null,
+    pen: null,
+    pena: null,
+    peng: null,
+    penga: null
   },
   {
     player_id: 3,
@@ -711,7 +752,16 @@ export const expectedPlayerStatistics = [
     isi: null,
     p: null,
     pa: null,
-    pap: null
+    pap: null,
+    mof: null,
+    ga: null,
+    geq: null,
+    gf: null,
+    gw: null,
+    pen: null,
+    pena: null,
+    peng: null,
+    penga: null
   }
 ]
 
@@ -750,6 +800,9 @@ export const expectedGoals = [
     second: 1141,
     standard: 1,
     type: 1,
+    first: true,
+    equalizing: false,
+    winning: false
   },
   {
     match_id: 1,
@@ -766,7 +819,10 @@ export const expectedGoals = [
     side: 2,
     standard: 1,
     type: 1,
-    second: 5187
+    second: 5187,
+    first: false,
+    equalizing: true,
+    winning: false
   }
 ]
 

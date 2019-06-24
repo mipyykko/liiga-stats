@@ -7,9 +7,6 @@ import {
   getTeamInfo,
   getTeamTactics,
 } from './teams'
-import {
-  getPlayerStatisticsForTeam,
-} from './players'
 import { getMatchGoals } from './goals'
 
 export const getMatches = async (matches, options = { force: false }) => {

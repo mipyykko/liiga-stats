@@ -82,10 +82,10 @@ export const getMatchPlayers = (match) => {
   })
 }
 
-export const getPlayerStatisticsForTeam = (match, team_id) => {
-  return getPlayerStatistics(match)
+/* export const getPlayerStatisticsForTeam = (match, goalsWithStatuses, team_id) => {
+  return getPlayerStatistics(match, goalsWithStatuses)
     .filter(p => p.team_id === team_id)
-}
+} */
 
 export const getUpdateablePlayers = async (players, options = { force: false }) => {
   const foundPlayers = await Player.query().findByIds(players.map(p => p.player_id))
