@@ -15,13 +15,13 @@ export class MatchTeam extends BaseModel {
 
       properties: {
         match_id: { type: 'integer' },
-        team_id: { type: 'integer' },
+        team_id: { type: 'integer' },
         score: { type: 'integer' },
-        score_pen: { type: 'integer' },
-        number_color: { type: ['string', 'null'] },
-        shirt_color: { type: ['string', 'null'] },
-        coach_name: { type: 'string' },
-        coach_surname: { type: 'string' }
+        score_pen: { type: 'integer' },
+        number_color: { type: ['string', 'null'] },
+        shirt_color: { type: ['string', 'null'] },
+        coach_name: { type: 'string' },
+        coach_surname: { type: 'string' }
       }
     }
   }
@@ -48,24 +48,15 @@ export class MatchTeam extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'goal',
         join: {
-          from: [
-            'match_teams.match_id',
-            'match_teams.team_id'
-          ],
-          to: [
-            'goals.match_id',
-            'goals.team_id'
-          ]
+          from: ['match_teams.match_id', 'match_teams.team_id'],
+          to: ['goals.match_id', 'goals.team_id']
         }
       },
       statistics: {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: 'matchTeamStatistic',
         join: {
-          from: [
-            'match_teams.team_id',
-            'match_teams.match_id'
-          ],
+          from: ['match_teams.team_id', 'match_teams.match_id'],
           to: [
             'match_team_statistics.team_id',
             'match_team_statistics.match_id'
@@ -76,17 +67,10 @@ export class MatchTeam extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchTeamTactic',
         join: {
-          from: [
-            'match_teams.team_id',
-            'match_teams.match_id'
-          ],
-          to: [
-            'match_team_tactics.team_id',
-            'match_team_tactics.match_id'
-          ]
+          from: ['match_teams.team_id', 'match_teams.match_id'],
+          to: ['match_team_tactics.team_id', 'match_team_tactics.match_id']
         }
       }
-
     }
   }
 }

@@ -164,6 +164,15 @@ CREATE TABLE match_players (
   PRIMARY KEY (player_id, match_id)
 );
 
+CREATE TABLE player_seasons (
+  player_id INT NOT NULL,
+  team_id INT NOT NULL,
+  tournament_id INT NOT NULL,
+  season_id INT NOT NULL,
+
+  PRIMARY KEY (player_id, team_id, tournament_id, season_id)
+);
+
 CREATE TABLE match_player_statistics (
   player_id INT NOT NULL,
   match_id INT NOT NULL,
@@ -327,6 +336,15 @@ ALTER TABLE match_players
   ADD CONSTRAINT "match_players_match_fk" FOREIGN KEY (match_id) REFERENCES matches (id);
 ALTER TABLE match_players
   ADD CONSTRAINT "match_players_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+
+ALTER TABLE player_seasons
+  ADD CONSTRAINT "player_seasons_player_fk" FOREIGN KEY (player_id) REFERENCES players (id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE player_seasons
+  ADD CONSTRAINT "player_seasons_team_fk" FOREIGN KEY (team_id) REFERENCES teams (id);
+ALTER TABLE player_seasons
+  ADD CONSTRAINT "player_seasons_tournament_fk" FOREIGN KEY (tournament_id) REFERENCES tournaments (id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE player_seasons
+  ADD CONSTRAINT "player_seasons_season_fk" FOREIGN KEY (season_id, tournament_id) REFERENCES seasons (id, tournament_id) DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE match_player_statistics
   ADD CONSTRAINT "match_player_statistics_player_fk" FOREIGN KEY (player_id) REFERENCES players (id);

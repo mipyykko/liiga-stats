@@ -12,7 +12,7 @@ export class SeasonTeamStatistic extends TeamStatisticModel {
   static get idColumn() {
     return ['team_id', 'season_id', 'tournament_id']
   }
-  
+
   static get jsonSchema() {
     const baseSchema = TeamStatisticModel.getJsonSchema()
 
@@ -21,9 +21,9 @@ export class SeasonTeamStatistic extends TeamStatisticModel {
       properties: {
         ...baseSchema.properties,
         gp: { type: 'integer' },
-        team_id: { type: 'integer' },
+        team_id: { type: 'integer' },
         season_id: { type: 'integer' },
-        tournament_id: { type: 'integer' },
+        tournament_id: { type: 'integer' }
       }
     }
   }

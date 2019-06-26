@@ -12,14 +12,14 @@ export class MatchTeamStatistic extends TeamStatisticModel {
   static get idColumn() {
     return ['team_id', 'match_id']
   }
-  
+
   static get jsonSchema() {
     const baseSchema = TeamStatisticModel.getJsonSchema()
 
     return {
       ...baseSchema,
       properties: {
-        team_id: { type: 'integer' },
+        team_id: { type: 'integer' },
         match_id: { type: 'integer' },
         ...baseSchema.properties
       }

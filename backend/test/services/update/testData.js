@@ -705,6 +705,33 @@ export const expectedPlayers = [
   }
 ]
 
+export const expectedPlayerSeasons = [
+  {
+    player_id: 1,
+    team_id: 1,
+    season_id: 1,
+    tournament_id: 1,
+  },
+  {
+    player_id: 2,
+    team_id: 2,
+    season_id: 1,
+    tournament_id: 1,
+  },
+  {
+    player_id: 3,
+    team_id: 2,
+    season_id: 1,
+    tournament_id: 1,
+  },
+  {
+    player_id: 5,
+    team_id: 3,
+    season_id: 1,
+    tournament_id: 1,
+  }
+]
+
 export const expectedPlayerStatistics = [
   {
     player_id: 1,

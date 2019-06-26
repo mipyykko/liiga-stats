@@ -12,7 +12,8 @@ import { 
   getUpdateablePlayers,
   getPlayerStatistics,
   getPlayerStatisticsForTeam,
-  getUpdateablePlayersFromEvents
+  getUpdateablePlayersFromEvents,
+  getStartingLineUp
 } from 'services/update/players'
 import { 
   testMatches, 
@@ -21,10 +22,12 @@ import {
   expectedPlayers, 
   expectedPlayerStatistics,
   detailedEvent,
-  expectedDetailedPlayers
+  expectedDetailedPlayers,
+  expectedPlayerSeasons
 } from './testData'
 import _ from 'lodash'
 import { Model } from 'objection'
+import { getUpdateablePlayerSeasons } from '../../../src/services/update/players';
 
 describe('Update service: players', () => {
   const oneMatchExpected = expectedUniquePlayers.filter(p => _.includes([1,2], p.team_id))
@@ -133,6 +136,118 @@ describe('Update service: players', () => {
       expect(APIstub.secondCall).to.have.been.calledWith(1,2)
 
       API.fetchDetailedEvent.restore()
+    })
+
+    it('returns empty on no data', async () => {
+      expect(await getUpdateablePlayersFromEvents([])).to.eql([])
+    })
+  })
+
+  describe('getUpdateablePlayerSeasons', () => {
+    let queryStub, findByIdsStub
+
+    beforeEach(() => {
+      queryStub = sinon.stub(Model, 'query')
+      findByIdsStub = sinon.stub()
+      
+      queryStub.returns({
+        findByIds: findByIdsStub
+      })
+      findByIdsStub.returns(Promise.resolve([]))
+    })
+    const uniquePlayers = getUniquePlayersWithStats(testMatches, ['player_id', 'team_id'])
+
+    it('returns updateable player seasons', async () => {
+      const updateablePlayerSeasons = await getUpdateablePlayerSeasons(uniquePlayers, 1, 1)
+
+      expect(updateablePlayerSeasons).to.eql(expectedPlayerSeasons)
+    })
+
+    it('returns correct data with existing data', async () => {
+      findByIdsStub.returns(Promise.resolve([ { player_id: 1, team_id: 1 } ]))
+
+      const updateablePlayerSeasons = await getUpdateablePlayerSeasons(uniquePlayers, 1, 1)
+
+      expect(updateablePlayerSeasons).to.eql(expectedPlayerSeasons.filter(p => p.player_id !== 1))
+    })
+
+    it('returns all data with existing data and force option', async () => {
+      findByIdsStub.returns(Promise.resolve([ { player_id: 1, team_id: 1 } ]))
+
+      const updateablePlayerSeasons = await getUpdateablePlayerSeasons(uniquePlayers, 1, 1, { force : true })
+
+      expect(updateablePlayerSeasons).to.eql(expectedPlayerSeasons)
+    })
+
+    afterEach(() => {
+      Model.query.restore()
+    })
+  })
+  describe('getStartingLineup', () => {
+    it('returns correct lineup for team', () => {
+      const match = {
+        match_id: 1,
+        tactics: [
+          {
+            second: 0,
+            tactics: [
+              {
+                team_id: 1,
+                second: 0,
+                player_id: 1,
+              },
+              {
+                team_id: 2,
+                second: 0,
+                player_id: 2
+              },
+              {
+                team_id: 2,
+                second: 0,
+                player_id: 3
+              }
+            ]
+          },
+          {
+            second: 1,
+            tactics: [
+              {
+                team_id: 1,
+                second: 1,
+                player_id: 5
+              }
+            ]
+          }
+        ]
+      }
+
+      const expected = {
+        1: [
+          {
+            match_id: 1,
+            team_id: 1,
+            second: 0,
+            player_id: 1
+          }
+        ],
+        2: [
+          {
+            match_id: 1,
+            team_id: 2,
+            second: 0,
+            player_id: 2
+          },
+          {
+            match_id: 1,
+            team_id: 2,
+            second: 0,
+            player_id: 3
+          }
+        ]
+      }
+
+      expect(getStartingLineUp(match, 1)).to.eql(expected[1])
+      expect(getStartingLineUp(match, 2)).to.eql(expected[2])
     })
   })
 })

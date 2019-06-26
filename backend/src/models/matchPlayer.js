@@ -14,14 +14,14 @@ export class MatchPlayer extends BaseModel {
       type: 'object',
 
       properties: {
-        player_id: { type: 'integer' },
-        match_id: { type: 'integer' },
-        team_id: { type: 'integer' },
-        number: { type: ['integer', 'null'] },
-        position_id: { type: ['integer', 'null'] },
-        starting: { type: 'boolean' },
+        player_id: { type: 'integer' },
+        match_id: { type: 'integer' },
+        team_id: { type: 'integer' },
+        number: { type: ['integer', 'null'] },
+        position_id: { type: ['integer', 'null'] },
+        starting: { type: 'boolean' }
         // TODO: these aren't accurate because of the halves - rethink
-/*         in_sub_second: { type: ['integer', 'null'] },
+        /*         in_sub_second: { type: ['integer', 'null'] },
         out_sub_second: { type: ['integer', 'null'] },
         replaced_player_id: { type: ['integer', 'null'] },
         replacement_player_id: { type: ['integer', 'null'] }, */
@@ -39,7 +39,7 @@ export class MatchPlayer extends BaseModel {
           to: 'players.id'
         }
       },
-/*       replaced_player: {
+      /*       replaced_player: {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: 'player',
         join: {
@@ -75,10 +75,7 @@ export class MatchPlayer extends BaseModel {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: 'matchPlayerStatistic',
         join: {
-          from: [
-            'match_players.player_id',
-            'match_players.match_id'
-          ],
+          from: ['match_players.player_id', 'match_players.match_id'],
           to: [
             'match_player_statistics.player_id',
             'match_player_statistics.match_id'
@@ -92,7 +89,7 @@ export class MatchPlayer extends BaseModel {
           from: [
             'match_players.player_id',
             'match_players.team_id',
-            'match_players.match_id',
+            'match_players.match_id'
           ],
           to: [
             'match_team_tactics.player_id',
@@ -105,28 +102,16 @@ export class MatchPlayer extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'goal',
         join: {
-          from: [
-            'match_players.player_id',
-            'match_players.match_id'
-          ],
-          to: [
-            'goals.scorer_id',
-            'goals.match_id'
-          ]
+          from: ['match_players.player_id', 'match_players.match_id'],
+          to: ['goals.scorer_id', 'goals.match_id']
         }
       },
       goal_events: {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchEvent',
         join: {
-          from: [
-            'match_players.player_id',
-            'match_players.match_id'
-          ],
-          to: [
-            'match_events.player_id',
-            'match_events.match_id'
-          ]
+          from: ['match_players.player_id', 'match_players.match_id'],
+          to: ['match_events.player_id', 'match_events.match_id']
         },
         modify: builder => builder.where('type', 'goal')
       },
@@ -134,14 +119,8 @@ export class MatchPlayer extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchEvent',
         join: {
-          from: [
-            'match_players.player_id',
-            'match_players.match_id'
-          ],
-          to: [
-            'match_events.player_id',
-            'match_events.match_id'
-          ]
+          from: ['match_players.player_id', 'match_players.match_id'],
+          to: ['match_events.player_id', 'match_events.match_id']
         },
         modify: builder => builder.whereIn('type', ['yc', 'rc', 'yrc'])
       },
@@ -149,14 +128,8 @@ export class MatchPlayer extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchEvent',
         join: {
-          from: [
-            'match_players.match_id',
-            'match_players.player_id'
-          ],
-          to: [
-            'match_events.match_id',
-            'match_events.opponent_player_id'
-          ]
+          from: ['match_players.match_id', 'match_players.player_id'],
+          to: ['match_events.match_id', 'match_events.opponent_player_id']
         },
         modify: builder => builder.where('type', 'sub')
       },
@@ -164,14 +137,8 @@ export class MatchPlayer extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchEvent',
         join: {
-          from: [
-            'match_players.match_id',
-            'match_players.player_id'
-          ],
-          to: [
-            'match_events.match_id',
-            'match_events.player_id'
-          ]
+          from: ['match_players.match_id', 'match_players.player_id'],
+          to: ['match_events.match_id', 'match_events.player_id']
         },
         modify: builder => builder.where('type', 'sub')
       },
@@ -179,19 +146,15 @@ export class MatchPlayer extends BaseModel {
         relation: BaseModel.HasManyRelation,
         modelClass: 'matchPlayerStatistic',
         join: {
-          from: [
-            'match_players.player_id',
-          ],
-          to: [
-            'match_player_statistics.player_id'
-          ],
+          from: ['match_players.player_id'],
+          to: ['match_player_statistics.player_id']
         },
-        modify: builder => builder
-          .sum({ g: 'g' })
-          .sum({ a: 'a' })
-          .groupBy('player_id')
+        modify: builder =>
+          builder
+            .sum({ g: 'g' })
+            .sum({ a: 'a' })
+            .groupBy('player_id')
       }
     }
   }
-
 }

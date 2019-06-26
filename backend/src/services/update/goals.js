@@ -54,7 +54,7 @@ export const getMatchGoals = match => {
   })
 }
 
-const isWinningGoal = ({
+export const isWinningGoal = ({
   score_first_team,
   score_second_team,
   home_team_score,

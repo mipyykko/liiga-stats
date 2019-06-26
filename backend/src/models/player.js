@@ -1,5 +1,4 @@
 import { BaseModel } from 'models/base'
-import { getPath } from './utils'
 
 export class Player extends BaseModel {
   static get tableName() {
@@ -11,11 +10,11 @@ export class Player extends BaseModel {
       type: 'object',
 
       properties: {
-        id: { type: 'integer' },
-        name: { type: 'string' },
-        surname: { type: 'string' },
+        id: { type: 'integer' },
+        name: { type: 'string' },
+        surname: { type: 'string' },
         display_name: { type: 'string' },
-        photo: { type: 'string' },
+        photo: { type: 'string' }
       }
     }
   }
@@ -31,7 +30,7 @@ export class Player extends BaseModel {
             from: 'match_players.player_id',
             to: 'match_players.match_id'
           },
-          to: 'matches.id',
+          to: 'matches.id'
         }
       },
       match_infos: {
@@ -39,7 +38,7 @@ export class Player extends BaseModel {
         modelClass: 'matchPlayer',
         join: {
           from: 'players.id',
-          to: 'match_players.player_id',
+          to: 'match_players.player_id'
         }
       }
     }

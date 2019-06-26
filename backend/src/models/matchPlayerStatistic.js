@@ -43,10 +43,10 @@ export class MatchPlayerStatistic extends PlayerStatisticModel {
     return {
       ...baseSchema,
       properties: {
-        player_id: { type: 'integer' },
-        match_id: { type: 'integer' },
-        team_id: { type: 'integer' },
-        ...baseSchema.properties,      
+        player_id: { type: 'integer' },
+        match_id: { type: 'integer' },
+        team_id: { type: 'integer' },
+        ...baseSchema.properties
       }
     }
   }
@@ -72,7 +72,7 @@ export class MatchPlayerStatistic extends PlayerStatisticModel {
       team: {
         relation: PlayerStatisticModel.HasOneRelation,
         modelClass: 'team',
-        join: { 
+        join: {
           from: 'match_player_statistics.team_id',
           to: 'teams.id'
         }

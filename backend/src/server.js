@@ -18,10 +18,11 @@ const apollo = new ApolloServer({
   schema: schema
 })
 
-/* process.on('unhandledRejection', (error, p) => {
+/* process.on('unhandledRejection', (error, promise) => {
   console.log('=== UNHANDLED REJECTION ===')
   console.dir(error)
-  process.exit(1)
+  throw promise
+  // process.exit(1)
 }) */
 
 app.use('/api', routes)

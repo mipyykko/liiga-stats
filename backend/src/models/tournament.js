@@ -10,9 +10,9 @@ export class Tournament extends BaseModel {
       type: 'object',
 
       properties: {
-        id: { type: 'integer' },
-        name: { type: 'string' },
-        country: { type: 'string' },
+        id: { type: 'integer' },
+        name: { type: 'string' },
+        country: { type: 'string' },
         type: { type: 'number' }
       }
     }

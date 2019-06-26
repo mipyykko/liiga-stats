@@ -9,20 +9,20 @@ export const insert = async (data, entity, trx = null) => {
   const chunks = _.chunk(data, 1000)
 
   return _.flattenDepth(
-    await Promise.all(chunks
-      .map(async chunk => 
-        await entity
-          .query(trx)
-          .insert(chunk)
-      )
+    await Promise.all(
+      chunks.map(async chunk => await entity.query(trx).insert(chunk))
     ),
-    1)
+    1
+  )
 }
 
 export const insertMany = async (data, entities, trx = null) => {
+  if (data.length !== entities.length) {
+    throw new Error('must have equal number of data arrays and entities')
+  }
+
   return Promise.all(
-    (_.zip(data, entities))
-      .map(async ([d, e]) => await insert(d, e, trx))
+    _.zip(data, entities).map(async ([d, e]) => await insert(d, e, trx))
   )
 }
 
@@ -35,36 +35,35 @@ export const update = async (data, entity, trx = null, id = 'id') => {
   }
 
   return _.flattenDepth(
-    await Promise.all(data.map(async d => 
-      await entity
-        .query(trx)
-        .skipUndefined()
-        .patchAndFetchById(getId(d, id), d))),
-    1)
-} 
+    await Promise.all(
+      data.map(
+        async d =>
+          await entity
+            .query(trx)
+            .skipUndefined()
+            .patchAndFetchById(getId(d, id), d)
+      )
+    ),
+    1
+  )
+}
 
-const getId = (data, id) => Array.isArray(id)
-  ? id.map(i => data[i])
-  : data[id]
+const getId = (data, id) =>
+  Array.isArray(id) ? id.map(i => data[i]) : data[id]
 
-const compareById = (data1, data2, id) => Array.isArray(id)
-  ? id.all(k => data1[k] === data2[k])
-  : data1[id] === data2[id]
+const compareById = (data1, data2, id) =>
+  Array.isArray(id)
+    ? id.all(k => data1[k] === data2[k])
+    : data1[id] === data2[id]
 
 const exists = n => typeof n !== 'undefined' && n !== null
 
 export const upsert = async (data, entity, trx = null, id) => {
-  const _id = id 
-    ? id
-    : entity.getIdColumn
-      ? entity.getIdColumn()
-      : 'id'
+  const _id = id ? id : entity.getIdColumn ? entity.getIdColumn() : 'id'
 
   // not an array, upsert single
   if (!Array.isArray(data)) {
-    const existing = await entity
-      .query(trx)
-      .findById(getId(data, _id))
+    const existing = await entity.query(trx).findById(getId(data, _id))
 
     if (!existing) {
       return insert(data, entity, trx)
@@ -76,52 +75,57 @@ export const upsert = async (data, entity, trx = null, id) => {
   const existing = await entity
     .query(trx)
     .findByIds(data.map(d => getId(d, _id)))
-  
+
   const existingIds = existing.filter(d => exists(getId(d, _id)))
-  const [maybeUpdateableData, insertableData] = _.partition(data, d => _.includes(existingIds, getId(d, _id)))
-  const updateableData = maybeUpdateableData
-    .filter(maybeData => !shallowCompare(
-      maybeData,
-      data.find(d => compareById(maybeData, d, _id))
-    ))
+  const [maybeUpdateableData, insertableData] = _.partition(data, d =>
+    _.includes(existingIds, getId(d, _id))
+  )
+  const updateableData = maybeUpdateableData.filter(
+    maybeData =>
+      !shallowCompare(maybeData, data.find(d => compareById(maybeData, d, _id)))
+  )
 
   return _.flattenDepth(
     await Promise.all([
       insert(insertableData, entity, trx),
-      ...updateableData.map(async d => update(d, entity, trx, _id))       
+      ...updateableData.map(async d => update(d, entity, trx, _id))
     ]),
-    1)
+    1
+  )
 }
 
 export const upsertMany = async (data, entities, trx = null) => {
   return Promise.all(
-    (_.zip(data, entities))
-      .map(async ([d, e]) => await upsert(d, e, trx))
+    _.zip(data, entities).map(async ([d, e]) => await upsert(d, e, trx))
   )
 }
 
-export const splitSeasonName = (name) => {
-  const seasonRegExp = /^(.*)\.\s+(.*) - (\d+)-?(\d+)?$/
+export const splitSeasonName = name => {
+  const seasonRegExp = /^(((.*)\.\s?)?(.*)\s)?- (\d+)-?(\d+)?$/
 
-  // TODO: this pattern does not apply to all tournaments/seasons!
+  // should catch even those without country and even tournament name
   try {
-    // eslint-disable-next-line no-empty-pattern
-    const [{}, country, tournamentName, start_year, end_year] = seasonRegExp.exec(name)
+    const res = seasonRegExp.exec(name) || []
 
-    return { country, tournamentName, start_year, end_year }
+    return { 
+      country: res[3],
+      tournamentName: res[4],
+      start_year: Number(res[5]) || undefined, 
+      end_year: Number(res[6]) || undefined 
+    }
   } catch (e) {
     return {}
   }
 }
 
-export const stripTournament = (name) => {
-  const tournamentRegExp = /^.*\.\s+(.*)$/
+export const stripTournament = name => {
+  const tournamentRegExp = /^(.*\.\s?)?(.*)$/
 
   try {
     // eslint-disable-next-line no-empty-pattern
-    const [{}, seasonName] = tournamentRegExp.exec(name)
-    
-    return seasonName
+    const res = tournamentRegExp.exec(name) || []
+
+    return res ? res[2] : null
   } catch (e) {
     return null
   }

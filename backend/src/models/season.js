@@ -14,12 +14,12 @@ export class Season extends BaseModel {
       type: 'object',
 
       properties: {
-        id: { type: 'integer' },
-        tournament_id: { type: 'integer' },
-        name: { type: 'string' },
-        start_year: { type: 'integer' },
-        end_year: { type: ['integer', 'null'] },
-        first_match_id: { type: 'integer' }
+        id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
+        name: { type: 'string' },
+        start_year: { type: 'integer' },
+        end_year: { type: ['integer', 'null'] },
+        first_match_id: { type: 'integer' }
       }
     }
   }
@@ -33,7 +33,7 @@ export class Season extends BaseModel {
           from: 'seasons.tournament_id',
           to: 'tournaments.id'
         }
-      },
+      }
       // firstmatch...
     }
   }

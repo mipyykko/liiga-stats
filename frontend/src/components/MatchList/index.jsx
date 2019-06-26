@@ -56,9 +56,11 @@ const MatchList = React.memo(props => {
 
     setMatchesByRound(roundMap)
 
-    // we alreay had a selected, ie. rehydrated
-    if (selected) {
-      setRound(data.matches.find(match => match.id === selected).round)
+    // we already had a selected, ie. rehydrated
+    const currentMatch = selected && data.matches ? data.matches.find(match => match.id === selected) : null
+
+    if (selected && currentMatch) {
+      setRound(currentMatch.round)
     } else {
       setRound(firstMatchOfLatestRound.round)
       setSelected(firstMatchOfLatestRound.id)

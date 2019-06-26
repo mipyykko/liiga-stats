@@ -5,24 +5,35 @@ import config from '../../config'
 export default class FakeAPI extends API {
   static fetchTournamentSeasons(tournamentid) {
     try {
-      return JSON.parse(fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${tournamentid}.json`))
+      return JSON.parse(
+        fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${tournamentid}.json`)
+      )
     } catch (err) {
       return super.fetchTournamentSeasons(tournamentid)
     }
   }
-  
+
   static fetchTournamentSeason(tournamentid, seasonid) {
     try {
-      return JSON.parse(fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${tournamentid}-${seasonid}.json`, { encoding: 'utf-8' }))
+      return JSON.parse(
+        fs.readFileSync(
+          `${config.LOCAL_DATA_DIRECTORY}/${tournamentid}-${seasonid}.json`,
+          { encoding: 'utf-8' }
+        )
+      )
     } catch (err) {
       return super.fetchTournamentSeason(tournamentid, seasonid)
     }
   }
 
-  static async fetchMatch (matchid) {
+  static async fetchMatch(matchid) {
     try {
-      return JSON.parse(fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${matchid}.json`, { encoding: 'utf-8' }))
-    } catch(err) {
+      return JSON.parse(
+        fs.readFileSync(`${config.LOCAL_DATA_DIRECTORY}/${matchid}.json`, {
+          encoding: 'utf-8'
+        })
+      )
+    } catch (err) {
       return super.fetchMatch(matchid)
     }
   }

@@ -14,7 +14,7 @@ export class SeasonTeam extends BaseModel {
       type: 'object',
 
       properties: {
-        team_id: { type: 'integer' },
+        team_id: { type: 'integer' },
         season_id: { type: 'integer' },
         tournament_id: { type: 'integer' }
       }

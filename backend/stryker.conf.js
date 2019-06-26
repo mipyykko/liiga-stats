@@ -2,7 +2,7 @@ module.exports = function(config) {
   config.set({
     mutator: 'javascript',
     mutate: [
-      'services/**/*.js'
+      'src/services/**/*.js'
     ],
     packageManager: 'npm',
     reporters: ['html', 'clear-text', 'progress'],

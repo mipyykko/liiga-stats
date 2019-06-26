@@ -1,4 +1,4 @@
-import { BaseModel } from 'models/base'
+import { BaseModel } from 'models/base'
 
 export class Goal extends BaseModel {
   static get tableName() {
@@ -15,10 +15,10 @@ export class Goal extends BaseModel {
 
       properties: {
         scorer_id: { type: 'integer' },
-        assistant_id: { type: ['integer', 'null'] },
+        assistant_id: { type: ['integer', 'null'] },
         match_id: { type: 'integer' },
         team_id: { type: 'integer' },
-        opposing_team_id: { type: 'integer' }, 
+        opposing_team_id: { type: 'integer' },
         opposing_goalkeeper_id: { type: 'integer' },
         half: { type: 'integer' },
         second: { type: 'integer' },
@@ -29,9 +29,9 @@ export class Goal extends BaseModel {
         away_team_score: { type: 'integer' },
         home_team_prev_score: { type: 'integer' },
         away_team_prev_score: { type: 'integer' },
-        winning: { type: 'boolean' },
+        winning: { type: 'boolean' },
         equalizing: { type: 'boolean' },
-        first: { type: 'boolean' } 
+        first: { type: 'boolean' }
       }
     }
   }
@@ -62,6 +62,6 @@ export class Goal extends BaseModel {
           to: 'players.id'
         }
       }
-    } 
+    }
   }
 }

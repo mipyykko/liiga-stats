@@ -12,7 +12,8 @@ import {
   getUpdateablePlayers,
   getMatchPlayers,
   getPlayerStatistics,
-  getUpdateablePlayersFromEvents
+  getUpdateablePlayersFromEvents,
+  getUpdateablePlayerSeasons
 } from './players'
 import {
   getUniqueTeamsFromMatches,
@@ -44,6 +45,7 @@ import {
   Goal,
   MatchEvent,
   SeasonTeam,
+  PlayerSeason,
   SeasonPlayerStatistic,
   SeasonTeamStatistic
 } from 'models'
@@ -86,19 +88,24 @@ const updateService = {
           updatedPlayerDetails = await update(updateablePlayerDetails, Player, trx)
         })
 
-      let updatedMatches, updatedSeasons, updatedTournaments
+      const uniquePlayersByPlayerAndTeam = getUniquePlayersWithStats(matches, ['player_id', 'team_id'])
+
+      const updateablePlayerSeasons = await getUpdateablePlayerSeasons(
+        uniquePlayersByPlayerAndTeam,
+        tournamentid,
+        seasonid
+      )
+
+      let updatedMatches, updatedSeasons, updatedTournaments, updatedPlayerSeasons
 
       // insert
-      const ret = await transaction(Tournament, Match, Season,
-        async (Tournament, Match, Season, trx) => 
-          [updatedTournaments, updatedSeasons, updatedMatches] = await insertMany(
-            [updateableTournaments, updateableSeasons, updateableMatches],
-            [Tournament, Season, Match],
+      const ret = await transaction(Tournament, Match, Season, PlayerSeason,
+        async (Tournament, Match, Season, PlayerSeason, trx) => 
+          [updatedTournaments, updatedSeasons, updatedMatches, updatedPlayerSeasons] = await insertMany(
+            [updateableTournaments, updateableSeasons, updateableMatches, updateablePlayerSeasons],
+            [Tournament, Season, Match, PlayerSeason],
             trx)
 
-/*           updatedMatches = await Promise.all(updateableMatches.map(m => Match
-            .query(trx)
-            .upsertGraph(m, { insertMissing: true }))) */
       )
 
       const updateableTeamStatistics = _.concat(
@@ -122,20 +129,6 @@ const updateService = {
       // upsert stats
       const updatedPlayerStatistics = await upsert(updateablePlayerStatistics, MatchPlayerStatistic)
       const updatedTeamStatistics = await upsert(updateableTeamStatistics, MatchTeamStatistic) 
-
-  /*       const [
-        updatedPlayerStatistics,
-        updatedTeamStatistics
-      ] = await upsertMany(
-        [
-          updateablePlayerStatistics,
-          updateableTeamStatistics
-        ],
-        [
-          MatchPlayerStatistic,
-          MatchTeamStatistic
-        ]
-      ) */
 
       const [
         updatedSeasonTeams,
@@ -172,6 +165,7 @@ const updateService = {
           players: updatedPlayers.map(p => getKey(p, Player)),
           player_details: updatedPlayerDetails.map(p => getKey(p, Player)),
           player_statistics: updatedPlayerStatistics.map(p => getKey(p, MatchPlayerStatistic)),
+          player_seasons: updatedPlayerSeasons.map(ps => getKey(ps, PlayerSeason)),
           matches: updatedMatches.map(m => getKey(m, Match)),
           match_players: updatedMatchPlayers.map(m => getKey(m, MatchPlayer)),
           match_teams: updatedMatchTeams.map(t => getKey(t, MatchTeam)),

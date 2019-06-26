@@ -44,11 +44,11 @@ export class SeasonPlayerStatistic extends PlayerStatisticModel {
       properties: {
         ...baseSchema.properties,
         gp: { type: 'integer' },
-        isi: { type: 'number' },
-        player_id: { type: 'integer' },
-        tournament_id: { type: 'integer' },
-        season_id: { type: 'integer' },
-        team_id: { type: 'integer' },
+        isi: { type: 'number' },
+        player_id: { type: 'integer' },
+        tournament_id: { type: 'integer' },
+        season_id: { type: 'integer' },
+        team_id: { type: 'integer' }
       }
     }
   }
@@ -63,10 +63,7 @@ export class SeasonPlayerStatistic extends PlayerStatisticModel {
             'season_player_statistics.season_id',
             'season_player_statistics.tournament_id'
           ],
-          to: [
-            'seasons.id',
-            'seasons.tournament_id'
-          ]
+          to: ['seasons.id', 'seasons.tournament_id']
         }
       },
       player: {
@@ -80,7 +77,7 @@ export class SeasonPlayerStatistic extends PlayerStatisticModel {
       team: {
         relation: PlayerStatisticModel.HasOneRelation,
         modelClass: 'team',
-        join: { 
+        join: {
           from: 'season_player_statistics.team_id',
           to: 'teams.id'
         }
