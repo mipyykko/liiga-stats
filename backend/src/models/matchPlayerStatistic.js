@@ -74,7 +74,7 @@ export class MatchPlayerStatistic extends PlayerStatisticModel {
         modelClass: 'team',
         join: {
           from: 'match_player_statistics.team_id',
-          to: 'teams.id'
+          to: 'teams.id' 
         }
       }
     }

@@ -13,5 +13,5 @@ module.exports = {
   migrations: {
     directory: path.join(__dirname, 'src', 'db', 'migrations')
   },
-  //debug: true
+  debug: true
 }

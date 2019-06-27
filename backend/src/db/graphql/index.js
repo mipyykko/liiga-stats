@@ -4,6 +4,7 @@ import { builder as graphQlBuilder } from 'objection-graphql'
 import forOwn from 'lodash'
 import models from 'models'
 import { knex } from '..'
+import _ from 'lodash'
 
 const camelCase = s =>
   s
@@ -51,23 +52,23 @@ const graphQlSchema = Object.entries(models)
   .build()
 
 const customSchema = `
-  type PlayerSeason {
-    tournament_id: Int!
-    season_id: Int!
-    team_id: Int!
+
+  extend type PlayerSeasons {
+    matches: [Matches]
   }
 
   extend type Players {
-    seasons: [PlayerSeason]
+    seasons: [PlayerSeasons]
+    season_statistics(tournament_id: Int, season_id: Int): [SeasonPlayerStatistics]
   }
 
   extend type MatchPlayers {
     history_seasons: [Seasons]
-    season_statistics: [SeasonPlayerStatistics]
+    season_statistics(tournament_id: Int, season_id: Int, upto: Boolean): [SeasonPlayerStatistics]
   }
 
   type Query {
-    player_seasons(player_id: Int!): [PlayerSeason]
+    player_seasons(player_id: Int!): [PlayerSeasons]
     season_player_statistics(player_id: Int!, tournament_id: Int!, season_id: Int!): [SeasonPlayerStatistics],
   }
 `
@@ -102,15 +103,19 @@ const playerStats = {
     'penga'
   ],
   avg: [],
-  count: [{ gp: 'player_id' }],
+  count: [{ gp: 'matches.id' }],
   calculate_avg: [['pa', 'p', 'pap'], ['cw', 'c', 'cwp']],
   raw: [
     'avg(cast(nullif(isi, 0) as bigint)) isi'
   ],
   select: [
-    'team_id',
+    'player_id',
+/*     'season_id',
+    'tournament_id', */
+    'team_id,
     'matches.tournament_id',
-    'matches.season_id'
+    'matches.season_id',
+    //'matches.date'
   ]
 }
 
@@ -122,7 +127,7 @@ const queryBuilder = (model, config) => {
   query = config.count.reduce((acc, curr) => acc.count(curr), query)
   query = config.calculate_avg
     .reduce((acc, curr) => acc.select(
-      knex.raw(`(cast(sum(${curr[0]}) as float) / cast(sum(${curr[1]}) as float) * 100) ${curr[2]}`)
+      knex.raw(`case sum(${curr[1]}) when 0 then 0 else (cast(sum(${curr[0]}) as float) / cast(sum(${curr[1]}) as float) * 100) end ${curr[2]}`)
     ), query)
   query = config.select.reduce((acc, curr) => acc.select(curr), query)
   query = config.raw.reduce((acc, curr) => acc.select(knex.raw(curr)), query)
@@ -130,6 +135,7 @@ const queryBuilder = (model, config) => {
   return query
 }
 
+// not updated
 const playerStatsSql =
   'team_id, count(player_id) gp, avg(cast(nullif(isi, 0) as bigint)) isi, ' +
   'sum(g) g, sum(a) a, sum(mof) mof, sum(s) s, sum(st) st, sum(f) f, sum(fop) fop, ' +
@@ -151,30 +157,107 @@ const mergedSchema = mergeSchemas({
   schemas: [graphQlSchema, customSchema],
   resolvers: {
     MatchPlayers: {
-      // TODO: now returns all player history - it's in wrong place, though
       season_statistics: async (obj, args, context, info) => {
-        return await queryBuilder(models.MatchPlayerStatistic, playerStats)
+        console.log('OBJ', obj, 'ARGS', args)
+        // TODO: total for season for all teams in competition
+        // - can be done by removing team_id from select and from groupby
+        //   but maybe it's better to leave it for the front
+
+        // if match { tournament_id, season_id } queried, then use those
+        // otherwise use season_statistics parameters,
+        // fallback returns all player season statistics
+
+        // upto flag gets statistics up to this game
+
+        const tournament_id = args.tournament_id || _.get(obj, 'match.tournament_id')
+        const season_id = args.season_id || _.get(obj, 'match.season_id')
+
+        let query = queryBuilder(models.MatchPlayerStatistic, playerStats)
           .where('player_id', obj.player.id)
           .leftJoin('matches', 'matches.id', 'match_player_statistics.match_id')
-          .groupBy('team_id', 'matches.tournament_id', 'matches.season_id')
+          .joinRelation('[match, team]')
+
+        if (tournament_id && season_id) {
+          query = query
+            .whereIn('match_id', builder =>
+              builder
+                .select('id')
+                .whereComposite(
+                  ['matches.tournament_id', 'matches.season_id'],
+                  [tournament_id, season_id]
+                )
+                .andWhereRaw(args.upto ? `date <= to_timestamp(${Number(obj.match.date) / 1000})` : '')
+                .from('matches')
+            )
+        }
+
+        query = query.groupBy('team_id', 'matches.tournament_id', 'matches.season_id', 'match_player_statistics.player_id')
+
+        return await query.execute()
       }
     },
     Players: {
       seasons: async (obj, args, context, info) => {
-        console.log('OBJ', obj, 'ARGS', args)
-        return knex
-          .distinct('season_id', 'tournament_id', 'match_players.team_id')
-          .from('matches')
-          .leftJoin('match_players', 'matches.id', 'match_players.match_id')
-          .where('match_players.player_id', obj.id)
+        return await models.PlayerSeason.query()
+          .select('team_id', 'season.id', 'season.tournament_id')
+          .distinct('player_id', 'player_seasons.tournament_id', 'season_id')
+          .joinRelation('[season, team]')
+          .eager('[team, season]')
+          .where('player_seasons.player_id', obj.id)
+      },
+      season_statistics: async (obj, args, context, info) => {
+        let query = queryBuilder(models.MatchPlayerStatistic, playerStats)
+          .skipUndefined()
+          .where('player_id', obj.id)
+          .leftJoin('matches', 'matches.id', 'match_player_statistics.match_id')
+
+        if (args.tournament_id && args.season_id) {
+          query = query.whereIn('match_id', builder =>
+            builder
+              .select('id')
+              .whereComposite(
+                ['tournament_id', 'season_id'],
+                [args.tournament_id, args.season_id]
+              )
+              .andWhere('date', '<=', 'match.date')
+              .from('matches')
+          )
+        }
+
+        query = query.groupBy('team_id', 'matches.tournament_id', 'matches.season_id', 'match_player_statistics.player_id')
+
+        return await query
+      }
+    },
+    PlayerSeasons: {
+      // requires player, tournament, season and team ids to be
+      // queried - returns 
+      matches: async (obj, args, context, info) => {
+        return await models.Match.query()
+          .select('*')
+          // TODO: more/less join/eager?
+          .joinRelation('[home_team, away_team]')
+          .eager('[home_team, away_team]')
+          .whereIn('matches.id', builder => builder
+            .distinct('match_id')
+            .from('match_players')
+            .whereComposite(
+              ['tournament_id', 'season_id'],
+              [obj.tournament_id, obj.season_id]
+            )
+            .andWhere('player_id', obj.player_id)
+            .andWhere('team_id', obj.team_id)
+            .groupBy('team_id', 'match_id')
+          )
+          .groupBy('matches.id', 'tournament_id', 'season_id', 'home_team.id', 'away_team.id')
       }
     },
     Query: {
       // TODO: options to get history; get totals for season or per team
       season_player_statistics: async (obj, args, context, info) => {
-        return await models.MatchPlayerStatistic.query()
-          .select(knex.raw(playerStatsSql))
+        return await queryBuilder(models.MatchPlayerStatistic, playerStats)
           .where('player_id', args.player_id)
+          .leftJoin('matches', 'matches.id', 'match_player_statistics.match_id')
           .whereIn('match_id', builder =>
             builder
               .select('id')
@@ -184,7 +267,7 @@ const mergedSchema = mergeSchemas({
               )
               .from('matches')
           )
-          .groupBy('team_id')
+          .groupBy('team_id', 'player_id', 'matches.tournament_id', 'matches.season_id')
       }
     }
   }
