@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apollo-server-express": "^2.5.0",
+    "apollo-server-express": "^2.14.2",
     "app-module-path": "^2.2.0",
     "bluebird": "^3.5.4",
     "body-parser": "^1.18.3",
