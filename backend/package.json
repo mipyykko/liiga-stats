@@ -25,7 +25,7 @@
     "graphql": "^14.3.0",
     "graphql-tools": "^4.0.5",
     "knex": "^0.16.5",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "morgan": "^1.9.1",
     "objection": "^1.6.8",
     "objection-graphql": "^0.4.5",
